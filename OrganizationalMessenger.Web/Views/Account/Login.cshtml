@@ -8,47 +8,164 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ورود</title>
+    <meta name="theme-color" content="#667eea" />
+    <title>ورود - پیام‌رسان سازمانی</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
     <style>
+        * {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+        }
+
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: Vazirmatn, Tahoma, sans-serif;
+            overflow: hidden;
         }
 
-        .login-container {
+        .login-wrapper {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+
+        .login-card {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
-            max-width: 450px;
-            width: 100%;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
             text-align: center;
-            margin-bottom: 40px;
         }
 
             .login-header .logo {
                 font-size: 3rem;
                 margin-bottom: 15px;
+                animation: pulse 2s infinite;
             }
 
-            .login-header h2 {
+        @@keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .login-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .login-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .login-body {
+            padding: 40px;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
+            border-radius: 10px 10px 0 0;
+            background: #f7fafc;
+            margin: -40px -40px 30px -40px;
+            padding: 0;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #a0aec0;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+            .auth-tab i {
+                margin-right: 6px;
+            }
+
+            .auth-tab.active {
                 color: #667eea;
-                font-weight: 700;
-                margin: 0;
+                border-bottom-color: #667eea;
+                background: white;
             }
 
-            .login-header p {
+            .auth-tab:hover:not(.active) {
                 color: #718096;
-                margin: 10px 0 0 0;
             }
+
+        .tab-content {
+            display: none;
+        }
+
+            .tab-content.active {
+                display: block;
+                animation: fadeIn 0.3s ease-out;
+            }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
 
         .form-group {
             margin-bottom: 20px;
@@ -61,82 +178,83 @@
                 display: block;
             }
 
-            .form-group input {
+            .form-group input,
+            .form-group select {
                 border: 2px solid #e2e8f0;
                 border-radius: 10px;
                 padding: 12px 15px;
                 font-size: 1rem;
                 transition: all 0.3s ease;
+                width: 100%;
             }
 
-                .form-group input:focus {
+                .form-group input:focus,
+                .form-group select:focus {
                     border-color: #667eea;
                     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
                     outline: none;
                 }
 
-        .btn-login {
+                .form-group input::placeholder {
+                    color: #cbd5e0;
+                }
+
+        .btn-submit {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             color: white;
-            padding: 12px;
-            font-size: 16px;
+            padding: 12px 30px;
+            font-size: 1rem;
             font-weight: 600;
             border-radius: 10px;
             width: 100%;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-            .btn-login:hover {
+            .btn-submit:hover:not(:disabled) {
                 transform: translateY(-2px);
                 box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
             }
 
-            .btn-login:disabled {
+            .btn-submit:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
             }
 
-        .alert {
-            border-radius: 10px;
-            border: none;
-            margin-bottom: 20px;
+        .spinner-border {
+            width: 18px;
+            height: 18px;
+            border-width: 2px;
         }
 
-        .auth-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e2e8f0;
+        .dev-info {
+            background: #fef5e7;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #7d6608;
         }
 
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            color: #a0aec0;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-            .auth-tab.active {
-                color: #667eea;
-                border-bottom-color: #667eea;
-            }
-
-        .tab-content {
-            display: none;
-        }
-
-            .tab-content.active {
+            .dev-info strong {
                 display: block;
+                margin-bottom: 8px;
             }
 
-        .otp-display {
+            .dev-info code {
+                background: rgba(0,0,0,0.05);
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: 'Courier New', monospace;
+            }
+
+        .otp-container {
             background: #f7fafc;
             border: 2px dashed #667eea;
             border-radius: 10px;
@@ -145,196 +263,432 @@
             margin-bottom: 20px;
         }
 
-            .otp-display .label {
-                color: #718096;
-                font-size: 0.9rem;
-                margin-bottom: 10px;
-            }
+        .otp-label {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
 
         .otp-code {
-            font-size: 2rem;
+            font-size: 2.2rem;
             color: #667eea;
             font-weight: 700;
-            font-family: monospace;
-            letter-spacing: 5px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 8px;
+            margin: 15px 0;
+            user-select: all;
         }
 
         .copy-btn {
             background: #e2e8f0;
             border: none;
             padding: 8px 12px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            margin-top: 10px;
             font-size: 0.85rem;
+            transition: all 0.3s ease;
         }
 
             .copy-btn:hover {
                 background: #cbd5e0;
+                transform: scale(1.05);
             }
 
-        .devinfo {
-            background: #fff5e6;
-            border-left: 4px solid #f6ad55;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-            font-size: 0.85rem;
-            color: #7c2d12;
+        .timer {
+            color: #e53e3e;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @@media (max-width: 480px) {
+            .login-body {
+                padding: 25px;
+            }
+
+            .auth-tabs {
+                margin: -25px -25px 20px -25px;
+            }
+
+            .login-header {
+                padding: 30px 15px;
+            }
+
+                .login-header h1 {
+                    font-size: 1.5rem;
+                }
+
+                .login-header .logo {
+                    font-size: 2.5rem;
+                }
+
+            .otp-code {
+                font-size: 1.8rem;
+                letter-spacing: 4px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <div class="logo">📱</div>
-            <h2>پیام‌رسان سازمانی</h2>
-            <p>سامانه پیام‌رسانی داخلی</p>
-        </div>
-
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger">@TempData["Error"]</div>
-        }
-
-        <div class="auth-tabs">
-            <div class="auth-tab active" onclick="switchTab('sms')">
-                <i class="fas fa-mobile-alt"></i> پیامک
+    <div class="login-wrapper">
+        <div class="login-card">
+            <!-- هدر -->
+            <div class="login-header">
+                <div class="logo">📱</div>
+                <h1>پیام‌رسان سازمانی</h1>
+                <p>سامانه ارتباطات داخلی شرکت</p>
             </div>
-            <div class="auth-tab" onclick="switchTab('password')">
-                <i class="fas fa-lock"></i> رمز عبور
-            </div>
-        </div>
 
-        <!-- ==================== تب پیامک ==================== -->
-        <div id="sms" class="tab-content active">
-            <form method="post" action="@Url.Action("LoginWithOtp")">
-                @Html.AntiForgeryToken()
+            <!-- بدنه -->
+            <div class="login-body">
+                <!-- پیام‌های خطا -->
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        @TempData["Error"]
+                    </div>
+                }
 
-                <div class="form-group">
-                    <label>شماره موبایل</label>
-                    <input type="tel" name="phoneNumber" class="form-control"
-                           placeholder="09123456789" required />
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        @TempData["Success"]
+                    </div>
+                }
+
+                <!-- تب‌های ورود -->
+                <div class="auth-tabs">
+                    <button type="button" class="auth-tab active" data-tab="sms">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span class="d-none d-sm-inline">پیامک</span>
+                    </button>
+                    <button type="button" class="auth-tab" data-tab="password">
+                        <i class="fas fa-lock"></i>
+                        <span class="d-none d-sm-inline">رمز عبور</span>
+                    </button>
+                    <button type="button" class="auth-tab" data-tab="ad">
+                        <i class="fas fa-building"></i>
+                        <span class="d-none d-sm-inline">Active Directory</span>
+                    </button>
                 </div>
 
-                <button type="submit" class="btn-login">درخواست کد</button>
-            </form>
+                <!-- ==================== تب پیامک ==================== -->
+                <div id="sms" class="tab-content active">
+                    <form id="smsForm" method="post" action="@Url.Action("SendOtp")">
+                        @Html.AntiForgeryToken()
 
-            <div class="devinfo">
-                <strong>💡 در حالت توسعه:</strong>
-                <br />
-                کد تایید برای شماره <strong>09123456789</strong> نمایش داده می‌شود
-            </div>
-        </div>
+                        <div class="form-group">
+                            <label for="smsPhone">
+                                <i class="fas fa-phone"></i> شماره موبایل
+                            </label>
+                            <input type="tel" id="smsPhone" name="phoneNumber"
+                                   class="form-control"
+                                   placeholder="09123456789"
+                                   pattern="0[0-9]{10}"
+                                   required />
+                            <small class="text-muted">فرمت: 09123456789</small>
+                        </div>
 
-        <!-- ==================== تب رمز عبور ==================== -->
-        <div id="password" class="tab-content">
-            <form method="post" action="@Url.Action("LoginWithPassword")">
-                @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-submit">
+                            <span class="spinner-border spinner-border-sm d-none" id="smsBtnSpinner"></span>
+                            درخواست کد تایید
+                        </button>
+                    </form>
 
-                <div class="form-group">
-                    <label>نام کاربری</label>
-                    <input type="text" name="username" class="form-control"
-                           placeholder="شماره موبایل" required />
+                    <div class="dev-info">
+                        <strong>💡 اطلاعات توسعه:</strong>
+                        شماره تستی: <code>09123456789</code><br />
+                        کد درخواست شده خودکار ارسال می‌شود
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>رمز عبور</label>
-                    <input type="password" name="password" class="form-control"
-                           placeholder="رمز عبور" required />
+                <!-- ==================== تب رمز عبور ==================== -->
+                <div id="password" class="tab-content">
+                    <form id="passwordForm" method="post" action="@Url.Action("LoginWithPassword")">
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group">
+                            <label for="pwdUsername">
+                                <i class="fas fa-user"></i> نام کاربری
+                            </label>
+                            <input type="text" id="pwdUsername" name="username"
+                                   class="form-control"
+                                   placeholder="شماره موبایل"
+                                   required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pwdPassword">
+                                <i class="fas fa-key"></i> رمز عبور
+                            </label>
+                            <input type="password" id="pwdPassword" name="password"
+                                   class="form-control"
+                                   placeholder="رمز عبور"
+                                   required />
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <span class="spinner-border spinner-border-sm d-none" id="pwdBtnSpinner"></span>
+                            ورود
+                        </button>
+                    </form>
+
+                    <div class="dev-info">
+                        <strong>💡 اطلاعات توسعه:</strong>
+                        نام کاربری: <code>09123456789</code><br />
+                        رمز عبور: <code>Test123!</code>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-login">ورود</button>
-            </form>
+                <!-- ==================== تب Active Directory ==================== -->
+                <div id="ad" class="tab-content">
+                    <form id="adForm" method="post" action="@Url.Action("LoginWithAD")">
+                        @Html.AntiForgeryToken()
 
-            <div class="devinfo">
-                <strong>💡 اطلاعات تستی:</strong>
-                <br />
-                نام کاربری: <code>09123456789</code>
-                <br />
-                رمز عبور: <code>Test123!</code>
+                        <div class="form-group">
+                            <label for="adUsername">
+                                <i class="fas fa-user"></i> نام کاربری AD
+                            </label>
+                            <input type="text" id="adUsername" name="username"
+                                   class="form-control"
+                                   placeholder="نام کاربری Active Directory"
+                                   required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adPassword">
+                                <i class="fas fa-key"></i> رمز عبور
+                            </label>
+                            <input type="password" id="adPassword" name="password"
+                                   class="form-control"
+                                   placeholder="رمز عبور"
+                                   required />
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <span class="spinner-border spinner-border-sm d-none" id="adBtnSpinner"></span>
+                            ورود با AD
+                        </button>
+                    </form>
+
+                    <div class="dev-info">
+                        <strong>💡 Active Directory:</strong>
+                        درخواست احراز هویت از سرور AD ارسال می‌شود
+                    </div>
+                </div>
+
+                <!-- ==================== OTP Verification ==================== -->
+                <div id="otpContainer" style="display: none;">
+                    <form id="otpForm" method="post" action="@Url.Action("VerifyOtp")">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="phoneNumber" id="phoneNumberField" />
+
+                        <div class="otp-container">
+                            <div class="otp-label">کد تایید 6 رقمی</div>
+                            <div class="otp-code" id="otpDisplay">------</div>
+                            <button type="button" class="copy-btn" onclick="copyOtp()">
+                                📋 کپی کد
+                            </button>
+                            <div class="timer">
+                                موارد باقی مانده: <span id="countdown">300</span> ثانیه
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="otpInput">کد را وارد کنید:</label>
+                            <input type="text" id="otpInput" name="otpCode"
+                                   class="form-control text-center"
+                                   placeholder="000000"
+                                   maxlength="6"
+                                   pattern="[0-9]{6}"
+                                   required
+                                   autofocus />
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <span class="spinner-border spinner-border-sm d-none" id="otpBtnSpinner"></span>
+                            تایید و ورود
+                        </button>
+
+                        <button type="button" class="btn btn-outline-secondary w-100 mt-2"
+                                onclick="resetToPhoneInput()">
+                            بازگشت
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- ==================== OTP وارد کردن ==================== -->
-    <div class="login-container mt-4" id="otpVerifyContainer" style="display:none;">
-        <div class="login-header">
-            <h2>تایید کد</h2>
-            <p>کد تایید را وارد کنید</p>
+        <!-- پیوند قانونی -->
+        <div class="text-center mt-4 text-white" style="font-size: 0.85rem;">
+            <p>© 1403 - تمامی حقوق محفوظ است</p>
         </div>
-
-        <form method="post" action="@Url.Action("VerifyOtp")">
-            @Html.AntiForgeryToken()
-
-            <input type="hidden" name="phoneNumber" id="hiddenPhone" />
-
-            <div id="otpDisplay" class="otp-display">
-                <div class="label">کد تایید (برای توسعه):</div>
-                <div class="otp-code" id="displayOtp">------</div>
-                <button type="button" class="copy-btn" onclick="copyOtp()">
-                    📋 کپی کدتبدیل
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label>کد تایید 6 رقمی</label>
-                <input type="text" name="otpCode" class="form-control"
-                       placeholder="000000" maxlength="6" required />
-            </div>
-
-            <button type="submit" class="btn-login">تایید و ورود</button>
-        </form>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+        // ==================== تب‌بندی ====================
+        $('.auth-tab').on('click', function() {
+            const tabName = $(this).data('tab');
 
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            event.target.closest('.auth-tab').classList.add('active');
-        }
+            $('.auth-tab').removeClass('active');
+            $('.tab-content').removeClass('active');
 
-        function copyOtp() {
-            const otp = document.getElementById('displayOtp').textContent;
-            navigator.clipboard.writeText(otp);
-            alert('کد کپی شد: ' + otp);
-        }
+            $(this).addClass('active');
+            $('#' + tabName).addClass('active');
 
-        // Show OTP verify on demand
-        document.querySelectorAll('form')[0].addEventListener('submit', function(e) {
+            // ریست کردن فرم‌های دیگر
+            resetForms();
+        });
+
+        // ==================== فرم پیامک ====================
+        $('#smsForm').on('submit', function(e) {
             e.preventDefault();
-            const phone = document.querySelector('input[name="phoneNumber"]').value;
 
-            // Call backend to generate OTP
-            fetch('@Url.Action("GenerateOtp")', {
-                method: 'POST',
+            const phone = $('#smsPhone').val().trim();
+            const $btn = $(this).find('.btn-submit');
+            const $spinner = $('#smsBtnSpinner');
+
+            if (!phone.match(/^0[0-9]{10}$/)) {
+                showError('فرمت شماره موبایل درست نیست');
+                return;
+            }
+
+            $spinner.removeClass('d-none');
+            $btn.prop('disabled', true);
+
+            $.ajax({
+                url: '@Url.Action("SendOtp")',
+                type: 'POST',
+                data: { phoneNumber: phone },
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': getAntiForgeryToken()
                 },
-                body: JSON.stringify({ phoneNumber: phone })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('hiddenPhone').value = phone;
-                    document.getElementById('displayOtp').textContent = data.otpCode;
-                    document.querySelector('.login-container').style.display = 'none';
-                    document.getElementById('otpVerifyContainer').style.display = 'block';
-                } else {
-                    alert('خطا: ' + data.message);
+                success: function(response) {
+                    if (response.success) {
+                        $('#phoneNumberField').val(phone);
+                        $('.login-card').fadeOut(300, function() {
+                            $(this).html($('#otpContainer').html());
+                            $(this).fadeIn(300);
+                            startCountdown();
+                            if (response.otpCode) {
+                                $('#otpDisplay').text(response.otpCode);
+                            }
+                        });
+                    } else {
+                        showError(response.message || 'خطا در ارسال کد');
+                    }
+                },
+                error: function(xhr) {
+                    showError('خطای ارتباطی: ' + xhr.status);
+                },
+                complete: function() {
+                    $spinner.addClass('d-none');
+                    $btn.prop('disabled', false);
                 }
             });
+        });
+
+        // ==================== کپی OTP ====================
+        function copyOtp() {
+            const otp = $('#otpDisplay').text().trim();
+            if (otp === '------') {
+                alert('کد هنوز دریافت نشده');
+                return;
+            }
+
+            navigator.clipboard.writeText(otp).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ کپی شد';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // ==================== شمارنده معکوس ====================
+        let countdownInterval;
+        function startCountdown() {
+            let seconds = 300; // 5 دقیقه
+
+            countdownInterval = setInterval(() => {
+                $('#countdown').text(seconds);
+
+                if (seconds <= 60) {
+                    $('#countdown').css('color', '#e53e3e');
+                }
+
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    alert('زمان انقضا یافته است. لطفاً دوباره درخواست کنید.');
+                    resetToPhoneInput();
+                }
+
+                seconds--;
+            }, 1000);
+        }
+
+        // ==================== بازگشت به ورودی موبایل ====================
+        function resetToPhoneInput() {
+            clearInterval(countdownInterval);
+            $('.auth-tab').removeClass('active');
+            $('.auth-tab[data-tab="sms"]').addClass('active');
+            $('.tab-content').removeClass('active');
+            $('#sms').addClass('active');
+            $('#smsPhone').focus();
+        }
+
+        // ==================== توابع کمکی ====================
+        function getAntiForgeryToken() {
+            return $('input[name="__RequestVerificationToken"]').first().val();
+        }
+
+        function showError(message) {
+            const alert = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+
+            $('.login-body').prepend(alert);
+
+            setTimeout(() => {
+                $('.alert').fadeOut(300, function() { $(this).remove(); });
+            }, 5000);
+        }
+
+        function resetForms() {
+            $('#smsForm, #passwordForm, #adForm').trigger('reset');
+            clearInterval(countdownInterval);
+        }
+
+        // اینتر برای OTP
+        $(document).on('keypress', '#otpInput', function(e) {
+            if (e.which === 13 && $(this).val().length === 6) {
+                $('#otpForm').submit();
+            }
         });
     </script>
 </body>

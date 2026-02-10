@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OrganizationalMessenger.Domain.Entities;
 using OrganizationalMessenger.Domain.Enums;
 using OrganizationalMessenger.Infrastructure.Data;
+using System.Security.Claims;
 
 namespace OrganizationalMessenger.Web.Controllers
 {
@@ -21,17 +22,22 @@ namespace OrganizationalMessenger.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var userId = int.Parse(User.FindFirst("NameIdentifier")?.Value ?? "0");
+            var userId = GetCurrentUserId();
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
             var user = await _context.Users
                 .Include(u => u.UserGroups)
+                    .ThenInclude(ug => ug.Group)
                 .Include(u => u.UserChannels)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                    .ThenInclude(uc => uc.Channel)
+                .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
             ViewBag.CurrentUser = user;
-            ViewBag.Chats = await GetUserChats(userId);
+            ViewBag.Chats = await GetUserChats(userId.Value);
             return View();
         }
 
@@ -39,8 +45,11 @@ namespace OrganizationalMessenger.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetChats(string tab = "all")
         {
-            var userId = int.Parse(User.FindFirst("NameIdentifier")?.Value ?? "0");
-            var chats = await GetUserChats(userId, tab);
+            var userId = GetCurrentUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            var chats = await GetUserChats(userId.Value, tab);
             return Json(chats);
         }
 
@@ -48,7 +57,12 @@ namespace OrganizationalMessenger.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMessages(int? userId = null, int? groupId = null, int? channelId = null)
         {
-            var currentUserId = int.Parse(User.FindFirst("NameIdentifier")?.Value ?? "0");
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null)
+                return Unauthorized();
+
+            if (userId == null && groupId == null && channelId == null)
+                return BadRequest("Destination is not specified.");
 
             IQueryable<Message> query = _context.Messages
                 .Include(m => m.Sender)
@@ -57,56 +71,138 @@ namespace OrganizationalMessenger.Web.Controllers
                 .OrderBy(m => m.CreatedAt);
 
             if (userId.HasValue)
-                query = query.Where(m => (m.SenderId == currentUserId && m.ReceiverId == userId) ||
-                                        (m.SenderId == userId && m.ReceiverId == currentUserId));
+            {
+                // چت خصوصی
+                query = query.Where(m =>
+                    (m.SenderId == currentUserId && m.ReceiverId == userId) ||
+                    (m.SenderId == userId && m.ReceiverId == currentUserId));
+            }
             else if (groupId.HasValue)
+            {
+                // پیام‌های گروه
                 query = query.Where(m => m.GroupId == groupId);
+            }
             else if (channelId.HasValue)
+            {
+                // پیام‌های کانال
                 query = query.Where(m => m.ChannelId == channelId);
+            }
 
-            var messages = await query.ToListAsync();
+            var messages = await query
+                .Select(m => new
+                {
+                    m.Id,
+                    m.MessageText,
+                    m.Content,
+                    m.Type,
+                    m.CreatedAt,
+                    m.SentAt,
+                    SenderId = m.SenderId,
+                    SenderName = m.Sender.FullName,
+                    SenderAvatar = m.Sender.AvatarUrl,
+                    m.GroupId,
+                    m.ChannelId,
+                    Attachments = m.Attachments.Select(a => new
+                    {
+                        a.Id,
+                        a.FileName,
+                        a.FileUrl,
+                        a.FileSize,
+                        a.FileType
+                    }).ToList()
+                })
+                .ToListAsync();
+
             return Json(messages);
         }
 
         // ارسال پیام
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
         {
-            var senderId = int.Parse(User.FindFirst("NameIdentifier")?.Value ?? "0");
-            var sender = await _context.Users.FindAsync(senderId);
-
-            if (sender == null)
+            var senderId = GetCurrentUserId();
+            if (senderId == null)
                 return Unauthorized();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (request.ReceiverId == null && request.GroupId == null && request.ChannelId == null)
+                return BadRequest("ReceiverId or GroupId or ChannelId must be specified.");
+
+            var sender = await _context.Users.FindAsync(senderId.Value);
+            if (sender == null || !sender.IsActive || sender.IsDeleted)
+                return Unauthorized();
+
+            // می‌توان اینجا چک کرد که کاربر عضو گروه/کانال هست یا نه
+            if (request.GroupId.HasValue)
+            {
+                var isMemberOfGroup = await _context.UserGroups
+                    .AnyAsync(ug => ug.UserId == senderId.Value && ug.GroupId == request.GroupId && ug.IsActive);
+                if (!isMemberOfGroup)
+                    return Forbid();
+            }
+
+            if (request.ChannelId.HasValue)
+            {
+                var isMemberOfChannel = await _context.UserChannels
+                    .AnyAsync(uc => uc.UserId == senderId.Value && uc.ChannelId == request.ChannelId && uc.IsActive);
+                if (!isMemberOfChannel)
+                    return Forbid();
+            }
+
+            var now = DateTime.Now;
 
             var message = new Message
             {
-                SenderId = senderId,
+                SenderId = senderId.Value,
                 ReceiverId = request.ReceiverId,
                 GroupId = request.GroupId,
                 ChannelId = request.ChannelId,
                 MessageText = request.MessageText,
                 Content = request.MessageText,
                 Type = request.Type,
-                SentAt = DateTime.Now,
-                CreatedAt = DateTime.Now
+                SentAt = now,
+                CreatedAt = now,
+                IsDeleted = false
             };
 
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, messageId = message.Id });
+            return Json(new
+            {
+                success = true,
+                messageId = message.Id,
+                sentAt = message.SentAt,
+                createdAt = message.CreatedAt
+            });
+        }
+
+        // متد کمکی برای گرفتن آی‌دی کاربر فعلی
+        private int? GetCurrentUserId()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null)
+                return null;
+
+            if (int.TryParse(claim.Value, out var id))
+                return id;
+
+            return null;
         }
 
         // متد کمکی
         private async Task<dynamic> GetUserChats(int userId, string tab = "all")
         {
             var user = await _context.Users
-                .Include(u => u.SentMessages.Where(m => !m.IsDeleted))
-                .Include(u => u.ReceivedMessages.Where(m => !m.IsDeleted))
                 .Include(u => u.UserGroups.Where(ug => ug.IsActive))
                     .ThenInclude(ug => ug.Group)
+                        .ThenInclude(g => g.UserGroups)
                 .Include(u => u.UserChannels.Where(uc => uc.IsActive))
                     .ThenInclude(uc => uc.Channel)
+                        .ThenInclude(c => c.UserChannels)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
@@ -114,7 +210,7 @@ namespace OrganizationalMessenger.Web.Controllers
 
             var chats = new List<dynamic>();
 
-            // چتهای خصوصی
+            // چت‌های خصوصی
             if (tab == "all" || tab == "private")
             {
                 var contacts = await _context.Users
@@ -132,6 +228,11 @@ namespace OrganizationalMessenger.Web.Controllers
 
                     if (lastMessage != null)
                     {
+                        var unreadCount = await _context.Messages
+                            .CountAsync(m => m.SenderId == contact.Id &&
+                                             m.ReceiverId == userId &&
+                                             !m.IsDeleted /* && !m.IsRead */);
+
                         chats.Add(new
                         {
                             type = "private",
@@ -141,16 +242,13 @@ namespace OrganizationalMessenger.Web.Controllers
                             isOnline = contact.IsOnline,
                             lastMessage = lastMessage.MessageText ?? lastMessage.Content,
                             lastMessageTime = lastMessage.CreatedAt,
-                            unreadCount = await _context.Messages
-                                .CountAsync(m => m.SenderId == contact.Id &&
-                                           m.ReceiverId == userId &&
-                                           !m.IsDeleted)
+                            unreadCount = unreadCount
                         });
                     }
                 }
             }
 
-            // گروهها
+            // گروه‌ها
             if (tab == "all" || tab == "group")
             {
                 foreach (var ug in user.UserGroups)
@@ -172,7 +270,7 @@ namespace OrganizationalMessenger.Web.Controllers
                 }
             }
 
-            // کانالها
+            // کانال‌ها
             if (tab == "all" || tab == "channel")
             {
                 foreach (var uc in user.UserChannels)
@@ -194,7 +292,9 @@ namespace OrganizationalMessenger.Web.Controllers
                 }
             }
 
-            return chats.OrderByDescending(c => c.lastMessageTime).ToList();
+            return chats
+                .OrderByDescending(c => c.lastMessageTime)
+                .ToList();
         }
     }
 
