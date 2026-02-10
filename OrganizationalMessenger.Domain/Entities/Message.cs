@@ -30,7 +30,7 @@ namespace OrganizationalMessenger.Domain.Entities
         public DateTime SentAt { get; set; } = DateTime.Now; // ⭐ اضافه شد
         public DateTime? DeliveredAt { get; set; }
 
-        // وضعیت‌ها
+        // وضعیت‌ها1
         public bool IsDelivered { get; set; } = false;
         public bool IsEdited { get; set; } = false;
         public DateTime? EditedAt { get; set; }
