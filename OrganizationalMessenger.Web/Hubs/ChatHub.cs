@@ -81,48 +81,69 @@ namespace OrganizationalMessenger.Web.Hubs
         /// <summary>
         /// ارسال پیام خصوصی
         /// </summary>
+        // در متد SendPrivateMessage
         public async Task SendPrivateMessage(int receiverId, string content)
         {
             var senderIdStr = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            var senderNameStr = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
 
             if (!int.TryParse(senderIdStr, out int senderId))
+            {
+                await Clients.Caller.SendAsync("Error", "Unauthorized");
                 return;
-
-            // ذخیره پیام در دیتابیس
-            var message = new Message
-            {
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                Content = content,
-                MessageText = content,
-                Type = MessageType.Text,
-                SentAt = DateTime.Now,
-                CreatedAt = DateTime.Now,
-                IsDelivered = true
-            };
-
-            _context.Messages.Add(message);
-            await _context.SaveChangesAsync();
-
-            // ارسال به گیرنده
-            if (OnlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
-            {
-                await Clients.Client(receiverConnectionId).SendAsync("ReceivePrivateMessage",
-                    new
-                    {
-                        id = message.Id,
-                        senderId = senderId,
-                        senderName = senderNameStr,
-                        content = content,
-                        sentAt = message.SentAt,
-                        messageId = message.Id
-                    });
             }
 
-            // ارسال تایید دریافت به فرستنده
-            await Clients.Caller.SendAsync("MessageSent", message.Id);
+            try
+            {
+                // ✅ 1. ذخیره در دیتابیس
+                var message = new Message
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Content = content,
+                    MessageText = content,
+                    Type = MessageType.Text,
+                    SentAt = DateTime.Now,
+                    CreatedAt = DateTime.Now,
+                    IsDeleted = false
+                };
+
+                _context.Messages.Add(message);
+                await _context.SaveChangesAsync(); // ✅ ذخیره میشه!
+
+                Console.WriteLine($"✅ Message saved: ID={message.Id}, From={senderId} To={receiverId}");
+
+                // 2. اطلاعات فرستنده
+                var sender = await _context.Users.FindAsync(senderId);
+
+                // 3. ارسال به گیرنده
+                if (OnlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
+                {
+                    await Clients.Client(receiverConnectionId).SendAsync("NewMessageReceived", new
+                    {
+                        messageId = message.Id,
+                        chatId = senderId,
+                        senderId = senderId,
+                        senderName = sender?.FullName ?? "کاربر",
+                        senderAvatar = sender?.AvatarUrl ?? "/images/default-avatar.png",
+                        content = content,
+                        sentAt = message.SentAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        chatType = "private",
+                        unreadCount = 1
+                    });
+                }
+
+                // 4. تایید به فرستنده
+                await Clients.Caller.SendAsync("MessageSent", new { success = true, messageId = message.Id });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Database Error: {ex.Message}");
+                await Clients.Caller.SendAsync("Error", "خطا در ذخیره پیام");
+            }
         }
+
+
+
 
         /// <summary>
         /// ارسال پیام گروهی

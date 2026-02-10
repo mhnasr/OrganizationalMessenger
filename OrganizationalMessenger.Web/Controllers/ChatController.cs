@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrganizationalMessenger.Domain.Entities;
@@ -43,6 +45,8 @@ namespace OrganizationalMessenger.Web.Controllers
 
         // دریافت لیست چتها
         [HttpGet]
+        [Route("Chat/GetChats")]  // ← این خط را اضافه کنید
+
         public async Task<IActionResult> GetChats(string tab = "all")
         {
             var userId = GetCurrentUserId();
@@ -165,11 +169,20 @@ namespace OrganizationalMessenger.Web.Controllers
                 Type = request.Type,
                 SentAt = now,
                 CreatedAt = now,
-                IsDeleted = false
+                IsDeleted = false,
+               
             };
-
+            try
+            {
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
+
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
 
             return Json(new
             {
@@ -211,6 +224,7 @@ namespace OrganizationalMessenger.Web.Controllers
             var chats = new List<dynamic>();
 
             // چت‌های خصوصی
+            // چت‌های خصوصی - مثل واتساپ (بدون خطا)
             if (tab == "all" || tab == "private")
             {
                 var contacts = await _context.Users
@@ -219,34 +233,52 @@ namespace OrganizationalMessenger.Web.Controllers
 
                 foreach (var contact in contacts)
                 {
+                    // همه پیام‌های بین من و این مخاطب
                     var lastMessage = await _context.Messages
                         .Where(m => !m.IsDeleted &&
-                               ((m.SenderId == userId && m.ReceiverId == contact.Id) ||
-                                (m.SenderId == contact.Id && m.ReceiverId == userId)))
+                               ((m.SenderId == userId && m.ReceiverId == contact.Id) ||     // ارسالی
+                                (m.SenderId == contact.Id && m.ReceiverId == userId)))      // دریافتی
                         .OrderByDescending(m => m.CreatedAt)
                         .FirstOrDefaultAsync();
 
-                    if (lastMessage != null)
-                    {
-                        var unreadCount = await _context.Messages
-                            .CountAsync(m => m.SenderId == contact.Id &&
-                                             m.ReceiverId == userId &&
-                                             !m.IsDeleted /* && !m.IsRead */);
+                    var unreadCount = await _context.Messages
+                        .CountAsync(m => m.SenderId == contact.Id &&
+                                        m.ReceiverId == userId &&
+                                        !m.IsDeleted);
 
-                        chats.Add(new
-                        {
-                            type = "private",
-                            id = contact.Id,
-                            name = contact.FullName,
-                            avatar = contact.AvatarUrl,
-                            isOnline = contact.IsOnline,
-                            lastMessage = lastMessage.MessageText ?? lastMessage.Content,
-                            lastMessageTime = lastMessage.CreatedAt,
-                            unreadCount = unreadCount
-                        });
+                    // ✅ Safe substring
+                    string lastMessageText = "";
+                    if (lastMessage?.MessageText != null)
+                    {
+                        lastMessageText = lastMessage.MessageText.Length > 30
+                            ? lastMessage.MessageText.Substring(0, 30)
+                            : lastMessage.MessageText;
                     }
+                    else if (lastMessage?.Content != null)
+                    {
+                        lastMessageText = lastMessage.Content.Length > 30
+                            ? lastMessage.Content.Substring(0, 30)
+                            : lastMessage.Content;
+                    }
+
+                    chats.Add(new
+                    {
+                        type = "private",
+                        id = contact.Id,
+                        name = contact.FullName ?? "کاربر",
+                        avatar = contact.AvatarUrl ?? "/images/default-avatar.png",
+                        isOnline = contact.IsOnline,
+                        lastMessage = lastMessageText + (lastMessageText.Length > 29 ? "..." : ""),
+                        lastMessageTime = lastMessage?.CreatedAt ?? contact.CreatedAt,
+                        unreadCount = unreadCount,
+                        messageDirection = lastMessage?.SenderId == userId ? "sent" : "received"
+                    });
                 }
             }
+
+            // ✅ سورت - جدیدترین بالا (واتساپ)
+            
+
 
             // گروه‌ها
             if (tab == "all" || tab == "group")
@@ -296,6 +328,21 @@ namespace OrganizationalMessenger.Web.Controllers
                 .OrderByDescending(c => c.lastMessageTime)
                 .ToList();
         }
+       
+        
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignOut()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // پاک کردن تمام cookie ها
+            Response.Cookies.Delete(".AspNetCore.Cookies");
+
+            return RedirectToAction("Login", "Account");
+        }
+
     }
 
     public class SendMessageRequest
