@@ -1,0 +1,192 @@
+﻿@model OrganizationalMessenger.Web.Areas.Admin.Models.UserListViewModel
+@{
+    ViewData["Title"] = "مدیریت کاربران";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2>
+            <i class="bi bi-people"></i> مدیریت کاربران
+        </h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> افزودن کاربر جدید
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- فرم جستجو -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" asp-action="Index">
+            <div class="row g-2">
+                <div class="col-md-10">
+                    <input type="text" name="search" value="@Model.SearchTerm"
+                           class="form-control" placeholder="جستجو بر اساس نام، نام خانوادگی، نام کاربری یا شماره موبایل...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> جستجو
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- جدول کاربران -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>نام کاربری</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>شماره موبایل</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ ثبت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Users.Any())
+                    {
+                        int rowNum = (Model.CurrentPage - 1) * Model.PageSize + 1;
+                        foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>@rowNum</td>
+                                <td>@user.Username</td>
+                                <td>@user.FirstName @user.LastName</td>
+                                <td>@(string.IsNullOrEmpty(user.PhoneNumber) ? "---" : user.PhoneNumber)</td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge bg-success">فعال</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">غیرفعال</span>
+                                    }
+                                </td>
+                                <td>@user.CreatedAt.ToString("yyyy/MM/dd")</td>
+                                <td>
+                                   
+                                    <a asp-action="Edit" asp-route-id="@user.Id"
+                                       class="btn btn-sm btn-warning btn-action" title="ویرایش">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger btn-action"
+                                            onclick="confirmDelete(@user.Id, '@user.FirstName @user.LastName')" title="حذف">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-secondary btn-action"
+                                            onclick="toggleStatus(@user.Id)" title="تغییر وضعیت">
+                                        <i class="bi bi-toggle-on"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            rowNum++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center">کاربری یافت نشد</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- صفحه‌بندی -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@(Model.CurrentPage - 1)"
+                           asp-route-search="@Model.SearchTerm">قبلی</a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-search="@Model.SearchTerm">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@(Model.CurrentPage + 1)"
+                           asp-route-search="@Model.SearchTerm">بعدی</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <p class="text-center text-muted">
+                نمایش @((Model.CurrentPage - 1) * Model.PageSize + 1) تا
+                @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)) از
+                @Model.TotalCount کاربر
+            </p>
+        }
+    </div>
+</div>
+
+<!-- فرم حذف (مخفی) -->
+<form id="deleteForm" method="post" asp-action="Delete">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="deleteId" />
+</form>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            if (confirm('آیا از حذف کاربر "' + name + '" اطمینان دارید؟')) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('deleteForm').submit();
+            }
+        }
+
+        function toggleStatus(id) {
+            if (confirm('آیا از تغییر وضعیت این کاربر اطمینان دارید؟')) {
+                $.ajax({
+                    url: '@Url.Action("ToggleStatus")',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+}

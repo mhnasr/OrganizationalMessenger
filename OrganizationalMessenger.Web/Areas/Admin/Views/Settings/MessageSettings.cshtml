@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "تنظیمات پیام‌ها";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4>تنظیمات پیام‌ها</h4>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+
+            <form asp-action="MessageSettings" method="post">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label>زمان ویرایش پیام (ثانیه)</label>
+                            <input type="number" name="messageEditTimeLimit"
+                                   value="@ViewBag.MessageEditTimeLimit"
+                                   class="form-control" min="0" />
+                            <small class="form-text text-muted">0 = بدون محدودیت</small>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>زمان حذف پیام (ثانیه)</label>
+                            <input type="number" name="messageDeleteTimeLimit"
+                                   value="@ViewBag.MessageDeleteTimeLimit"
+                                   class="form-control" min="0" />
+                            <small class="form-text text-muted">0 = بدون محدودیت</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- ✅ Checkbox 1 + Hidden -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" name="allowMessageEdit" value="true"
+                                   class="form-check-input" id="allowEdit"
+                                   @(ViewBag.AllowMessageEdit == true ? "checked" : "") />
+                            <label class="form-check-label" for="allowEdit">اجازه ویرایش پیام</label>
+                        </div>
+                        <input type="hidden" name="allowMessageEdit" value="false" />
+
+                        <!-- ✅ Checkbox 2 + Hidden -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" name="allowMessageDelete" value="true"
+                                   class="form-check-input" id="allowDelete"
+                                   @(ViewBag.AllowMessageDelete == true ? "checked" : "") />
+                            <label class="form-check-label" for="allowDelete">اجازه حذف پیام</label>
+                        </div>
+                        <input type="hidden" name="allowMessageDelete" value="false" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">ذخیره</button>
+                <a asp-action="Index" class="btn btn-secondary ml-2">بازگشت</a>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "تنظیمات احراز هویت";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4>تنظیمات احراز هویت</h4>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+
+            <form asp-action="Authentication" method="post">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label>نوع احراز هویت</label>
+                            @{
+                                string authType = ViewBag.AuthenticationType?.ToString() ?? "Database";
+                            }
+                            <select name="authenticationType" class="form-control">
+                                <option value="Database" selected="@(authType == "Database")">دیتابیس</option>
+                                <option value="ActiveDirectory" selected="@(authType == "ActiveDirectory")">Active Directory</option>
+                                <option value="ERP" selected="@(authType == "ERP")">ERP</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>سرور AD</label>
+                            <input type="text" name="adServer" value="@ViewBag.AdServer" class="form-control" />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>دامنه AD</label>
+                            <input type="text" name="adDomain" value="@ViewBag.AdDomain" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label>API ERP</label>
+                            <input type="url" name="erpApiUrl" value="@ViewBag.ErpApiUrl"
+                                   class="form-control" placeholder="https://erp.company.com/api" />
+                        </div>
+
+                        <!-- ✅ Checkbox -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" name="otpEnabled" value="true"
+                                   class="form-check-input" id="otpEnabled"
+                                   @(ViewBag.OtpEnabled == true ? "checked" : "") />
+                            <label class="form-check-label" for="otpEnabled">فعال‌سازی OTP</label>
+                        </div>
+                        <input type="hidden" name="otpEnabled" value="false" />
+
+                        <div class="form-group mb-3">
+                            <label>انقضای OTP (دقیقه)</label>
+                            <input type="number" name="otpExpiryMinutes"
+                                   value="@ViewBag.OtpExpiryMinutes"
+                                   class="form-control" min="1" max="60" />
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">ذخیره</button>
+                <a asp-action="Index" class="btn btn-secondary ml-2">بازگشت</a>
+            </form>
+        </div>
+    </div>
+</div>

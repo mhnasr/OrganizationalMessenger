@@ -1,0 +1,220 @@
+﻿@model IEnumerable<OrganizationalMessenger.Domain.Entities.SystemSetting>
+@{
+    ViewData["Title"] = "تنظیمات سیستم";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar Menu - مدرن -->
+        <div class="col-xl-3 col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-gradient-primary text-white border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>منوی تنظیمات
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a asp-action="General" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("General") == true ? "active" : "")">
+                        <i class="fas fa-sliders-h me-3 text-primary"></i>عمومی
+                    </a>
+                    <a asp-action="Authentication" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("Authentication") == true ? "active" : "")">
+                        <i class="fas fa-shield-alt me-3 text-success"></i>احراز هویت
+                    </a>
+                    <a asp-action="MessageSettings" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("MessageSettings") == true ? "active" : "")">
+                        <i class="fas fa-comment-dots me-3 text-info"></i>پیام‌ها
+                    </a>
+                    <a asp-action="Sms" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("Sms") == true ? "active" : "")">
+                        <i class="fas fa-sms me-3 text-warning"></i>پیامک
+                    </a>
+                    <a asp-action="VoIP" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("VoIP") == true ? "active" : "")">
+                        <i class="fas fa-phone me-3 text-danger"></i>VoIP
+                    </a>
+                    <a asp-action="Telegram" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("Telegram") == true ? "active" : "")">
+                        <i class="fab fa-telegram-plane me-3 text-primary"></i>تلگرام
+                    </a>
+                    <a asp-action="FileUpload" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("FileUpload") == true ? "active" : "")">
+                        <i class="fas fa-file-upload me-3 text-success"></i>آپلود فایل
+                    </a>
+                    <a asp-action="ForbiddenWords" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("ForbiddenWords") == true ? "active" : "")">
+                        <i class="fas fa-ban me-3 text-danger"></i>کلمات ممنوعه
+                    </a>
+                    <a asp-action="ServiceLinks" class="list-group-item list-group-item-action @(Context.Request.Path.Value?.Contains("ServiceLinks") == true ? "active" : "")">
+                        <i class="fas fa-link me-3 text-info"></i>خدمات
+                    </a>
+                    <a asp-action="Export" class="list-group-item list-group-item-action list-group-item-success">
+                        <i class="fas fa-download me-3"></i>خروجی JSON
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content - مدرن -->
+        <div class="col-xl-9 col-lg-8">
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-cog fa-2x text-primary mb-2"></i>
+                            <h3 class="text-primary">@ViewBag.TotalSettings</h3>
+                            <p class="mb-0 text-muted">کل تنظیمات</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                            <h3 class="text-warning">@(((DateTime)ViewBag.LastUpdated).ToString("HH:mm"))</h3>
+                            <p class="mb-0 text-muted">آخرین بروزرسانی</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h3 class="text-success">@Model.Count(s => s.Value?.ToLower() == "true")</h3>
+                            <p class="mb-0 text-muted">فعال</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Table - شیک -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-secondary text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list me-2"></i>وضعیت تنظیمات سیستم
+                    </h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="border-0 py-3">
+                                        <i class="fas fa-key me-1"></i>کلید
+                                    </th>
+                                    <th class="border-0 py-3">
+                                        <i class="fas fa-cube me-1"></i>مقدار
+                                    </th>
+                                    <th class="border-0 py-3">
+                                        <i class="fas fa-info-circle me-1"></i>توضیح
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+                                @foreach (var item in Model.OrderBy(x => x.Key))
+                                {
+                                    <tr class="hover-row">
+                                        <td class="py-3">
+                                            <code class="bg-light px-2 py-1 rounded font-monospace text-dark fw-semibold">
+                                                @item.Key
+                                            </code>
+                                        </td>
+                                        <td class="py-3">
+                                            @{
+                                                bool isBool = item.Value?.ToLower() == "true" || item.Value?.ToLower() == "false";
+                                            }
+                                            @if (isBool)
+                                            {
+                                                <span class="badge fs-6 px-3 py-2 @(item.Value == "true" ? "bg-success" : "bg-danger")">
+                                                    @if (item.Value == "true")
+                                                    {
+                                                        <i class="fas fa-check-circle me-1"></i>
+                                                        <span>فعال</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-times-circle me-1"></i>
+                                                        <span>غیرفعال</span>
+                                                    }
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-light text-dark px-3 py-2">
+                                                    @item.Value
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="py-3">
+                                            @if (!string.IsNullOrEmpty(item.Description))
+                                            {
+                                                <span class="text-muted small d-inline-block" style="max-width: 300px;" title="@item.Description">
+                                                    @item.Description
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">—</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .bg-gradient-primary {
+        background: var(--primary-gradient) !important;
+    }
+
+    .bg-gradient-secondary {
+        background: var(--secondary-gradient) !important;
+    }
+
+    .list-group-item.active {
+        background-color: var(--primary-gradient);
+        border-color: transparent;
+    }
+
+    .hover-row:hover {
+        background-color: rgba(0,123,255,.05);
+        transform: scale(1.01);
+        transition: all 0.2s ease;
+    }
+
+    .table-hover tbody tr:hover {
+        --bs-table-accent-bg: rgba(0,0,0,.025);
+    }
+
+    .font-monospace {
+        font-family: 'Fira Code', 'SF Mono', monospace;
+        font-size: 0.875rem;
+    }
+
+    .badge {
+        font-weight: 500 !important;
+        border-radius: 25px;
+        min-width: 80px;
+        text-align: center;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Smooth hover animations
+        document.querySelectorAll('.hover-row').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transform = 'translateY(-2px)';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+}

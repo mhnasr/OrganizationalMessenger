@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "تنظیمات عمومی";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form asp-action="General" method="post" enctype="multipart/form-data">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-cog"></i> تنظیمات عمومی</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label>نام سازمان <span class="text-danger">*</span></label>
+                            <input type="text" name="organizationName" value="@ViewBag.OrganizationName"
+                                   class="form-control" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>لوگوی سازمان</label>
+                            <input type="file" name="logoFile" class="form-control" accept="image/*" />
+                            @if (!string.IsNullOrEmpty(ViewBag.LogoUrl?.ToString()))
+                            {
+                                <img src="@ViewBag.LogoUrl" style="max-height:80px; border:1px solid #ddd;" />
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <!-- ✅ CHECKBOX 1 - درست -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" id="allowGroupCreation"
+                                   name="allowUserGroupCreation" value="true"
+                                   class="form-check-input"
+                                   @(ViewBag.AllowUserGroupCreation ? "checked" : "") />
+                            <label class="form-check-label" for="allowGroupCreation">
+                                اجازه ایجاد گروه به کاربران
+                            </label>
+                        </div>
+
+                        <!-- ✅ CHECKBOX 2 - درست -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" id="allowChannelCreation"
+                                   name="allowUserChannelCreation" value="true"
+                                   class="form-check-input"
+                                   @(ViewBag.AllowUserChannelCreation ? "checked" : "") />
+                            <label class="form-check-label" for="allowChannelCreation">
+                                اجازه ایجاد کانال به کاربران
+                            </label>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>حداکثر اعضای گروه</label>
+                            <input type="number" name="maxGroupMembers"
+                                   value="@ViewBag.MaxGroupMembers"
+                                   class="form-control" min="10" max="10000" />
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> ذخیره تنظیمات
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg ml-2">بازگشت</a>
+            </div>
+        </div>
+    </form>
+</div>

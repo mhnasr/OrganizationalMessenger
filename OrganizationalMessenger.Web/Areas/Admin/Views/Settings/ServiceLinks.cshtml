@@ -1,0 +1,89 @@
+﻿@model IEnumerable<OrganizationalMessenger.Domain.Entities.ServiceLink>
+@{
+    ViewData["Title"] = "لینک‌های خدمات";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4><i class="fas fa-link"></i> لینک‌های خدمات (@Model.Count())</h4>
+
+            <!-- ✅ FORM کامل - کار می‌کند! -->
+            <form asp-action="AddServiceLink" method="post" class="input-group input-group-sm" style="max-width: 500px;">
+                <input type="text" name="title" class="form-control" placeholder="عنوان خدمت" required />
+                <input type="url" name="url" class="form-control" placeholder="https://erp.company.com" required />
+                <input type="text" name="iconUrl" class="form-control" placeholder="fas fa-external-link" />
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-plus"></i> افزودن
+                </button>
+            </form>
+        </div>
+
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-link fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">هیچ لینکی ثبت نشده</h5>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>عنوان</th>
+                                <th style="width: 200px;">آدرس</th>
+                                <th style="width: 120px;">آیکون</th>
+                                <th style="width: 100px;">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int index = 1;
+                            }
+                            @foreach (var link in Model.OrderBy(l => l.DisplayOrder))
+                            {
+                                <tr>
+                                    <td>@index</td>
+                                    <td><strong>@link.Title</strong></td>
+                                    <td>
+                                        <a href="@link.Url" target="_blank" class="text-truncate d-inline-block"
+                                           style="max-width: 200px;" title="@link.Url">
+                                            @link.Url
+                                        </a>
+                                    </td>
+                                    <td><code>@link.IconUrl</code></td>
+                                    <td>
+                                        <form asp-action="DeleteServiceLink" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@link.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('حذف شود؟ @link.Title')">
+                                                <i class="fas fa-trash">حذف</i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                index++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary mt-3">بازگشت</a>
+</div>

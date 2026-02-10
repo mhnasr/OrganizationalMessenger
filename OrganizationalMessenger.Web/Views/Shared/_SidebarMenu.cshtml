@@ -1,0 +1,283 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
+}
+
+<!-- Brand -->
+<div class="sidebar-brand">
+    @* <img src="~/images/logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/50/4e73df/ffffff?text=OM'" /> *@
+    <h5>پیام‌رسان سازمانی</h5>
+</div>
+
+<!-- Menu -->
+<ul class="sidebar-menu">
+
+    <!-- Dashboard -->
+    <li class="menu-item">
+        <a href="@Url.Action("Index", "Dashboard")" class="menu-link @(currentController == "dashboard" ? "active" : "")">
+            <i class="fas fa-tachometer-alt"></i>
+            <span class="menu-text">داشبورد</span>
+        </a>
+    </li>
+
+    <!-- User Management -->
+    <li class="menu-header">مدیریت کاربران</li>
+
+    <li class="menu-item has-submenu @(currentController == "users" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "users" ? "active" : "")">
+            <i class="fas fa-users"></i>
+            <span class="menu-text">کاربران</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "Users")" class="submenu-link @(currentController == "users" && currentAction == "index" ? "active" : "")">
+                    لیست کاربران
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Create", "Users")" class="submenu-link @(currentController == "users" && currentAction == "create" ? "active" : "")">
+                    افزودن کاربر
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Permissions", "Users")" class="submenu-link @(currentController == "users" && currentAction == "permissions" ? "active" : "")">
+                    مجوزها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("SmsCredits", "Users")" class="submenu-link @(currentController == "users" && currentAction == "smscredits" ? "active" : "")">
+                    اعتبار پیامک
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Groups -->
+    <li class="menu-item has-submenu @(currentController == "groups" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "groups" ? "active" : "")">
+            <i class="fas fa-user-friends"></i>
+            <span class="menu-text">گروه‌ها</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "Groups")" class="submenu-link @(currentController == "groups" && currentAction == "index" ? "active" : "")">
+                    لیست گروه‌ها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Create", "Groups")" class="submenu-link @(currentController == "groups" && currentAction == "create" ? "active" : "")">
+                    ایجاد گروه
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Channels -->
+    <li class="menu-item has-submenu @(currentController == "channels" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "channels" ? "active" : "")">
+            <i class="fas fa-broadcast-tower"></i>
+            <span class="menu-text">کانال‌ها</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "Channels")" class="submenu-link @(currentController == "channels" && currentAction == "index" ? "active" : "")">
+                    لیست کانال‌ها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Create", "Channels")" class="submenu-link @(currentController == "channels" && currentAction == "create" ? "active" : "")">
+                    ایجاد کانال
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Messages -->
+    <li class="menu-header">پیام‌ها و محتوا</li>
+
+    <li class="menu-item has-submenu @(currentController == "messages" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "messages" ? "active" : "")">
+            <i class="fas fa-comments"></i>
+            <span class="menu-text">پیام‌ها</span>
+            <span class="menu-badge" id="reportsBadge">0</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "Messages")" class="submenu-link @(currentController == "messages" && currentAction == "index" ? "active" : "")">
+                    تمام پیام‌ها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Reports", "Messages")" class="submenu-link @(currentController == "messages" && currentAction == "reports" ? "active" : "")">
+                    گزارشات پیام
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("ForbiddenWords", "Messages")" class="submenu-link @(currentController == "messages" && currentAction == "forbiddenwords" ? "active" : "")">
+                    کلمات ممنوعه
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Polls -->
+    <li class="menu-item">
+        <a href="@Url.Action("Index", "Polls")" class="menu-link @(currentController == "polls" ? "active" : "")">
+            <i class="fas fa-poll"></i>
+            <span class="menu-text">نظرسنجی‌ها</span>
+        </a>
+    </li>
+
+    <!-- Calls -->
+    <li class="menu-item">
+        <a href="@Url.Action("Index", "Calls")" class="menu-link @(currentController == "calls" ? "active" : "")">
+            <i class="fas fa-phone-alt"></i>
+            <span class="menu-text">تماس‌ها</span>
+        </a>
+    </li>
+
+    <!-- Notifications -->
+    <li class="menu-header">اعلان‌ها</li>
+
+    <li class="menu-item has-submenu @(currentController == "notifications" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "notifications" ? "active" : "")">
+            <i class="fas fa-bell"></i>
+            <span class="menu-text">اعلان‌ها</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "Notifications")" class="submenu-link @(currentController == "notifications" && currentAction == "index" ? "active" : "")">
+                    لیست اعلان‌ها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Create", "Notifications")" class="submenu-link @(currentController == "notifications" && currentAction == "create" ? "active" : "")">
+                    ارسال اعلان
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("SystemAlerts", "Notifications")" class="submenu-link @(currentController == "notifications" && currentAction == "systemalerts" ? "active" : "")">
+                    هشدارهای سیستم
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Reports & Analytics -->
+    <li class="menu-header">گزارشات</li>
+
+    <li class="menu-item has-submenu @(currentController == "reports" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "reports" ? "active" : "")">
+            <i class="fas fa-chart-bar"></i>
+            <span class="menu-text">گزارشات</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "Reports")" class="submenu-link @(currentController == "reports" && currentAction == "index" ? "active" : "")">
+                    داشبورد گزارشات
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("UserActivity", "Reports")" class="submenu-link @(currentController == "reports" && currentAction == "useractivity" ? "active" : "")">
+                    فعالیت کاربران
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("MessageStats", "Reports")" class="submenu-link @(currentController == "reports" && currentAction == "messagestats" ? "active" : "")">
+                    آمار پیام‌ها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("CallLogs", "Reports")" class="submenu-link @(currentController == "reports" && currentAction == "calllogs" ? "active" : "")">
+                    لاگ تماس‌ها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("LoginHistory", "Reports")" class="submenu-link @(currentController == "reports" && currentAction == "loginhistory" ? "active" : "")">
+                    تاریخچه ورود
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Settings -->
+    <li class="menu-header">تنظیمات</li>
+
+    <li class="menu-item has-submenu @(currentController == "settings" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "settings" ? "active" : "")">
+            <i class="fas fa-cogs"></i>
+            <span class="menu-text">تنظیمات</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "index" ? "active" : "")">
+                    تنظیمات عمومی
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Authentication", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "authentication" ? "active" : "")">
+                    احراز هویت
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("VoIP", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "voip" ? "active" : "")">
+                    تنظیمات VoIP
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("FileUpload", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "fileupload" ? "active" : "")">
+                    آپلود فایل
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("MessageSettings", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "messagesettings" ? "active" : "")">
+                    تنظیمات پیام
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("ServiceLinks", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "servicelinks" ? "active" : "")">
+                    لینک سرویس‌ها
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Telegram", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "telegram" ? "active" : "")">
+                    تنظیمات تلگرام
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Sms", "Settings")" class="submenu-link @(currentController == "settings" && currentAction == "sms" ? "active" : "")">
+                    تنظیمات پیامک
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Admin Users -->
+    <li class="menu-item has-submenu @(currentController == "adminusers" ? "open" : "")">
+        <a href="#" class="menu-link @(currentController == "adminusers" ? "active" : "")">
+            <i class="fas fa-user-shield"></i>
+            <span class="menu-text">مدیران سیستم</span>
+            <i class="fas fa-chevron-left menu-arrow"></i>
+        </a>
+        <ul class="submenu">
+            <li>
+                <a href="@Url.Action("Index", "AdminUsers")" class="submenu-link @(currentController == "adminusers" && currentAction == "index" ? "active" : "")">
+                    لیست مدیران
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Create", "AdminUsers")" class="submenu-link @(currentController == "adminusers" && currentAction == "create" ? "active" : "")">
+                    افزودن مدیر
+                </a>
+            </li>
+        </ul>
+    </li>
+
+</ul>

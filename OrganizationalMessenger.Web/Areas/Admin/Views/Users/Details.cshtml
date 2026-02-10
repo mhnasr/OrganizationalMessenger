@@ -1,0 +1,166 @@
+﻿@{
+    ViewData["Title"] = "جزئیات کاربر";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    // Helper برای تبدیل تاریخ میلادی به شمسی
+    string ToPersianDate(DateTime? date)
+    {
+        if (date == null) return "---";
+        var persianCalendar = new System.Globalization.PersianCalendar();
+        return $"{persianCalendar.GetYear(date.Value)}/{persianCalendar.GetMonth(date.Value):00}/{persianCalendar.GetDayOfMonth(date.Value):00}";
+    }
+
+    string ToPersianDateTime(DateTime? date)
+    {
+        if (date == null) return "---";
+        var persianCalendar = new System.Globalization.PersianCalendar();
+        return $"{persianCalendar.GetYear(date.Value)}/{persianCalendar.GetMonth(date.Value):00}/{persianCalendar.GetDayOfMonth(date.Value):00} {date.Value:HH:mm}";
+    }
+}
+
+<div class="page-header">
+    <h2>جزئیات کاربر</h2>
+    <div class="actions">
+        <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">ویرایش</a>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">بازگشت به لیست</a>
+    </div>
+</div>
+
+<div class="details-container">
+    <div class="detail-card">
+        <h3>اطلاعات پایه</h3>
+        <div class="detail-row">
+            <span class="label">نام کاربری:</span>
+            <span class="value">@Model.Username</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">نام و نام خانوادگی:</span>
+            <span class="value">@Model.FirstName @Model.LastName</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">ایمیل:</span>
+            <span class="value">@(string.IsNullOrEmpty(Model.Email) ? "---" : Model.Email)</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">شماره تلفن:</span>
+            <span class="value">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "---" : Model.PhoneNumber)</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">وضعیت:</span>
+            <span class="badge @(Model.IsActive ? "badge-active" : "badge-inactive")">
+                @(Model.IsActive ? "فعال" : "غیرفعال")
+            </span>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3>احراز هویت</h3>
+        <div class="detail-row">
+            <span class="label">Active Directory ID:</span>
+            <span class="value">@(string.IsNullOrEmpty(Model.ActiveDirectoryId) ? "---" : Model.ActiveDirectoryId)</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">ERP User ID:</span>
+            <span class="value">@(string.IsNullOrEmpty(Model.ErpUserId) ? "---" : Model.ErpUserId)</span>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3>اعتبارات و مجوزها</h3>
+        <div class="detail-row">
+            <span class="label">اعتبار پیامک:</span>
+            <span class="value">@Model.SmsCredit</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">مجوز ایجاد گروه:</span>
+            <span class="badge @(Model.CanCreateGroup ? "badge-active" : "badge-inactive")">
+                @(Model.CanCreateGroup ? "دارد" : "ندارد")
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="label">مجوز ایجاد کانال:</span>
+            <span class="badge @(Model.CanCreateChannel ? "badge-active" : "badge-inactive")">
+                @(Model.CanCreateChannel ? "دارد" : "ندارد")
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="label">مجوز تماس صوتی:</span>
+            <span class="badge @(Model.CanMakeVoiceCall ? "badge-active" : "badge-inactive")">
+                @(Model.CanMakeVoiceCall ? "دارد" : "ندارد")
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="label">مجوز تماس تصویری:</span>
+            <span class="badge @(Model.CanMakeVideoCall ? "badge-active" : "badge-inactive")">
+                @(Model.CanMakeVideoCall ? "دارد" : "ندارد")
+            </span>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3>فعالیت‌ها</h3>
+        <div class="detail-row">
+            <span class="label">تاریخ ثبت‌نام:</span>
+            <span class="value">@ToPersianDateTime(Model.CreatedAt)</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">آخرین بازدید:</span>
+            <span class="value">@ToPersianDateTime(Model.LastSeenAt)</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">تعداد پیام‌های ارسالی:</span>
+            <span class="value">@ViewBag.MessageCount</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">تعداد تماس‌ها:</span>
+            <span class="value">@ViewBag.CallCount</span>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3>گروه‌های عضو (@Model.UserGroups.Count)</h3>
+        @if (Model.UserGroups.Any())
+        {
+            <ul class="list-items">
+                @foreach (var ug in Model.UserGroups)
+                {
+                    <li>
+                        @ug.Group.Name
+                        @if (ug.IsAdmin)
+                        {
+                            <span class="badge badge-admin">مدیر</span>
+                        }
+                        <span class="date">عضویت: @ToPersianDate(ug.JoinedAt)</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="no-data">عضو هیچ گروهی نیست</p>
+        }
+    </div>
+
+    <div class="detail-card">
+        <h3>کانال‌های عضو (@Model.UserChannels.Count)</h3>
+        @if (Model.UserChannels.Any())
+        {
+            <ul class="list-items">
+                @foreach (var uc in Model.UserChannels)
+                {
+                    <li>
+                        @uc.Channel.Name
+                        @if (uc.IsAdmin)
+                        {
+                            <span class="badge badge-admin">مدیر</span>
+                        }
+                        <span class="date">عضویت: @ToPersianDate(uc.JoinedAt)</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="no-data">عضو هیچ کانالی نیست</p>
+        }
+    </div>
+</div>

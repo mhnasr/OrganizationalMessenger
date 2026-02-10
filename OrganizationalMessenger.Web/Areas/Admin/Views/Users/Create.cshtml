@@ -1,0 +1,168 @@
+﻿@model OrganizationalMessenger.Web.Areas.Admin.Models.UserCreateViewModel
+@{
+    ViewData["Title"] = "افزودن کاربر جدید";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <h2>
+            <i class="bi bi-person-plus"></i> افزودن کاربر جدید
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row">
+                        <!-- اطلاعات پایه -->
+                        <div class="col-md-12 mb-3">
+                            <h5 class="border-bottom pb-2">اطلاعات پایه</h5>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Username" class="form-label"></label>
+                            <input asp-for="Username" class="form-control" />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="09123456789" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FirstName" class="form-label"></label>
+                            <input asp-for="FirstName" class="form-control" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="LastName" class="form-label"></label>
+                            <input asp-for="LastName" class="form-control" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <!-- اطلاعات احراز هویت -->
+                        <div class="col-md-12 mb-3 mt-3">
+                            <h5 class="border-bottom pb-2">اطلاعات احراز هویت</h5>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ActiveDirectoryId" class="form-label"></label>
+                            <input asp-for="ActiveDirectoryId" class="form-control" />
+                            <span asp-validation-for="ActiveDirectoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ErpUserId" class="form-label"></label>
+                            <input asp-for="ErpUserId" class="form-control" />
+                            <span asp-validation-for="ErpUserId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SmsCredit" class="form-label"></label>
+                            <input asp-for="SmsCredit" type="number" class="form-control" />
+                            <span asp-validation-for="SmsCredit" class="text-danger"></span>
+                        </div>
+
+                        <!-- دسترسی‌ها -->
+                        <div class="col-md-12 mb-3 mt-3">
+                            <h5 class="border-bottom pb-2">دسترسی‌ها و مجوزها</h5>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsActive" class="form-check-label"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="CanCreateGroup" class="form-check-input" type="checkbox" />
+                                <label asp-for="CanCreateGroup" class="form-check-label"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="CanCreateChannel" class="form-check-input" type="checkbox" />
+                                <label asp-for="CanCreateChannel" class="form-check-label"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="CanMakeVoiceCall" class="form-check-input" type="checkbox" />
+                                <label asp-for="CanMakeVoiceCall" class="form-check-label"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="CanMakeVideoCall" class="form-check-input" type="checkbox" />
+                                <label asp-for="CanMakeVideoCall" class="form-check-label"></label>
+                            </div>
+                        </div>
+
+                        <!-- دکمه‌ها -->
+                        <div class="col-md-12 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> ذخیره
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> انصراف
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- راهنما -->
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> راهنما</h5>
+            </div>
+            <div class="card-body">
+                <h6>نکات مهم:</h6>
+                <ul class="small">
+                    <li>نام کاربری باید یکتا باشد</li>
+                    <li>شماره موبایل برای احراز هویت پیامکی استفاده می‌شود</li>
+                    <li>شناسه AD برای احراز هویت Active Directory</li>
+                    <li>شناسه ERP برای احراز هویت سیستم ERP</li>
+                    <li>اعتبار پیامک برای ارسال کد تایید به کاربر</li>
+                </ul>
+
+                <h6 class="mt-3">دسترسی‌ها:</h6>
+                <ul class="small">
+                    <li><strong>ایجاد گروه:</strong> کاربر می‌تواند گروه جدید ایجاد کند</li>
+                    <li><strong>ایجاد کانال:</strong> کاربر می‌تواند کانال جدید ایجاد کند</li>
+                    <li><strong>تماس صوتی:</strong> کاربر می‌تواند تماس صوتی برقرار کند</li>
+                    <li><strong>تماس تصویری:</strong> کاربر می‌تواند تماس تصویری برقرار کند</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

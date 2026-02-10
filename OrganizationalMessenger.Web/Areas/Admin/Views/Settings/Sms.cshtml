@@ -1,0 +1,164 @@
+﻿@{
+    ViewData["Title"] = "تنظیمات SMS (TopTip)";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var balanceResult = ViewBag.BalanceResult;
+    bool balanceSuccess = balanceResult != null && (balanceResult as dynamic).Success == true;
+    decimal balance = balanceSuccess ? (decimal)(balanceResult as dynamic).Balance : 0;
+    string balanceMessage = balanceSuccess ? "موفق" : ((balanceResult as dynamic)?.Message ?? "نامشخص");
+}
+
+<div class="container-fluid">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row">
+        <!-- Main Settings -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-sms"></i> تنظیمات TopTip SMS</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Sms" method="post">
+                        <!-- SMS Toggle -->
+                        <div class="form-check mb-4">
+                            <input type="checkbox" name="smsEnabled" value="true"
+                                   class="form-check-input" id="smsEnabled"
+                                   @(ViewBag.SmsEnabled == true ? "checked" : "") />
+                            <input type="hidden" name="smsEnabled" value="false" />
+                            <label class="form-check-label" for="smsEnabled">
+                                <h5>فعال‌سازی SMS</h5>
+                            </label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- API Key -->
+                                <div class="form-group mb-3">
+                                    <label>API Key <span class="text-danger">*</span></label>
+                                    <input type="text" name="smsApiKey" value="@ViewBag.SmsApiKey"
+                                           class="form-control" required />
+                                    <small>از پنل TopTip کپی کنید</small>
+                                </div>
+
+                                <!-- Sender Number -->
+                                <div class="form-group mb-3">
+                                    <label>شماره ارسال <span class="text-danger">*</span></label>
+                                    <input type="text" name="smsSenderNumber" value="@ViewBag.SmsSenderNumber"
+                                           class="form-control" placeholder="3000505" required />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <!-- Username -->
+                                <div class="form-group mb-3">
+                                    <label>نام کاربری پنل <span class="text-danger">*</span></label>
+                                    <input type="text" name="smsUsername" value="@ViewBag.SmsUsername"
+                                           class="form-control" required />
+                                </div>
+
+                                <!-- Password -->
+                                <div class="form-group mb-3">
+                                    <label>رمز عبور پنل <span class="text-danger">*</span></label>
+                                    <input type="password" name="smsPassword" value="@ViewBag.SmsPassword"
+                                           class="form-control" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OTP Settings -->
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>طول OTP</label>
+                                    <input type="number" name="otpLength" value="@ViewBag.OtpLength"
+                                           class="form-control" min="4" max="8" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>انقضای OTP (دقیقه)</label>
+                                    <input type="number" name="otpExpiryMinutes" value="@ViewBag.OtpExpiryMinutes"
+                                           class="form-control" min="1" max="30" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg mt-3">
+                            <i class="fas fa-save"></i> ذخیره تنظیمات TopTip
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Display -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px; z-index:1!important">
+                <div class="card-header bg-success text-white">
+                    <h6><i class="fas fa-wallet"></i> موجودی TopTip</h6>
+                </div>
+                <div class="card-body text-center">
+                    @if (balanceSuccess)
+                    {
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
+                            <h3 class="text-success">@balance.ToString("N0") ریال</h3>
+                            <small class="text-success">اتصال موفق</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-2"></i>
+                            <h5 class="text-warning">@balanceMessage</h5>
+                            <small class="text-muted">نام کاربری/رمز را تنظیم کنید</small>
+                        </div>
+                    }
+
+                    <hr />
+                    <small class="text-muted">
+                        <strong>آخرین بروزرسانی:</strong> @DateTime.Now.ToString("HH:mm:ss")
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentation -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h6>راهنمای TopTip</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>دریافت اطلاعات:</h6>
+                    <ul class="small">
+                        <li><a href="https://toptip.ir" target="_blank">toptip.ir</a> → ثبت‌نام</li>
+                        <li>پنل → شارژ حساب</li>
+                        <li>تنظیمات → API Key / Username / Password</li>
+                        <li>خدمات → شماره ارسال (3000505 و...)</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>API ارسال:</h6>
+                    <pre class="small bg-light p-2 rounded">
+http://toptip.ir/webservice/rest/sms_send
+?note_arr[]=سلام
+&api_key=YOUR_API_KEY
+&receiver_number=09123456789
+&sender_number=3000505
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

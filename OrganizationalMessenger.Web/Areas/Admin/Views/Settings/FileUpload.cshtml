@@ -1,0 +1,177 @@
+﻿@model IEnumerable<OrganizationalMessenger.Domain.Entities.FileUploadSetting>
+@{
+    ViewData["Title"] = "تنظیمات آپلود فایل";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+
+    <!-- Add New File Type -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5><i class="fas fa-plus-circle"></i> اضافه کردن نوع فایل جدید</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="AddFileType" method="post" class="row align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label"> jpg, pdf, zipنوع فایل</label>
+                    <input type="text" name="fileType" placeholder="jpg"
+                           class="form-control" maxlength="10" required />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">دسته‌بندی</label>
+                    <select name="category" class="form-control">
+                        <option value="تصویر">تصویر</option>
+                        <option value="ویدیو">ویدیو</option>
+                        <option value="صوت">صوت</option>
+                        <option value="سند">سند</option>
+                        <option value="آرشیو">آرشیو</option>
+                        <option value="سایر">سایر</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">حداکثر حجم (5MB پیش‌فرض)</label>
+                    <input type="number" name="maxSize" value="5242880"
+                           class="form-control" min="1024" step="1024" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">وضعیت</label>
+                    <select name="isAllowed" class="form-control">
+                        <option value="true">فعال</option>
+                        <option value="false">غیرفعال</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-success btn-block">
+                        <i class="fas fa-plus"></i> اضافه کن
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- File Types Table -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5><i class="fas fa-list"></i> فایل‌های تعریف‌شده (@Model.Count())</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-warning text-center py-5">
+                    <i class="fas fa-file-upload fa-3x mb-3 text-muted"></i>
+                    <h4>هیچ نوع فایلی تعریف نشده</h4>
+                    <p class="mb-0">از فرم بالا اولین نوع فایل را اضافه کنید</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 120px;">نوع فایل</th>
+                                <th style="width: 120px;">دسته‌بندی</th>
+                                <th style="width: 100px;">حداکثر حجم</th>
+                                <th style="width: 100px;">وضعیت</th>
+                                <th style="width: 200px;">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <code class="text-dark font-weight-bold">.@item.FileType</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary text-black px-2 py-1">
+                                            @item.Category
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <small>@(item.MaxSize / 1024 / 1024) MB</small>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge @(item.IsAllowed ? "badge-success" : "badge-danger") px-2 py-1" style="color:black">
+                                            @(item.IsAllowed ? "فعال" : "غیرفعال")
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <!-- Update Form - Compact -->
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <form asp-action="UpdateFileType" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <div class="input-group input-group-sm" style="width: 300px;">
+                                                    <input type="number" name="maxSize" value="@item.MaxSize"
+                                                           class="form-control form-control-sm px-1" style="height: 32px; margin-left:10px" />
+                                                    @{
+                                                        bool isAllowed = item.IsAllowed;
+                                                    }
+                                                    <select name="isAllowed" class="form-control form-control-sm px-1" style="height: 32px; border-left: 0; margin-left:10px">
+                                                        <option value="true" selected="@isAllowed">فعال</option>
+                                                        <option value="false" selected="@(!isAllowed)">غیرفعال</option>
+                                                    </select>
+                                                    <div class="input-group-append">
+                                                        <button type="submit" class="btn btn-primary px-2" title="بروزرسانی" style="width:74px">
+                                                            <i class="fas fa-save"> ذخیره</i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+
+                                            <!-- Delete Button -->
+                                            <form asp-action="DeleteFileType" method="post" class="d-inline ml-1">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-danger"
+                                                        onclick="return confirm('آیا مطمئنید؟ .@item.FileType حذف شود')"
+                                                        title="حذف">
+                                                    <i class="fas fa-trash">حذف</i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> بازگشت به تنظیمات
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+}

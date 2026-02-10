@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "تنظیمات VoIP";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4><i class="fas fa-phone"></i> تنظیمات VoIP</h4>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form asp-action="VoIP" method="post">
+                <!-- ✅ Checkbox + Hidden Field -->
+                <div class="form-check mb-4">
+                    <input type="checkbox" name="voipEnabled" value="true"
+                           class="form-check-input" id="voipEnabled"
+                           @(ViewBag.VoipEnabled == true ? "checked" : "") />
+                    <label class="form-check-label" for="voipEnabled">
+                        <h5>فعال‌سازی تماس‌های VoIP</h5>
+                    </label>
+                </div>
+                <!-- ✅ Hidden Field -->
+                <input type="hidden" name="voipEnabled" value="false" />
+
+                <div class="alert alert-info">
+                    <strong>توجه:</strong> با فعال‌سازی VoIP، کاربران می‌توانند تماس صوتی و تصویری برقرار کنند.
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> ذخیره تنظیمات
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg ml-2">بازگشت</a>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,65 @@
+﻿@model OrganizationalMessenger.Web.Models.ViewModels.ChannelCreateViewModel
+
+@{
+    ViewData["Title"] = "ایجاد کانال";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <h2>ایجاد کانال جدید</h2>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">بازگشت به لیست</a>
+</div>
+
+<form method="post" class="form-container">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label asp-for="Name">نام کانال *</label>
+        <input asp-for="Name" class="form-control" required />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description">توضیحات</label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CreatorId">سازنده *</label>
+        <select asp-for="CreatorId" class="form-control" required>
+            <option value="">-- انتخاب کنید --</option>
+            @if (ViewBag.Users != null)
+            {
+                @foreach (var user in ViewBag.Users)
+                {
+                    <option value="@user.Id">@user.FullName (@user.Username)</option>
+                }
+            }
+        </select>
+        <span asp-validation-for="CreatorId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label class="checkbox-label">
+            <input asp-for="IsPublic" type="checkbox" />
+            کانال عمومی
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label class="checkbox-label">
+            <input asp-for="IsActive" type="checkbox" />
+            فعال
+        </label>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">ایجاد کانال</button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">انصراف</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

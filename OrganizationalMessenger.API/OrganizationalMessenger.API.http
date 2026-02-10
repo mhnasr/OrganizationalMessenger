@@ -1,0 +1,6 @@
+@OrganizationalMessenger.API_HostAddress = http://localhost:5176
+
+GET {{OrganizationalMessenger.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,68 @@
+﻿@model OrganizationalMessenger.Web.Models.ViewModels.GroupCreateViewModel
+
+@{
+    ViewData["Title"] = "ایجاد گروه";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <h2>ایجاد گروه جدید</h2>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">بازگشت به لیست</a>
+</div>
+
+<form method="post" class="form-container">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label for="Name">نام گروه *</label>
+        <input type="text" id="Name" name="Name" asp-for="Name" required />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Description">توضیحات</label>
+        <textarea id="Description" name="Description" asp-for="Description" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="CreatorId">سازنده *</label>
+        <select id="CreatorId" name="CreatorId" asp-for="CreatorId" required>
+            <option value="">-- انتخاب کنید --</option>
+            @foreach (var user in ViewBag.Users)
+            {
+                <option value="@user.Id">@user.FirstName @user.LastName (@user.Username)</option>
+            }
+        </select>
+        <span asp-validation-for="CreatorId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="MaxMembers">حداکثر تعداد اعضا</label>
+        <input type="number" id="MaxMembers" name="MaxMembers" asp-for="MaxMembers" min="2" max="5000" value="200" />
+        <span asp-validation-for="MaxMembers" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="IsPublic" asp-for="IsPublic" />
+            گروه عمومی
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="IsActive" asp-for="IsActive" checked />
+            فعال
+        </label>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">ایجاد گروه</button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">انصراف</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,54 @@
+﻿@{
+    ViewData["Title"] = "تنظیمات تلگرام";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4><i class="fab fa-telegram-plane"></i> تنظیمات تلگرام</h4>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form asp-action="Telegram" method="post">
+                <!-- ✅ Checkbox + Hidden -->
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="telegramEnabled" value="true"
+                           class="form-check-input" id="telegramEnabled"
+                           @(ViewBag.TelegramEnabled == true ? "checked" : "") />
+                    <label class="form-check-label" for="telegramEnabled">
+                        فعال‌سازی تلگرام
+                    </label>
+                </div>
+                <input type="hidden" name="telegramEnabled" value="false" />
+                
+                <!-- ✅ Bot Token با مقدار قبلی -->
+                <div class="form-group mb-3">
+                    <label>Bot Token <span class="text-muted">(از BotFather تلگرام)</span></label>
+                    <input type="text" name="botToken" 
+                           value="@ViewBag.BotToken"
+                           class="form-control" 
+                           placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" />
+                    <small class="form-text text-muted">
+                        1. در تلگرام BotFather را پیدا کنید<br/>
+                        2. /newbot → نام ربات → username_bot<br/>
+                        3. توکن را کپی کنید (مثال: 123456:ABC-DEF...)
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> ذخیره تنظیمات
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg ml-2">بازگشت</a>
+            </form>
+        </div>
+    </div>
+</div>

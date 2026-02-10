@@ -1,0 +1,86 @@
+﻿@model IEnumerable<OrganizationalMessenger.Web.Models.ViewModels.ChannelListViewModel>
+
+@{
+    ViewData["Title"] = "مدیریت کانال‌ها";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <h2>مدیریت کانال‌ها</h2>
+    <a href="@Url.Action("Create")" class="btn btn-primary">+ کانال جدید</a>
+</div>
+
+<div class="search-filter">
+    <form method="get" class="search-form">
+        <input type="text" name="searchTerm" placeholder="جستجو بر اساس نام یا توضیحات..."
+               value="@ViewBag.SearchTerm" />
+
+        <select name="isActive">
+            <option value="">همه کانال‌ها</option>
+            <option value="true" selected="@(ViewBag.IsActive == true)">فعال</option>
+            <option value="false" selected="@(ViewBag.IsActive == false)">غیرفعال</option>
+        </select>
+
+        <button type="submit" class="btn btn-secondary">جستجو</button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">پاک کردن فیلترها</a>
+    </form>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-error">@TempData["ErrorMessage"]</div>
+}
+
+<table>
+    <thead>
+        <tr>
+            <th>نام کانال</th>
+            <th>سازنده</th>
+            <th>تعداد اعضا</th>
+            <th>وضعیت</th>
+            <th>نوع</th>
+            <th>تاریخ ایجاد</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var channel in Model)
+        {
+            <tr>
+                <td>@channel.Name</td>
+                <td>@channel.CreatorName</td>
+                <td>@channel.SubscriberCount</td>
+                <td>
+                    <span class="badge @(channel.IsActive ? "badge-active" : "badge-inactive")">
+                        @(channel.IsActive ? "فعال" : "غیرفعال")
+                    </span>
+                </td>
+                <td>
+                    <span class="badge @(channel.IsPublic ? "badge-active" : "badge-inactive")">
+                        @(channel.IsPublic ? "عمومی" : "خصوصی")
+                    </span>
+                </td>
+                <td>@channel.CreatedAt.ToString("yyyy/MM/dd")</td>
+                <td class="actions">
+                    <a href="@Url.Action("Details", new { id = channel.Id })" class="btn-icon" title="جزئیات">👁️</a>
+                    <a href="@Url.Action("Edit", new { id = channel.Id })" class="btn-icon" title="ویرایش">✏️</a>
+                    <form method="post" action="@Url.Action("Delete", new { id = channel.Id })"
+                          style="display:inline;" onsubmit="return confirm('آیا مطمئن هستید؟');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-icon btn-danger" title="حذف">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <p class="no-data">هیچ کانالی یافت نشد.</p>
+}

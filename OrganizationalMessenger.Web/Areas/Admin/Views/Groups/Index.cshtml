@@ -1,0 +1,87 @@
+﻿@model IEnumerable<OrganizationalMessenger.Web.Models.ViewModels.GroupListViewModel>
+
+@{
+    ViewData["Title"] = "مدیریت گروه‌ها";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <h2>مدیریت گروه‌ها</h2>
+    <a href="@Url.Action("Create")" class="btn btn-primary">+ گروه جدید</a>
+</div>
+
+<div class="search-filter">
+    <form method="get" class="search-form">
+        <input type="text" name="searchTerm" placeholder="جستجو بر اساس نام یا توضیحات..."
+               value="@ViewBag.SearchTerm" />
+
+        <select name="isActive">
+            <option value="">همه گروه‌ها</option>
+            <option value="true" selected="@(ViewBag.IsActive == true)">فعال</option>
+            <option value="false" selected="@(ViewBag.IsActive == false)">غیرفعال</option>
+        </select>
+
+        <button type="submit" class="btn btn-secondary">جستجو</button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">پاک کردن فیلترها</a>
+    </form>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-error">@TempData["ErrorMessage"]</div>
+}
+
+<table>
+    <thead>
+        <tr>
+            <th>نام گروه</th>
+            <th>سازنده</th>
+            <th>تعداد اعضا</th>
+            <th>وضعیت</th>
+            <th>نوع</th>
+            <th>تاریخ ایجاد</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var group in Model)
+        {
+            <tr>
+                <td>@group.Name</td>
+                <td>@group.CreatorName</td>
+                <td>@group.MemberCount</td>
+                <td>
+                    <span class="badge @(group.IsActive ? "badge-active" : "badge-inactive")">
+                        @(group.IsActive ? "فعال" : "غیرفعال")
+                    </span>
+                </td>
+                <td>
+                    <span class="badge @(group.IsPublic ? "badge-active" : "badge-inactive")">
+                        @(group.IsPublic ? "عمومی" : "خصوصی")
+                    </span>
+                </td>
+                <td>@group.CreatedAt.ToString("yyyy/MM/dd")</td>
+                <td class="actions">
+                    <a href="@Url.Action("Details", new { id = group.Id })" class="btn-icon" title="جزئیات">👁️</a>
+                    <a href="@Url.Action("Members", new { id = group.Id })" class="btn-icon" title="اعضا">👥</a>
+                    <a href="@Url.Action("Edit", new { id = group.Id })" class="btn-icon" title="ویرایش">✏️</a>
+                    <form method="post" action="@Url.Action("Delete", new { id = group.Id })"
+                          style="display:inline;" onsubmit="return confirm('آیا مطمئن هستید؟');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-icon btn-danger" title="حذف">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <p class="no-data">هیچ گروهی یافت نشد.</p>
+}

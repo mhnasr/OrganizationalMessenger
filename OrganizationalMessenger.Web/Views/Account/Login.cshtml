@@ -1,0 +1,25 @@
+﻿<h2>ورود</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form asp-action="Login" method="post">
+    <div class="form-group mb-3">
+        <label>نام کاربری</label>
+        <input name="username" class="form-control" />
+    </div>
+    <div class="form-group mb-3">
+        <label>رمز عبور</label>
+        <input name="password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">ورود</button>
+</form>
+
+<div class="mt-4">
+    <h6>👥 کاربران تست:</h6>
+    <p>testuser1 → Test1234! (ادمین)</p>
+    <p>testuser25 → Test1234!</p>
+    <p>testuser100 → Test1234!</p>
+</div>

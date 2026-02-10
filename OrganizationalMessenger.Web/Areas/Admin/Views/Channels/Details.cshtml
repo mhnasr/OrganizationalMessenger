@@ -1,0 +1,91 @@
+﻿@model OrganizationalMessenger.Domain.Entities.Channel
+
+@{
+    ViewData["Title"] = "جزئیات کانال";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    string ToPersianDate(DateTime? date)
+    {
+        if (date == null) return "---";
+        var persianCalendar = new System.Globalization.PersianCalendar();
+        return $"{persianCalendar.GetYear(date.Value)}/{persianCalendar.GetMonth(date.Value):00}/{persianCalendar.GetDayOfMonth(date.Value):00}";
+    }
+}
+
+<div class="page-header">
+    <h2>جزئیات کانال</h2>
+    <div class="actions">
+        <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">ویرایش</a>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">بازگشت به لیست</a>
+    </div>
+</div>
+
+<div class="details-container">
+    <div class="detail-card">
+        <h3>اطلاعات پایه</h3>
+        <div class="detail-row">
+            <span class="label">نام کانال:</span>
+            <span class="value">@Model.Name</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">توضیحات:</span>
+            <span class="value">@(string.IsNullOrEmpty(Model.Description) ? "---" : Model.Description)</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">سازنده:</span>
+            <span class="value">@Model.Creator.FirstName @Model.Creator.LastName (@Model.Creator.Username)</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">وضعیت:</span>
+            <span class="badge @(Model.IsActive ? "badge-active" : "badge-inactive")">
+                @(Model.IsActive ? "فعال" : "غیرفعال")
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="label">نوع:</span>
+            <span class="badge @(Model.IsPublic ? "badge-active" : "badge-inactive")">
+                @(Model.IsPublic ? "عمومی" : "خصوصی")
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="label">تاریخ ایجاد:</span>
+            <span class="value">@ToPersianDate(Model.CreatedAt)</span>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3>آمار</h3>
+        <div class="detail-row">
+            <span class="label">تعداد اعضا:</span>
+            <span class="value">@ViewBag.MemberCount</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">تعداد پیام‌ها:</span>
+            <span class="value">@ViewBag.MessageCount</span>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3>اعضای کانال (@Model.UserChannels.Count)</h3>
+        @if (Model.UserChannels.Any())
+        {
+            <ul class="list-items">
+                @foreach (var uc in Model.UserChannels.OrderByDescending(x => x.IsAdmin))
+                {
+                    <li>
+                        @uc.User.FirstName @uc.User.LastName (@uc.User.Username)
+                        @if (uc.IsAdmin)
+                        {
+                            <span class="badge badge-admin">مدیر</span>
+                        }
+                        <span class="date">عضویت: @ToPersianDate(uc.JoinedAt)</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="no-data">عضوی وجود ندارد</p>
+        }
+    </div>
+</div>

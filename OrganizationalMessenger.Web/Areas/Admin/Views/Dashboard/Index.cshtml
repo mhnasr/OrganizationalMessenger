@@ -1,0 +1,1416 @@
+﻿@{
+    ViewData["Title"] = "داشبورد";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section Styles {
+<style>
+    /* ==================== متغیرهای CSS ==================== */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        --dark-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+        --card-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        --card-hover-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    /* ==================== هدر صفحه ==================== */
+    .page-header {
+        background: var(--primary-gradient);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @@keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header .date-display {
+        font-size: 1rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ==================== کارت‌های آمار ==================== */
+    .stats-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--card-hover-shadow);
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        opacity: 0.1;
+        transform: translate(30%, -30%);
+    }
+
+    .stats-card.primary::before { background: #667eea; }
+    .stats-card.success::before { background: #38ef7d; }
+    .stats-card.warning::before { background: #f5576c; }
+    .stats-card.info::before { background: #00f2fe; }
+    .stats-card.danger::before { background: #f45c43; }
+    .stats-card.purple::before { background: #9f7aea; }
+    .stats-card.teal::before { background: #38b2ac; }
+    .stats-card.orange::before { background: #ed8936; }
+
+    .stats-card .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 15px;
+    }
+
+    .stats-card.primary .icon-wrapper { background: var(--primary-gradient); }
+    .stats-card.success .icon-wrapper { background: var(--success-gradient); }
+    .stats-card.warning .icon-wrapper { background: var(--warning-gradient); }
+    .stats-card.info .icon-wrapper { background: var(--info-gradient); }
+    .stats-card.danger .icon-wrapper { background: var(--danger-gradient); }
+    .stats-card.purple .icon-wrapper { background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%); }
+    .stats-card.teal .icon-wrapper { background: linear-gradient(135deg, #38b2ac 0%, #319795 100%); }
+    .stats-card.orange .icon-wrapper { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); }
+
+    .stats-card .stats-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+
+    .stats-card .stats-label {
+        font-size: 0.9rem;
+        color: #718096;
+        margin-bottom: 10px;
+    }
+
+    .stats-card .stats-change {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stats-card .stats-change.positive { color: #38a169; }
+    .stats-card .stats-change.negative { color: #e53e3e; }
+
+    /* ==================== کارت‌های نمودار ==================== */
+    .chart-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--card-shadow);
+        height: 100%;
+    }
+
+    .chart-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .chart-card .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chart-card .card-title i {
+        color: #667eea;
+    }
+
+    .chart-period-btns {
+        display: flex;
+        gap: 5px;
+    }
+
+    .chart-period-btn {
+        padding: 6px 12px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .chart-period-btn:hover,
+    .chart-period-btn.active {
+        background: #667eea;
+        color: #fff;
+        border-color: #667eea;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+
+    /* ==================== کارت‌های جدول ==================== */
+    .table-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--card-shadow);
+        height: 100%;
+    }
+
+    .table-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-card .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-card .card-title i {
+        color: #667eea;
+    }
+
+    .table-card .view-all-btn {
+        font-size: 0.85rem;
+        color: #667eea;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .table-card .view-all-btn:hover {
+        color: #764ba2;
+    }
+
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .dashboard-table th {
+        text-align: right;
+        padding: 12px 15px;
+        font-weight: 600;
+        color: #4a5568;
+        background: #f7fafc;
+        font-size: 0.85rem;
+    }
+
+    .dashboard-table th:first-child {
+        border-radius: 0 10px 10px 0;
+    }
+
+    .dashboard-table th:last-child {
+        border-radius: 10px 0 0 10px;
+    }
+
+    .dashboard-table td {
+        padding: 15px;
+        border-bottom: 1px solid #edf2f7;
+        font-size: 0.9rem;
+        color: #4a5568;
+    }
+
+    .dashboard-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .dashboard-table tr:hover td {
+        background: #f7fafc;
+    }
+
+    /* ==================== آواتار کاربر ==================== */
+    .user-avatar {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        background: var(--primary-gradient);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .user-avatar .online-indicator {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        background: #48bb78;
+        border-radius: 50%;
+        border: 2px solid #fff;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-info .user-name {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .user-info .user-username {
+        font-size: 0.8rem;
+        color: #a0aec0;
+    }
+
+    /* ==================== بج‌ها ==================== */
+    .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge.bg-success {
+        background: rgba(72, 187, 120, 0.15) !important;
+        color: #38a169;
+    }
+
+    .badge.bg-danger {
+        background: rgba(245, 101, 101, 0.15) !important;
+        color: #e53e3e;
+    }
+
+    .badge.bg-warning {
+        background: rgba(237, 137, 54, 0.15) !important;
+        color: #dd6b20;
+    }
+
+    .badge.bg-info {
+        background: rgba(66, 153, 225, 0.15) !important;
+        color: #3182ce;
+    }
+
+    .badge.bg-secondary {
+        background: rgba(113, 128, 150, 0.15) !important;
+        color: #718096;
+    }
+
+    .badge.bg-primary {
+        background: rgba(102, 126, 234, 0.15) !important;
+        color: #667eea;
+    }
+
+    /* ==================== انیمیشن آپدیت ==================== */
+    .value-updated {
+        animation: pulse-update 0.5s ease;
+    }
+
+    @@keyframes pulse-update {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); color: #48bb78; }
+        100% { transform: scale(1); }
+    }
+
+    /* ==================== آخرین به‌روزرسانی ==================== */
+    .last-updated {
+        font-size: 0.8rem;
+        color: #a0aec0;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .last-updated i {
+        animation: spin 2s linear infinite;
+    }
+
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* ==================== ریسپانسیو ==================== */
+    @@media (max-width: 768px) {
+        .page-header {
+            padding: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-card .stats-value {
+            font-size: 1.8rem;
+        }
+
+        .chart-period-btns {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+}
+
+<!-- ==================== هدر صفحه ==================== -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1><i class="fas fa-chart-line me-2"></i>داشبورد</h1>
+            <p class="date-display mb-0 mt-2">
+                <i class="fas fa-calendar-alt me-1"></i>
+                @ViewBag.TodayPersianDate
+            </p>
+        </div>
+        <div class="last-updated" id="lastUpdatedContainer">
+            <i class="fas fa-sync-alt"></i>
+            <span>آخرین به‌روزرسانی: </span>
+            <span id="lastUpdated">@ViewBag.TodayPersianDateTime</span>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== کارت‌های آمار ==================== -->
+<div class="row g-4 mb-4">
+    <!-- کل کاربران -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card primary">
+            <div class="icon-wrapper">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stats-value" id="totalUsers">@ViewBag.TotalUsers</div>
+            <div class="stats-label">کل کاربران</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+@ViewBag.NewUsersToday نفر امروز</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- کاربران آنلاین -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card success">
+            <div class="icon-wrapper">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stats-value" id="onlineUsers">@ViewBag.OnlineUsers</div>
+            <div class="stats-label">کاربران آنلاین</div>
+            <div class="stats-change positive">
+                <i class="fas fa-circle text-success"></i>
+                <span>فعال</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- کل پیام‌ها -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card info">
+            <div class="icon-wrapper">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="stats-value" id="totalMessages">@ViewBag.TotalMessages</div>
+            <div class="stats-label">کل پیام‌ها</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+@ViewBag.MessagesToday پیام امروز</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- گروه‌ها -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card warning">
+            <div class="icon-wrapper">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="stats-value" id="totalGroups">@ViewBag.TotalGroups</div>
+            <div class="stats-label">گروه‌ها</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+@ViewBag.NewGroupsThisWeek این هفته</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- کانال‌ها -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card purple">
+            <div class="icon-wrapper">
+                <i class="fas fa-broadcast-tower"></i>
+            </div>
+            <div class="stats-value" id="totalChannels">@ViewBag.TotalChannels</div>
+            <div class="stats-label">کانال‌ها</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+@ViewBag.NewChannelsThisWeek این هفته</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- تماس‌ها -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card teal">
+            <div class="icon-wrapper">
+                <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="stats-value" id="totalCalls">@ViewBag.TotalCalls</div>
+            <div class="stats-label">تماس‌ها</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>+@ViewBag.CallsToday امروز</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- فایل‌های آپلود شده -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card orange">
+            <div class="icon-wrapper">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="stats-value" id="totalFiles">@ViewBag.TotalFiles</div>
+            <div class="stats-label">فایل‌های آپلود شده</div>
+            <div class="stats-change">
+                <i class="fas fa-database"></i>
+                <span>@ViewBag.TotalStorageUsed استفاده شده</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- گزارشات در انتظار -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="stats-card danger">
+            <div class="icon-wrapper">
+                <i class="fas fa-flag"></i>
+            </div>
+            <div class="stats-value" id="pendingReports">@ViewBag.PendingReports</div>
+            <div class="stats-label">گزارشات در انتظار</div>
+            <div class="stats-change negative">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>نیاز به بررسی</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== نمودارها ==================== -->
+<div class="row g-4 mb-4">
+    <!-- نمودار پیام‌ها -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="chart-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-area"></i>
+                    آمار پیام‌ها
+                </h5>
+                <div class="chart-period-btns">
+                    <button class="chart-period-btn active" data-period="week">هفته</button>
+                    <button class="chart-period-btn" data-period="month">ماه</button>
+                    <button class="chart-period-btn" data-period="year">سال</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="messagesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- نمودار نوع پیام‌ها -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="chart-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie"></i>
+                    نوع پیام‌ها
+                </h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="messageTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== نمودارهای ردیف دوم ==================== -->
+<div class="row g-4 mb-4">
+    <!-- نمودار فعالیت کاربران -->
+    <div class="col-xl-6">
+        <div class="chart-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-bar"></i>
+                    فعالیت کاربران (ساعتی)
+                </h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="userActivityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- نمودار تماس‌ها -->
+    <div class="col-xl-6">
+        <div class="chart-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line"></i>
+                    آمار تماس‌ها
+                </h5>
+                <div class="chart-period-btns">
+                    <button class="chart-period-btn active" data-period="week" data-chart="calls">هفته</button>
+                    <button class="chart-period-btn" data-period="month" data-chart="calls">ماه</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="callsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== جداول ==================== -->
+<div class="row g-4 mb-4">
+    <!-- کاربران جدید -->
+    <div class="col-xl-6">
+        <div class="table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-user-plus"></i>
+                    کاربران جدید
+                </h5>
+                <a href="/Admin/Users" class="view-all-btn">
+                    مشاهده همه
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>کاربر</th>
+                            <th>تاریخ عضویت</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="newUsersTableBody">
+                        @if (ViewBag.NewUsers != null)
+                        {
+                            foreach (var user in ViewBag.NewUsers)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="user-info">
+                                            <div class="user-avatar">
+                                                @(user.FullName?.Length > 0 ? user.FullName[0].ToString().ToUpper() : "U")
+                                                @if (user.IsOnline)
+                                                {
+                                                    <span class="online-indicator"></span>
+                                                }
+                                            </div>
+                                            <div>
+                                                <div class="user-name">@user.FullName</div>
+                                                <div class="user-username">@@@user.Username</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@user.CreatedAtPersian</td>
+                                    <td>
+                                        @if (user.IsActive)
+                                        {
+                                            <span class="badge bg-success">فعال</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">غیرفعال</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="/Admin/Users/Edit/@user.Id" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                    کاربر جدیدی یافت نشد
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- گزارشات اخیر -->
+    <div class="col-xl-6">
+        <div class="table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-flag"></i>
+                    گزارشات اخیر
+                </h5>
+                <a href="/Admin/Reports" class="view-all-btn">
+                    مشاهده همه
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>گزارش‌دهنده</th>
+                            <th>نوع</th>
+                            <th>دلیل</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentReportsTableBody">
+                        @if (ViewBag.RecentReports != null && ((IEnumerable<dynamic>)ViewBag.RecentReports).Any())
+                        {
+                            foreach (var report in ViewBag.RecentReports)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="user-info">
+                                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                                @(report.ReporterName?.Length > 0 ? report.ReporterName[0].ToString().ToUpper() : "U")
+                                            </div>
+                                            <div>
+                                                <div class="user-name">@report.ReporterName</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @switch (report.ItemType)
+                                        {
+                                            case "Message":
+                                                <span class="badge bg-info">پیام</span>
+                                                break;
+                                            case "User":
+                                                <span class="badge bg-primary">کاربر</span>
+                                                break;
+                                            case "Group":
+                                                <span class="badge bg-warning">گروه</span>
+                                                break;
+                                            case "Channel":
+                                                <span class="badge bg-secondary">کانال</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark">@report.ItemType</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="@report.Reason">
+                                            @report.Reason
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @switch (report.Status)
+                                        {
+                                            case "Pending":
+                                                <span class="badge bg-warning">در انتظار</span>
+                                                break;
+                                            case "Reviewed":
+                                                <span class="badge bg-info">بررسی شده</span>
+                                                break;
+                                            case "Resolved":
+                                                <span class="badge bg-success">حل شده</span>
+                                                break;
+                                            case "Dismissed":
+                                                <span class="badge bg-secondary">رد شده</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark">@report.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="/Admin/Reports/Details/@report.Id" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-check-circle fa-2x mb-2 d-block text-success"></i>
+                                    گزارشی یافت نشد
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== ردیف سوم جداول ==================== -->
+<div class="row g-4 mb-4">
+    <!-- گروه‌های فعال -->
+    <div class="col-xl-4">
+        <div class="table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-fire"></i>
+                    گروه‌های فعال
+                </h5>
+                <a href="/Admin/Groups" class="view-all-btn">
+                    مشاهده همه
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>نام گروه</th>
+                            <th>اعضا</th>
+                            <th>پیام‌ها</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.ActiveGroups != null)
+                        {
+                            foreach (var group in ViewBag.ActiveGroups)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: var(--warning-gradient);">
+                                                <i class="fas fa-users" style="font-size: 0.8rem;"></i>
+                                            </div>
+                                            <span>@group.Name</span>
+                                        </div>
+                                    </td>
+                                    <td>@group.MemberCount</td>
+                                    <td>@group.MessageCount</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    گروهی یافت نشد
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- کانال‌های فعال -->
+    <div class="col-xl-4">
+        <div class="table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-broadcast-tower"></i>
+                    کانال‌های فعال
+                </h5>
+                <a href="/Admin/Channels" class="view-all-btn">
+                    مشاهده همه
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>نام کانال</th>
+                            <th>اعضا</th>
+                            <th>پست‌ها</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.ActiveChannels != null)
+                        {
+                            foreach (var channel in ViewBag.ActiveChannels)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);">
+                                                <i class="fas fa-broadcast-tower" style="font-size: 0.8rem;"></i>
+                                            </div>
+                                            <span>@channel.Name</span>
+                                        </div>
+                                    </td>
+                                    <td>@channel.SubscriberCount</td>
+                                    <td>@channel.PostCount</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    کانالی یافت نشد
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- آخرین تماس‌ها -->
+    <div class="col-xl-4">
+        <div class="table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-phone-alt"></i>
+                    آخرین تماس‌ها
+                </h5>
+                <a href="/Admin/Calls" class="view-all-btn">
+                    مشاهده همه
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>تماس‌گیرنده</th>
+                            <th>نوع</th>
+                            <th>مدت</th>
+                            <th>وضعیت</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.RecentCalls != null)
+                        {
+                            foreach (var call in ViewBag.RecentCalls)
+                            {
+                                <tr>
+                                    <td>@call.InitiatorName</td>
+                                    <td>
+                                        @if (call.Type == "Voice")
+                                        {
+                                            <i class="fas fa-phone text-success"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-video text-primary"></i>
+                                        }
+                                    </td>
+                                    <td>@call.Duration</td>
+                                    <td>
+                                        @switch (call.Status)
+                                        {
+                                            case "Answered":
+                                                <span class="badge bg-success">برقرار</span>
+                                                break;
+                                            case "Missed":
+                                                <span class="badge bg-warning">از دست رفته</span>
+                                                break;
+                                            case "Rejected":
+                                                <span class="badge bg-danger">رد شده</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@call.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    تماسی یافت نشد
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== کارت‌های سریع ==================== -->
+<div class="row g-4">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-bolt"></i>
+                    دسترسی سریع
+                </h5>
+            </div>
+            <div class="row g-3 p-3">
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <a href="/Admin/Users/Create" class="quick-action-btn">
+                        <div class="quick-action-icon" style="background: var(--primary-gradient);">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <span>کاربر جدید</span>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <a href="/Admin/Groups/Create" class="quick-action-btn">
+                        <div class="quick-action-icon" style="background: var(--success-gradient);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span>گروه جدید</span>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <a href="/Admin/Channels/Create" class="quick-action-btn">
+                        <div class="quick-action-icon" style="background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);">
+                            <i class="fas fa-broadcast-tower"></i>
+                        </div>
+                        <span>کانال جدید</span>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <a href="/Admin/Messages/Broadcast" class="quick-action-btn">
+                        <div class="quick-action-icon" style="background: var(--info-gradient);">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <span>پیام همگانی</span>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <a href="/Admin/Settings" class="quick-action-btn">
+                        <div class="quick-action-icon" style="background: var(--warning-gradient);">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <span>تنظیمات</span>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <a href="/Admin/Reports" class="quick-action-btn">
+                        <div class="quick-action-icon" style="background: var(--danger-gradient);">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        <span>گزارشات</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // ==================== تنظیمات Chart.js ====================
+        Chart.defaults.font.family = 'Vazirmatn, Tahoma, sans-serif';
+        Chart.defaults.color = '#718096';
+
+        // ==================== نمودار پیام‌ها ====================
+        const messagesCtx = document.getElementById('messagesChart').getContext('2d');
+        const messagesChart = new Chart(messagesCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(ViewBag.MessageChartLabels ?? "['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه']"),
+                datasets: [{
+                    label: 'پیام‌ها',
+                    data: @Html.Raw(ViewBag.MessageChartData ?? "[120, 190, 150, 220, 180, 250, 200]"),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#2d3748',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // ==================== نمودار نوع پیام‌ها ====================
+        const messageTypesCtx = document.getElementById('messageTypesChart').getContext('2d');
+        const messageTypesChart = new Chart(messageTypesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['متنی', 'تصویر', 'ویدیو', 'صوتی', 'فایل', 'سایر'],
+                datasets: [{
+                    data: @Html.Raw(ViewBag.MessageTypesData ?? "[65, 15, 8, 5, 5, 2]"),
+                    backgroundColor: [
+                        '#667eea',
+                        '#38ef7d',
+                        '#f5576c',
+                        '#4facfe',
+                        '#ed8936',
+                        '#9f7aea'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#2d3748',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 10
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+
+        // ==================== نمودار فعالیت کاربران ====================
+        const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+        const userActivityChart = new Chart(userActivityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'],
+                datasets: [{
+                    label: 'فعالیت',
+                    data: @Html.Raw(ViewBag.UserActivityData ?? "[10, 5, 3, 8, 45, 80, 95, 88, 92, 85, 60, 30]"),
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#2d3748',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return 'ساعت ' + context[0].label + ':00';
+                            },
+                            label: function(context) {
+                                return context.raw + ' کاربر فعال';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // ==================== نمودار تماس‌ها ====================
+        const callsCtx = document.getElementById('callsChart').getContext('2d');
+        const callsChart = new Chart(callsCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(ViewBag.CallsChartLabels ?? "['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه']"),
+                datasets: [
+                    {
+                        label: 'تماس صوتی',
+                        data: @Html.Raw(ViewBag.VoiceCallsData ?? "[25, 35, 28, 42, 38, 45, 30]"),
+                        borderColor: '#48bb78',
+                        backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'تماس تصویری',
+                        data: @Html.Raw(ViewBag.VideoCallsData ?? "[10, 15, 12, 18, 14, 20, 15]"),
+                        borderColor: '#4299e1',
+                        backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#2d3748',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // ==================== تغییر بازه زمانی نمودارها ====================
+        document.querySelectorAll('.chart-period-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const period = this.dataset.period;
+                const chartType = this.dataset.chart || 'messages';
+
+                // تغییر وضعیت active
+                this.parentElement.querySelectorAll('.chart-period-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // درخواست داده جدید از سرور
+                loadChartData(chartType, period);
+            });
+        });
+
+        function loadChartData(chartType, period) {
+            fetch(`/Admin/Dashboard/GetChartData?type=${chartType}&period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (chartType === 'messages') {
+                        messagesChart.data.labels = data.labels;
+                        messagesChart.data.datasets[0].data = data.values;
+                        messagesChart.update();
+                    } else if (chartType === 'calls') {
+                        callsChart.data.labels = data.labels;
+                        callsChart.data.datasets[0].data = data.voiceCalls;
+                        callsChart.data.datasets[1].data = data.videoCalls;
+                        callsChart.update();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // ==================== به‌روزرسانی خودکار آمار ====================
+        function updateStats() {
+            fetch('/Admin/Dashboard/GetLiveStats')
+                .then(response => response.json())
+                .then(data => {
+                    // به‌روزرسانی کارت‌های آمار با انیمیشن
+                    updateStatValue('totalUsers', data.totalUsers);
+                    updateStatValue('onlineUsers', data.onlineUsers);
+                    updateStatValue('totalMessages', data.totalMessages);
+                    updateStatValue('totalGroups', data.totalGroups);
+                    updateStatValue('totalChannels', data.totalChannels);
+                    updateStatValue('totalCalls', data.totalCalls);
+                    updateStatValue('totalFiles', data.totalFiles);
+                    updateStatValue('pendingReports', data.pendingReports);
+
+                    // به‌روزرسانی زمان
+                    document.getElementById('lastUpdated').textContent = data.lastUpdated;
+                })
+                .catch(error => console.error('Error updating stats:', error));
+        }
+
+        function updateStatValue(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            if (element && element.textContent !== newValue.toString()) {
+                element.textContent = newValue.toLocaleString('fa-IR');
+                element.classList.add('value-updated');
+                setTimeout(() => element.classList.remove('value-updated'), 500);
+            }
+        }
+
+        // به‌روزرسانی هر 30 ثانیه
+        setInterval(updateStats, 30000);
+
+        // ==================== انیمیشن ورود کارت‌ها ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.stats-card, .chart-card, .table-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+
+    <style>
+        /* استایل دکمه‌های دسترسی سریع */
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 15px;
+            background: #f7fafc;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #4a5568;
+            transition: all 0.3s ease;
+        }
+
+            .quick-action-btn:hover {
+                background: #edf2f7;
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                color: #2d3748;
+            }
+
+        .quick-action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .quick-action-btn span {
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+        }
+    </style>
+}
