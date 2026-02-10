@@ -19,7 +19,7 @@ document.querySelectorAll('.login-tab-btn').forEach(btn => {
 // ارسال OTP
 function sendOtp() {
     const phoneNumber = document.querySelector('[name="phoneNumber"]').value;
-
+    alert('sf');
     if (!phoneNumber || !/09\d{9}/.test(phoneNumber)) {
         alert('لطفا شماره موبایل معتبر وارد کنید');
         return;

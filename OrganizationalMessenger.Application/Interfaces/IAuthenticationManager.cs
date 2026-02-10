@@ -9,8 +9,9 @@
 
     public enum AuthenticationType
     {
-        ActiveDirectory,
-        ERP,
-        OTP
+        Database = 0,      // شماره موبایل از دیتابیس
+        ActiveDirectory = 1,
+        ERP = 2,
+        SMS = 3           // اضافه شد - OTP پیامکی
     }
 }

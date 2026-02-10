@@ -2,20 +2,22 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OrganizationalMessenger.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using OrganizationalMessenger.Infrastructure.Data;
+using OrganizationalMessenger.Infrastructure.Services;
+using System.DirectoryServices.ActiveDirectory;
 using System.Security.Claims;
 
 [AllowAnonymous]
 public class AccountController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly IAuthenticationManager _authManager;
+    private readonly OtpService _otpService;
 
-    public AccountController(ApplicationDbContext context, IAuthenticationManager authManager)
+    public AccountController(ApplicationDbContext context, OtpService otpService)
     {
         _context = context;
-        _authManager = authManager;
+        _otpService = otpService;
     }
 
     public IActionResult Login()
@@ -23,39 +25,78 @@ public class AccountController : Controller
         return View();
     }
 
+    // ==================== تولید OTP ====================
     [HttpPost]
-    public async Task<IActionResult> Login(string username, string password)
+    public async Task<IActionResult> GenerateOtp(string phoneNumber)
     {
-        // تست کاربران ساده
-        var user = _context.Users.FirstOrDefault(u => u.Username == username &&
-            u.PasswordHash == "AQAAAAEAACcQAAAAEG3LzixU/DMivW0V8ALZr0eH5x4oJvVDIfQiGaPYTB141YiQCDY5ale+wjF3R0C8Q==");
+        var (success, otpCode, message) = await _otpService.GenerateOtpAsync(phoneNumber);
 
-        if (user != null && user.IsActive)
+        return Json(new { success, otpCode, message });
+    }
+
+    // ==================== تایید OTP ====================
+    [HttpPost]
+    public async Task<IActionResult> VerifyOtp(string phoneNumber, string otpCode)
+    {
+        var (success, message) = await _otpService.VerifyOtpAsync(phoneNumber, otpCode);
+
+        if (!success)
         {
-            // ✅ Cookie Login
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim("FullName", user.FirstName + " " + user.LastName),
-                new Claim("PhoneNumber", user.PhoneNumber ?? "")
-            };
-
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(14)
-            };
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity), authProperties);
-
-            return RedirectToAction("Index", "Chat");
+            TempData["Error"] = message;
+            return RedirectToAction("Login");
         }
 
-        ViewBag.Error = "نام کاربری یا رمز اشتباه";
-        return View();
+        // ورود کاربر
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+        if (user == null)
+        {
+            TempData["Error"] = "کاربر یافت نشد";
+            return RedirectToAction("Login");
+        }
+
+        await SignInUserAsync(user);
+        return RedirectToAction("Index", "Chat");
+    }
+
+    // ==================== ورود با پسورد ====================
+    [HttpPost]
+    public async Task<IActionResult> LoginWithPassword(string username, string password)
+    {
+        // تست
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (user == null)
+        {
+            TempData["Error"] = "کاربر یافت نشد";
+            return RedirectToAction("Login");
+        }
+
+        await SignInUserAsync(user);
+        return RedirectToAction("Index", "Chat");
+    }
+
+    private async Task SignInUserAsync(OrganizationalMessenger.Domain.Entities.User user)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim("FullName", $"{user.FirstName} {user.LastName}"),
+            new Claim("PhoneNumber", user.PhoneNumber ?? ""),
+            new Claim("Avatar", user.AvatarUrl ?? "")
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var authProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+        };
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity),
+            authProperties
+        );
     }
 
     public async Task<IActionResult> Logout()

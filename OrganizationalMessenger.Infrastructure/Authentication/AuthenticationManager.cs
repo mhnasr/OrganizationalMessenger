@@ -37,7 +37,7 @@ namespace OrganizationalMessenger.Infrastructure.Authentication
                 AuthenticationType.ERP =>
                     _serviceProvider.GetRequiredService<ErpAuthenticationProvider>(),
 
-                AuthenticationType.OTP =>
+                AuthenticationType.SMS =>
                     _serviceProvider.GetRequiredService<OtpAuthenticationProvider>(),
 
                 _ => throw new NotSupportedException($"Authentication type {type} is not supported.")

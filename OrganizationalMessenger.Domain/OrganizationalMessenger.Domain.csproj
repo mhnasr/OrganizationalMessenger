@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OrganizationalMessenger.Application\OrganizationalMessenger.Application.csproj" />
+  </ItemGroup>
+
 </Project>

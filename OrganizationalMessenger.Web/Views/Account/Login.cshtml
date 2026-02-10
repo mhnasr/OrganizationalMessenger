@@ -1,7 +1,5 @@
-﻿@using OrganizationalMessenger.Web.Areas.Admin.Models
-@model LoginViewModel
-@{
-    ViewData["Title"] = "ورود به سامانه";
+﻿@{
+    ViewData["Title"] = "ورود - پیام‌رسان سازمانی";
     Layout = null;
 }
 
@@ -10,124 +8,334 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>ورود</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="~/css/auth.css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Vazirmatn, Tahoma, sans-serif;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+            .login-header .logo {
+                font-size: 3rem;
+                margin-bottom: 15px;
+            }
+
+            .login-header h2 {
+                color: #667eea;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .login-header p {
+                color: #718096;
+                margin: 10px 0 0 0;
+            }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+            .form-group label {
+                color: #2d3748;
+                font-weight: 600;
+                margin-bottom: 8px;
+                display: block;
+            }
+
+            .form-group input {
+                border: 2px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 12px 15px;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+            }
+
+                .form-group input:focus {
+                    border-color: #667eea;
+                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                    outline: none;
+                }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+            .btn-login:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            }
+
+            .btn-login:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #a0aec0;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+            .auth-tab.active {
+                color: #667eea;
+                border-bottom-color: #667eea;
+            }
+
+        .tab-content {
+            display: none;
+        }
+
+            .tab-content.active {
+                display: block;
+            }
+
+        .otp-display {
+            background: #f7fafc;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+            .otp-display .label {
+                color: #718096;
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+
+        .otp-code {
+            font-size: 2rem;
+            color: #667eea;
+            font-weight: 700;
+            font-family: monospace;
+            letter-spacing: 5px;
+        }
+
+        .copy-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+            .copy-btn:hover {
+                background: #cbd5e0;
+            }
+
+        .devinfo {
+            background: #fff5e6;
+            border-left: 4px solid #f6ad55;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #7c2d12;
+        }
+    </style>
 </head>
-<body class="login-body">
+<body>
     <div class="login-container">
-        <div class="login-card">
-            <!-- لوگو -->
-            <div class="login-logo">
-                <img src="~/images/logo.png" alt="لوگو" />
-                <h1>پیام‌رسان سازمانی</h1>
-            </div>
+        <div class="login-header">
+            <div class="logo">📱</div>
+            <h2>پیام‌رسان سازمانی</h2>
+            <p>سامانه پیام‌رسانی داخلی</p>
+        </div>
 
-            <!-- انتخاب روش لاگین -->
-            <div class="login-tabs">
-                <button class="login-tab-btn active" data-method="sms">پیامک</button>
-                <button class="login-tab-btn" data-method="password">رمز عبور</button>
-                <button class="login-tab-btn" data-method="ad">Active Directory</button>
-                <button class="login-tab-btn" data-method="erp">ERP</button>
-            </div>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
 
-            <!-- فرم لاگین -->
-            <form id="loginForm" method="post" asp-action="Login">
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchTab('sms')">
+                <i class="fas fa-mobile-alt"></i> پیامک
+            </div>
+            <div class="auth-tab" onclick="switchTab('password')">
+                <i class="fas fa-lock"></i> رمز عبور
+            </div>
+        </div>
+
+        <!-- ==================== تب پیامک ==================== -->
+        <div id="sms" class="tab-content active">
+            <form method="post" action="@Url.Action("LoginWithOtp")">
                 @Html.AntiForgeryToken()
 
-                <!-- روش SMS -->
-                <div class="login-method active" data-method="sms">
-                    <div class="form-group mb-3">
-                        <label class="form-label">شماره موبایل</label>
-                        <input type="tel" name="phoneNumber" class="form-control"
-                               placeholder="09123456789" required />
-                    </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="sendOtp()">
-                        ارسال کد تایید
-                    </button>
-
-                    <div class="otp-input mt-3" style="display:none;" id="otpSection">
-                        <label class="form-label">کد تایید</label>
-                        <input type="text" name="otpCode" class="form-control"
-                               placeholder="کد 4 رقمی" maxlength="4" />
-                        <small class="text-muted">
-                            <span id="otpTimer">60</span> ثانیه تا انتهای اعتبار
-                        </small>
-                    </div>
-
-                    <button type="submit" class="btn btn-success w-100 mt-2" id="submitOtp" style="display:none;">
-                        ورود
-                    </button>
+                <div class="form-group">
+                    <label>شماره موبایل</label>
+                    <input type="tel" name="phoneNumber" class="form-control"
+                           placeholder="09123456789" required />
                 </div>
 
-                <!-- روش رمز عبور -->
-                <div class="login-method" data-method="password">
-                    <div class="form-group mb-3">
-                        <label class="form-label">نام کاربری</label>
-                        <input type="text" name="username" class="form-control" />
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label">رمز عبور</label>
-                        <input type="password" name="password" class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">ورود</button>
-                </div>
-
-                <!-- روش Active Directory -->
-                <div class="login-method" data-method="ad">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        با اطلاعات Active Directory وارد شوید
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label">نام کاربری AD</label>
-                        <input type="text" name="adUsername" class="form-control" />
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label">رمز عبور</label>
-                        <input type="password" name="adPassword" class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">ورود</button>
-                </div>
-
-                <!-- روش ERP -->
-                <div class="login-method" data-method="erp">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        با اطلاعات ERP سازمان وارد شوید
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label">نام کاربری ERP</label>
-                        <input type="text" name="erpUsername" class="form-control" />
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label">رمز عبور</label>
-                        <input type="password" name="erpPassword" class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">ورود</button>
-                </div>
-
-                <!-- خطاها -->
-                @if (ViewBag.Error != null)
-                {
-                    <div class="alert alert-danger mt-3">
-                        <i class="fas fa-exclamation-circle"></i>
-                        @ViewBag.Error
-                    </div>
-                }
+                <button type="submit" class="btn-login">درخواست کد</button>
             </form>
 
-            <!-- اطلاعات لوگین -->
-            <div class="login-info mt-4 text-center text-muted">
-                <small>
-                    این سامانه فقط برای کاربران مجاز است.<br>
-                    درصورت مشکل با پشتیبانی تماس بگیرید.
-                </small>
+            <div class="devinfo">
+                <strong>💡 در حالت توسعه:</strong>
+                <br />
+                کد تایید برای شماره <strong>09123456789</strong> نمایش داده می‌شود
+            </div>
+        </div>
+
+        <!-- ==================== تب رمز عبور ==================== -->
+        <div id="password" class="tab-content">
+            <form method="post" action="@Url.Action("LoginWithPassword")">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label>نام کاربری</label>
+                    <input type="text" name="username" class="form-control"
+                           placeholder="شماره موبایل" required />
+                </div>
+
+                <div class="form-group">
+                    <label>رمز عبور</label>
+                    <input type="password" name="password" class="form-control"
+                           placeholder="رمز عبور" required />
+                </div>
+
+                <button type="submit" class="btn-login">ورود</button>
+            </form>
+
+            <div class="devinfo">
+                <strong>💡 اطلاعات تستی:</strong>
+                <br />
+                نام کاربری: <code>09123456789</code>
+                <br />
+                رمز عبور: <code>Test123!</code>
             </div>
         </div>
     </div>
 
+    <!-- ==================== OTP وارد کردن ==================== -->
+    <div class="login-container mt-4" id="otpVerifyContainer" style="display:none;">
+        <div class="login-header">
+            <h2>تایید کد</h2>
+            <p>کد تایید را وارد کنید</p>
+        </div>
+
+        <form method="post" action="@Url.Action("VerifyOtp")">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="phoneNumber" id="hiddenPhone" />
+
+            <div id="otpDisplay" class="otp-display">
+                <div class="label">کد تایید (برای توسعه):</div>
+                <div class="otp-code" id="displayOtp">------</div>
+                <button type="button" class="copy-btn" onclick="copyOtp()">
+                    📋 کپی کدتبدیل
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>کد تایید 6 رقمی</label>
+                <input type="text" name="otpCode" class="form-control"
+                       placeholder="000000" maxlength="6" required />
+            </div>
+
+            <button type="submit" class="btn-login">تایید و ورود</button>
+        </form>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/js/login.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.auth-tab').classList.add('active');
+        }
+
+        function copyOtp() {
+            const otp = document.getElementById('displayOtp').textContent;
+            navigator.clipboard.writeText(otp);
+            alert('کد کپی شد: ' + otp);
+        }
+
+        // Show OTP verify on demand
+        document.querySelectorAll('form')[0].addEventListener('submit', function(e) {
+            e.preventDefault();
+            const phone = document.querySelector('input[name="phoneNumber"]').value;
+
+            // Call backend to generate OTP
+            fetch('@Url.Action("GenerateOtp")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ phoneNumber: phone })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('hiddenPhone').value = phone;
+                    document.getElementById('displayOtp').textContent = data.otpCode;
+                    document.querySelector('.login-container').style.display = 'none';
+                    document.getElementById('otpVerifyContainer').style.display = 'block';
+                } else {
+                    alert('خطا: ' + data.message);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

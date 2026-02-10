@@ -7,6 +7,7 @@ using OrganizationalMessenger.Infrastructure.Authentication;
 using OrganizationalMessenger.Infrastructure.Authentication.OrganizationalMessenger.Infrastructure.Authentication;
 using OrganizationalMessenger.Infrastructure.Data;
 using OrganizationalMessenger.Infrastructure.Services;
+using OrganizationalMessenger.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,7 @@ builder.Services.AddSession(options =>
 
 // ✅ HttpClient
 builder.Services.AddHttpClient();
-
+builder.Services.AddScoped<OtpService>();
 // ✅ Services موجود
 builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IAuthenticationManager, AuthenticationManager>();

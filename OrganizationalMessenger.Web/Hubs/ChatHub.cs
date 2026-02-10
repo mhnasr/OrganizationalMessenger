@@ -3,118 +3,218 @@ using Microsoft.EntityFrameworkCore;
 using OrganizationalMessenger.Domain.Entities;
 using OrganizationalMessenger.Domain.Enums;
 using OrganizationalMessenger.Infrastructure.Data;
-using System.DirectoryServices.ActiveDirectory;
 
-public class ChatHub : Hub
+namespace OrganizationalMessenger.Web.Hubs
 {
-    private readonly ApplicationDbContext _context;
-    private static Dictionary<string, string> _userConnections = new();
-
-    public ChatHub(ApplicationDbContext context)
+    public class ChatHub : Hub
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<ChatHub> _logger;
 
-    public override async Task OnConnectedAsync()
-    {
-        var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        // فهرست کاربران آنلاین: userId -> connectionId
+        private static Dictionary<int, string> OnlineUsers = new();
 
-        if (!string.IsNullOrEmpty(userId))
+        public ChatHub(ApplicationDbContext context, ILogger<ChatHub> logger)
         {
-            _userConnections[Context.ConnectionId] = userId;
+            _context = context;
+            _logger = logger;
+        }
 
-            // آپدیت وضعیت آنلاین کاربر
-            var user = await _context.Users.FindAsync(int.Parse(userId));
-            if (user != null)
+        /// <summary>
+        /// اتصال کاربر
+        /// </summary>
+        public override async Task OnConnectedAsync()
+        {
+            var userId = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            if (!string.IsNullOrEmpty(userId) && int.TryParse(userId, out int id))
             {
-                user.IsOnline = true;
-                user.LastSeen = DateTime.Now;
-                await _context.SaveChangesAsync();
+                OnlineUsers[id] = Context.ConnectionId;
 
-                // اطلاع به دیگران
-                await Clients.All.SendAsync("UserOnlineStatusChanged", userId, true);
+                // به‌روزرسانی وضعیت کاربر
+                var user = await _context.Users.FindAsync(id);
+                if (user != null)
+                {
+                    user.IsOnline = true;
+                    user.LastSeen = DateTime.Now;
+                    await _context.SaveChangesAsync();
+
+                    // ارسال وضعیت آنلاین به همه کاربران
+                    await Clients.All.SendAsync("UserOnline", id, user.FirstName, user.LastName);
+                }
+
+                _logger.LogInformation($"کاربر {id} متصل شد");
+            }
+
+            await base.OnConnectedAsync();
+        }
+
+        /// <summary>
+        /// قطع اتصال کاربر
+        /// </summary>
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var userId = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            if (!string.IsNullOrEmpty(userId) && int.TryParse(userId, out int id))
+            {
+                OnlineUsers.Remove(id);
+
+                // به‌روزرسانی وضعیت کاربر
+                var user = await _context.Users.FindAsync(id);
+                if (user != null)
+                {
+                    user.IsOnline = false;
+                    user.LastSeen = DateTime.Now;
+                    await _context.SaveChangesAsync();
+
+                    // ارسال وضعیت آفلاین به همه کاربران
+                    await Clients.All.SendAsync("UserOffline", id, DateTime.Now);
+                }
+
+                _logger.LogInformation($"کاربر {id} قطع اتصال شد");
+            }
+
+            await base.OnDisconnectedAsync(exception);
+        }
+
+        /// <summary>
+        /// ارسال پیام خصوصی
+        /// </summary>
+        public async Task SendPrivateMessage(int receiverId, string content)
+        {
+            var senderIdStr = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            var senderNameStr = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+            if (!int.TryParse(senderIdStr, out int senderId))
+                return;
+
+            // ذخیره پیام در دیتابیس
+            var message = new Message
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Content = content,
+                MessageText = content,
+                Type = MessageType.Text,
+                SentAt = DateTime.Now,
+                CreatedAt = DateTime.Now,
+                IsDelivered = true
+            };
+
+            _context.Messages.Add(message);
+            await _context.SaveChangesAsync();
+
+            // ارسال به گیرنده
+            if (OnlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
+            {
+                await Clients.Client(receiverConnectionId).SendAsync("ReceivePrivateMessage",
+                    new
+                    {
+                        id = message.Id,
+                        senderId = senderId,
+                        senderName = senderNameStr,
+                        content = content,
+                        sentAt = message.SentAt,
+                        messageId = message.Id
+                    });
+            }
+
+            // ارسال تایید دریافت به فرستنده
+            await Clients.Caller.SendAsync("MessageSent", message.Id);
+        }
+
+        /// <summary>
+        /// ارسال پیام گروهی
+        /// </summary>
+        public async Task SendGroupMessage(int groupId, string content)
+        {
+            var senderIdStr = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            var senderNameStr = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+            if (!int.TryParse(senderIdStr, out int senderId))
+                return;
+
+            // ذخیره پیام
+            var message = new Message
+            {
+                SenderId = senderId,
+                GroupId = groupId,
+                Content = content,
+                MessageText = content,
+                Type = MessageType.Text,
+                SentAt = DateTime.Now,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Messages.Add(message);
+            await _context.SaveChangesAsync();
+
+            // ارسال به تمام اعضای گروه
+            var groupMembers = await _context.UserGroups
+                .Where(ug => ug.GroupId == groupId && ug.IsActive)
+                .Select(ug => ug.UserId)
+                .ToListAsync();
+
+            await Clients.Group($"group-{groupId}").SendAsync("ReceiveGroupMessage",
+                new
+                {
+                    id = message.Id,
+                    groupId = groupId,
+                    senderId = senderId,
+                    senderName = senderNameStr,
+                    content = content,
+                    sentAt = message.SentAt,
+                    messageId = message.Id
+                });
+        }
+
+        /// <summary>
+        /// پیوستن به گروه
+        /// </summary>
+        public async Task JoinGroup(int groupId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"group-{groupId}");
+        }
+
+        /// <summary>
+        /// ترک گروه
+        /// </summary>
+        public async Task LeaveGroup(int groupId)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"group-{groupId}");
+        }
+
+        /// <summary>
+        /// ارسال تایپینگ اندیکیشن
+        /// </summary>
+        public async Task SendTypingNotification(int receiverId)
+        {
+            var senderNameStr = Context.User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+            if (OnlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
+            {
+                await Clients.Client(receiverConnectionId).SendAsync("UserTyping", senderNameStr);
             }
         }
 
-        await base.OnConnectedAsync();
-    }
-
-    public override async Task OnDisconnectedAsync(Exception exception)
-    {
-        if (_userConnections.TryGetValue(Context.ConnectionId, out var userId))
+        /// <summary>
+        /// توقف تایپینگ
+        /// </summary>
+        public async Task SendStoppedTyping(int receiverId)
         {
-            _userConnections.Remove(Context.ConnectionId);
-
-            // آپدیت وضعیت آفلاین
-            var user = await _context.Users.FindAsync(int.Parse(userId));
-            if (user != null)
+            if (OnlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
             {
-                user.IsOnline = false;
-                user.LastSeen = DateTime.Now;
-                await _context.SaveChangesAsync();
-
-                // اطلاع به دیگران
-                await Clients.All.SendAsync("UserOnlineStatusChanged", userId, false);
+                await Clients.Client(receiverConnectionId).SendAsync("UserStoppedTyping");
             }
         }
 
-        await base.OnDisconnectedAsync(exception);
-    }
-
-    public async Task SendMessage(string messageText, int? receiverId = null, int? groupId = null)
-    {
-        var userId = int.Parse(Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-
-        if (userId == 0 || string.IsNullOrEmpty(messageText))
-            return;
-
-        var message = new Message
+        /// <summary>
+        /// دریافت وضعیت آنلاین تمام کاربران
+        /// </summary>
+        public async Task GetOnlineUsers()
         {
-            SenderId = userId,
-            ReceiverId = receiverId,
-            GroupId = groupId,
-            Content = messageText,
-            MessageText = messageText,
-            Type = MessageType.Text,
-            SentAt = DateTime.Now,
-            IsDelivered = true
-        };
-
-        _context.Messages.Add(message);
-        await _context.SaveChangesAsync();
-
-        // ارسال پیام
-        if (receiverId.HasValue)
-        {
-            // پیام خصوصی
-            await Clients.User(receiverId.Value.ToString())
-                .SendAsync("ReceiveMessage", userId, "", messageText);
+            await Clients.Caller.SendAsync("OnlineUsersList", OnlineUsers.Keys.ToList());
         }
-        else if (groupId.HasValue)
-        {
-            // پیام ��روهی
-            await Clients.All.SendAsync("ReceiveMessage", userId, "", messageText);
-        }
-
-        // تیک‌های تک
-        await Clients.Caller.SendAsync("MessageSent", message.Id);
-    }
-
-    public async Task MarkMessageAsRead(int messageId)
-    {
-        var userId = int.Parse(Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-
-        var messageRead = new MessageRead
-        {
-            MessageId = messageId,
-            UserId = userId,
-            ReadAt = DateTime.Now
-        };
-
-        _context.MessageReads.Add(messageRead);
-        await _context.SaveChangesAsync();
-
-        // تیک دوم سبز
-        await Clients.All.SendAsync("MessageRead", messageId, userId);
     }
 }
