@@ -1,0 +1,153 @@
+﻿@{
+    ViewData["Title"] = "چت";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="chat-container">
+    <!-- سایدبار -->
+    <div class="chat-sidebar">
+        <!-- هدر سایدبار -->
+        <div class="sidebar-header">
+            <input type="text" class="search-input" placeholder="جستجو..." id="searchInput" />
+            <i class="fas fa-search"></i>
+        </div>
+
+        <!-- تب‌های چت -->
+        <div class="chat-tabs">
+            <button class="chat-tab-btn active" data-tab="all">
+                <i class="fas fa-comments"></i> همه
+            </button>
+            <button class="chat-tab-btn" data-tab="direct">
+                <i class="fas fa-user"></i> خصوصی
+            </button>
+            <button class="chat-tab-btn" data-tab="group">
+                <i class="fas fa-users"></i> گروه
+            </button>
+            <button class="chat-tab-btn" data-tab="channel">
+                <i class="fas fa-broadcast-tower"></i> کانال
+            </button>
+        </div>
+
+        <!-- لیست چت‌ها -->
+        <div class="chat-list" id="chatList">
+            <!-- نمونه -->
+            <div class="chat-item active" data-chat-id="1" onclick="selectChat(1)">
+                <div class="chat-avatar">
+                    <img src="~/images/avatar.jpg" alt="نام" />
+                    <span class="online-indicator"></span>
+                </div>
+                <div class="chat-info">
+                    <div class="chat-name">محمد ناصری</div>
+                    <div class="chat-preview">سلام، چطور می‌تونم کمکت کنم؟</div>
+                </div>
+                <div class="chat-meta">
+                    <span class="chat-time">14:25</span>
+                    <span class="chat-badge">2</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نقش اصلی چت -->
+    <div class="chat-main">
+        <!-- هدر چت -->
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <button class="btn-back" onclick="backToList()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chat-header-info">
+                    <h3 id="chatName">محمد ناصری</h3>
+                    <small id="chatStatus">آنلاین</small>
+                </div>
+            </div>
+
+            <div class="chat-header-right">
+                <button class="btn-icon" title="تماس صوتی">
+                    <i class="fas fa-phone"></i>
+                </button>
+                <button class="btn-icon" title="تماس تصویری">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="btn-icon" title="VoIP">
+                    <i class="fas fa-phone-alt"></i>
+                </button>
+                <button class="btn-icon" onclick="toggleChatMenu()">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+
+                <!-- منوی سه نقطه -->
+                <div class="chat-menu" style="display:none;">
+                    <button onclick="searchInChat()">
+                        <i class="fas fa-search"></i> جستجو
+                    </button>
+                    <button onclick="muteChat()">
+                        <i class="fas fa-bell-slash"></i> بی‌صدا کردن
+                    </button>
+                    <button onclick="reportChat()">
+                        <i class="fas fa-flag"></i> گزارش تخلف
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- محتوای پیام‌ها -->
+        <div class="messages-container" id="messagesContainer">
+            <!-- پیام‌ها توسط JavaScript اضافه می‌شوند -->
+        </div>
+
+        <!-- Input فرم ارسال -->
+        <div class="message-input-area">
+            <div class="input-toolbar">
+                <button class="btn-attach" onclick="toggleAttachMenu()">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+
+                <textarea class="message-input" id="messageInput"
+                          placeholder="پیام را بنویسید..." rows="1"></textarea>
+
+                <button class="btn-emoji" onclick="toggleEmojiPicker()">
+                    <i class="fas fa-smile"></i>
+                </button>
+
+                <button class="btn-send" id="btnSend" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <!-- منوی Attach -->
+            <div class="attach-menu" style="display:none;">
+                <button onclick="takePhoto()">
+                    <i class="fas fa-camera"></i> دوربین
+                </button>
+                <button onclick="selectFile('image')">
+                    <i class="fas fa-image"></i> عکس/ویدیو
+                </button>
+                <button onclick="selectFile('file')">
+                    <i class="fas fa-file"></i> فایل
+                </button>
+                <button onclick="sendLocation()">
+                    <i class="fas fa-map-marker-alt"></i> مکان
+                </button>
+            </div>
+
+            <!-- انتخاب فایل -->
+            <input type="file" id="fileInput" style="display:none;" />
+        </div>
+    </div>
+
+    <!-- ساید پانل اطلاعات -->
+    <div class="chat-details" style="display:none;">
+        <!-- اطلاعات تماس و دیگر موارد -->
+    </div>
+</div>
+
+<!-- Emoji Picker -->
+<div class="emoji-picker" style="display:none;">
+    <!-- ایموجی‌ها -->
+</div>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.js"></script>
+    <script src="~/js/chat.js"></script>
+}

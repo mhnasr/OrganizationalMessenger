@@ -1,25 +1,133 @@
-﻿<h2>ورود</h2>
-
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
+﻿@using OrganizationalMessenger.Web.Areas.Admin.Models
+@model LoginViewModel
+@{
+    ViewData["Title"] = "ورود به سامانه";
+    Layout = null;
 }
 
-<form asp-action="Login" method="post">
-    <div class="form-group mb-3">
-        <label>نام کاربری</label>
-        <input name="username" class="form-control" />
-    </div>
-    <div class="form-group mb-3">
-        <label>رمز عبور</label>
-        <input name="password" type="password" class="form-control" />
-    </div>
-    <button type="submit" class="btn btn-primary">ورود</button>
-</form>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="~/css/auth.css" />
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card">
+            <!-- لوگو -->
+            <div class="login-logo">
+                <img src="~/images/logo.png" alt="لوگو" />
+                <h1>پیام‌رسان سازمانی</h1>
+            </div>
 
-<div class="mt-4">
-    <h6>👥 کاربران تست:</h6>
-    <p>testuser1 → Test1234! (ادمین)</p>
-    <p>testuser25 → Test1234!</p>
-    <p>testuser100 → Test1234!</p>
-</div>
+            <!-- انتخاب روش لاگین -->
+            <div class="login-tabs">
+                <button class="login-tab-btn active" data-method="sms">پیامک</button>
+                <button class="login-tab-btn" data-method="password">رمز عبور</button>
+                <button class="login-tab-btn" data-method="ad">Active Directory</button>
+                <button class="login-tab-btn" data-method="erp">ERP</button>
+            </div>
+
+            <!-- فرم لاگین -->
+            <form id="loginForm" method="post" asp-action="Login">
+                @Html.AntiForgeryToken()
+
+                <!-- روش SMS -->
+                <div class="login-method active" data-method="sms">
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره موبایل</label>
+                        <input type="tel" name="phoneNumber" class="form-control"
+                               placeholder="09123456789" required />
+                    </div>
+                    <button type="button" class="btn btn-primary w-100" onclick="sendOtp()">
+                        ارسال کد تایید
+                    </button>
+
+                    <div class="otp-input mt-3" style="display:none;" id="otpSection">
+                        <label class="form-label">کد تایید</label>
+                        <input type="text" name="otpCode" class="form-control"
+                               placeholder="کد 4 رقمی" maxlength="4" />
+                        <small class="text-muted">
+                            <span id="otpTimer">60</span> ثانیه تا انتهای اعتبار
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mt-2" id="submitOtp" style="display:none;">
+                        ورود
+                    </button>
+                </div>
+
+                <!-- روش رمز عبور -->
+                <div class="login-method" data-method="password">
+                    <div class="form-group mb-3">
+                        <label class="form-label">نام کاربری</label>
+                        <input type="text" name="username" class="form-control" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">رمز عبور</label>
+                        <input type="password" name="password" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">ورود</button>
+                </div>
+
+                <!-- روش Active Directory -->
+                <div class="login-method" data-method="ad">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        با اطلاعات Active Directory وارد شوید
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">نام کاربری AD</label>
+                        <input type="text" name="adUsername" class="form-control" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">رمز عبور</label>
+                        <input type="password" name="adPassword" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">ورود</button>
+                </div>
+
+                <!-- روش ERP -->
+                <div class="login-method" data-method="erp">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        با اطلاعات ERP سازمان وارد شوید
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">نام کاربری ERP</label>
+                        <input type="text" name="erpUsername" class="form-control" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">رمز عبور</label>
+                        <input type="password" name="erpPassword" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">ورود</button>
+                </div>
+
+                <!-- خطاها -->
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger mt-3">
+                        <i class="fas fa-exclamation-circle"></i>
+                        @ViewBag.Error
+                    </div>
+                }
+            </form>
+
+            <!-- اطلاعات لوگین -->
+            <div class="login-info mt-4 text-center text-muted">
+                <small>
+                    این سامانه فقط برای کاربران مجاز است.<br>
+                    درصورت مشکل با پشتیبانی تماس بگیرید.
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/login.js"></script>
+</body>
+</html>
