@@ -18,6 +18,9 @@ let replyingToMessage = null;
 let isPageFocused = true;
 let isTyping = false;
 
+// ✅ متغیرهای Zoom
+let isZoomed = false;
+let currentPreviewImage = null;
 
 // ✅ متغیرهای Voice Recording
 let mediaRecorder = null;
@@ -800,7 +803,8 @@ function renderFileAttachment(file) {
                 <img src="${file.thumbnailUrl || file.fileUrl}" 
                      alt="${file.originalFileName}" 
                      onclick="openImagePreview('${file.fileUrl}')"
-                     loading="lazy">
+                     loading="lazy"
+                     style="cursor: pointer;">
                 <a href="/api/File/download/${file.id}" 
                    class="file-download-btn" 
                    title="دانلود"
@@ -888,18 +892,7 @@ function closeVideoPreview(event) {
     }
 }
 
-function openImagePreview(url) {
-    const modal = document.createElement('div');
-    modal.className = 'image-preview-modal';
-    modal.innerHTML = `
-        <div class="image-preview-overlay" onclick="this.parentElement.remove(); document.body.style.overflow='auto'">
-            <img src="${url}" alt="Preview" onclick="event.stopPropagation()">
-            <button class="close-preview" onclick="this.parentElement.parentElement.remove(); document.body.style.overflow='auto'">✕</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
-}
+
 
 function getFileIcon(fileType, extension) {
     const iconMap = {
@@ -925,15 +918,42 @@ function handleMessageSent(data) {
     const tempMessages = document.querySelectorAll('.message[data-temp="true"]');
     tempMessages.forEach(msg => msg.remove());
 
-    // ✅ اضافه کردن sentAt برای محاسبه زمان
+    // ✅ اطمینان از وجود sentAt
     if (!data.sentAt) {
+        console.warn('⚠️ No sentAt, using current time');
         data.sentAt = new Date().toISOString();
+    } else {
+        try {
+            const date = new Date(data.sentAt);
+
+            // ✅ چک معتبر بودن تاریخ
+            if (isNaN(date.getTime())) {
+                console.error('❌ Invalid sentAt:', data.sentAt);
+                data.sentAt = new Date().toISOString();
+            } else {
+                // ✅ چک اینکه تاریخ در آینده نباشد
+                const now = new Date();
+                if (date > now) {
+                    console.warn('⚠️ sentAt is in future, using current time');
+                    data.sentAt = now.toISOString();
+                } else {
+                    data.sentAt = date.toISOString();
+                }
+            }
+        } catch (e) {
+            console.error('❌ sentAt parse error:', e);
+            data.sentAt = new Date().toISOString();
+        }
     }
 
-    // ✅ نمایش پیام با منوی کامل
+    console.log('📅 Corrected sentAt:', data.sentAt);
+    console.log('🕐 Current time:', new Date().toISOString());
+
+    // نمایش پیام با منوی کامل
     displayMessage(data);
     scrollToBottom();
 }
+
 
 function handleTabClick(tabBtn) {
     const tab = tabBtn.dataset.tab;
@@ -956,161 +976,8 @@ function getInitials(name) {
     return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
 }
 
-function toggleEmojiPicker() {
-    let container = document.getElementById('emojiPickerContainer');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'emojiPickerContainer';
-        document.body.appendChild(container);
-    }
 
-    if (!container.innerHTML) {
-        container.innerHTML = createMatrixEmojiPickerHTML();
-        setupEmojiPickerEvents();
-    }
 
-    emojiPickerVisible = !emojiPickerVisible;
-
-    if (emojiPickerVisible) {
-        container.style.display = 'block';
-
-        const emojiBtn = document.getElementById('emojiBtn');
-        const pickerEl = container.querySelector('.mx_ContextualMenu');
-
-        if (emojiBtn && pickerEl) {
-            const btnRect = emojiBtn.getBoundingClientRect();
-            const top = btnRect.top - 460;
-            const left = btnRect.left;
-            const finalTop = top < 10 ? btnRect.bottom + 10 : top;
-            const finalLeft = (left + 360) > window.innerWidth ? window.innerWidth - 370 : left;
-
-            pickerEl.style.top = `${finalTop}px`;
-            pickerEl.style.left = `${finalLeft}px`;
-        }
-    } else {
-        container.style.display = 'none';
-    }
-}
-
-function createMatrixEmojiPickerHTML() {
-    return `
-        <div class="mx_ContextualMenu mx_visible">
-            <section class="mx_EmojiPicker">
-                <nav class="mx_EmojiPicker_header">
-                    <button class="mx_EmojiPicker_anchor active" data-category="recent" title="پرکاربرد">🕒</button>
-                    <button class="mx_EmojiPicker_anchor" data-category="people" title="افراد">😀</button>
-                    <button class="mx_EmojiPicker_anchor" data-category="nature" title="طبیعت">🐱</button>
-                    <button class="mx_EmojiPicker_anchor" data-category="food" title="غذا">🍔</button>
-                    <button class="mx_EmojiPicker_anchor" data-category="symbols" title="نمادها">❤️</button>
-                </nav>
-                <div class="mx_EmojiPicker_body">
-                    <section class="mx_EmojiPicker_category active" data-category="recent">
-                        <h2 class="mx_EmojiPicker_category_label">پرکاربرد</h2>
-                        <div class="mx_EmojiPicker_list">
-                            ${getRecentEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
-                        </div>
-                    </section>
-                    <section class="mx_EmojiPicker_category" data-category="people">
-                        <h2 class="mx_EmojiPicker_category_label">افراد</h2>
-                        <div class="mx_EmojiPicker_list">
-                            ${getPeopleEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
-                        </div>
-                    </section>
-                    <section class="mx_EmojiPicker_category" data-category="nature">
-                        <h2 class="mx_EmojiPicker_category_label">طبیعت</h2>
-                        <div class="mx_EmojiPicker_list">
-                            ${getNatureEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
-                        </div>
-                    </section>
-                    <section class="mx_EmojiPicker_category" data-category="food">
-                        <h2 class="mx_EmojiPicker_category_label">غذا</h2>
-                        <div class="mx_EmojiPicker_list">
-                            ${getFoodEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
-                        </div>
-                    </section>
-                    <section class="mx_EmojiPicker_category" data-category="symbols">
-                        <h2 class="mx_EmojiPicker_category_label">نمادها</h2>
-                        <div class="mx_EmojiPicker_list">
-                            ${getSymbolsEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
-                        </div>
-                    </section>
-                </div>
-                <section class="mx_EmojiPicker_footer">
-                    <h2 class="mx_EmojiPicker_quick_header">واکنش سریع</h2>
-                    <div class="mx_EmojiPicker_quick_list">
-                        ${['👍', '👎', '😂', '❤️', '🎉', '😢', '🔥', '👀'].map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
-                    </div>
-                </section>
-            </section>
-        </div>
-    `;
-}
-
-function getRecentEmojis() {
-    return ['😂', '😍', '👍', '❤️', '🔥', '🙏', '😢', '🎉', '😘', '😎', '👌', '✌️', '⭐', '💯', '✅', '❌'];
-}
-
-function getPeopleEmojis() {
-    return ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰'];
-}
-
-function getNatureEmojis() {
-    return ['🐱', '🐶', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵'];
-}
-
-function getFoodEmojis() {
-    return ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝'];
-}
-
-function getSymbolsEmojis() {
-    return ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖'];
-}
-
-function insertEmoji(emoji) {
-    const input = document.getElementById('messageInput');
-    if (!input) return;
-
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    input.value = input.value.substring(0, start) + emoji + input.value.substring(end);
-    input.focus();
-    const newPos = start + emoji.length;
-    input.setSelectionRange(newPos, newPos);
-
-    hideEmojiPicker();
-}
-
-function hideEmojiPicker() {
-    const container = document.getElementById('emojiPickerContainer');
-    if (container) container.style.display = 'none';
-    emojiPickerVisible = false;
-}
-
-function setupEmojiPickerEvents() {
-    const container = document.getElementById('emojiPickerContainer');
-    if (!container) return;
-
-    container.addEventListener('click', function (e) {
-        const emojiItem = e.target.closest('.mx_EmojiPicker_item');
-        if (emojiItem) {
-            insertEmoji(emojiItem.dataset.emoji);
-            e.stopPropagation();
-            return;
-        }
-
-        const categoryBtn = e.target.closest('.mx_EmojiPicker_anchor');
-        if (categoryBtn) {
-            document.querySelectorAll('.mx_EmojiPicker_anchor').forEach(btn => btn.classList.remove('active'));
-            categoryBtn.classList.add('active');
-
-            document.querySelectorAll('.mx_EmojiPicker_category').forEach(cat => cat.classList.remove('active'));
-            const targetCategory = container.querySelector(`.mx_EmojiPicker_category[data-category="${categoryBtn.dataset.category}"]`);
-            if (targetCategory) targetCategory.classList.add('active');
-
-            e.stopPropagation();
-        }
-    });
-}
 
 function setupEventListeners() {
     console.log('🎯 Setting up event listeners...');
@@ -1796,7 +1663,14 @@ function displayMessage(msg) {
     messageEl.dataset.messageId = msg.id;
 
     // ✅ اطمینان از وجود sentAt
-    messageEl.dataset.sentAt = msg.sentAt || new Date().toISOString();
+    const sentAt = msg.sentAt || new Date().toISOString();
+    messageEl.dataset.sentAt = sentAt;
+
+    console.log('🔍 displayMessage:', {
+        messageId: msg.id,
+        sentAt: sentAt,
+        hasAttachments: !!(msg.attachments && msg.attachments.length > 0)
+    });
 
     // چک پیام حذف شده
     if (msg.isDeleted) {
@@ -1805,7 +1679,6 @@ function displayMessage(msg) {
             <div class="message-wrapper">
                 <div class="message-bubble">
                     <div class="message-content deleted-message">
-                        
                         <div class="deleted-text">
                             ${isSent ? 'شما این پیام را حذف کردید' : 'این پیام حذف شده است'}
                         </div>
@@ -1846,7 +1719,7 @@ function displayMessage(msg) {
     const messageContent = msg.content || msg.messageText || '';
 
     if (hasAttachments) {
-        if (messageContent && !messageContent.startsWith('📎')) {
+        if (messageContent && !messageContent.startsWith('📎') && !messageContent.startsWith('🎤')) {
             messageTextHtml = `<div class="message-caption" data-editable="true">${escapeHtml(messageContent)}</div>`;
         }
     } else {
@@ -1905,12 +1778,12 @@ function displayMessage(msg) {
     // ✅ Message Menu - با محاسبه زمان صحیح
     let messageMenuHtml = '';
     if (isSent) {
-        const canEdit = canEditMessage(msg.sentAt || new Date());
-        const canDelete = canDeleteMessage(msg.sentAt || new Date());
+        const canEdit = canEditMessage(sentAt); // ✅ استفاده از sentAt اصلاح شده
+        const canDelete = canDeleteMessage(sentAt); // ✅ استفاده از sentAt اصلاح شده
 
         console.log('🔍 Menu permissions:', {
             messageId: msg.id,
-            sentAt: msg.sentAt,
+            sentAt: sentAt,
             canEdit,
             canDelete,
             settings: messageSettings
@@ -1990,6 +1863,8 @@ function displayMessage(msg) {
         setTimeout(() => markMessagesAsRead(), 500);
     }
 }
+
+
 // ✅ اسکرول به پیام reply شده
 function scrollToMessage(messageId) {
     const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
@@ -2708,6 +2583,9 @@ async function sendVoiceMessage(audioBlob) {
 // ============================================
 // Voice Player
 // ============================================
+// ============================================
+// Voice Player
+// ============================================
 function renderAudioPlayer(file) {
     const audioId = `audio_${file.id}`;
     const duration = file.duration || 0;
@@ -2736,60 +2614,8 @@ function renderAudioPlayer(file) {
             <audio id="${audioId}" src="${file.fileUrl}" preload="metadata"></audio>
         </div>
     `;
-}   
-
-// ✅ جست‌وجو در صوت با کلیک
-function seekVoice(event, fileId) {
-    event.stopPropagation();
-
-    const audio = document.getElementById(`audio_${fileId}`);
-    const progressContainer = event.currentTarget;
-
-    if (!audio || !audio.duration) return;
-
-    const rect = progressContainer.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const percent = clickX / rect.width;
-
-    audio.currentTime = percent * audio.duration;
-
-    console.log(`⏩ Seek to ${Math.floor(percent * 100)}%`);
 }
 
-// ✅ به‌روزرسانی Progress Bar
-function updateVoiceDuration(fileId, audio) {
-    const durationEl = document.getElementById(`duration_${fileId}`);
-    const progressFill = document.getElementById(`progress_${fileId}`);
-
-    if (!durationEl || !audio.duration) return;
-
-    // زمان باقی‌مانده
-    const remaining = Math.ceil(audio.duration - audio.currentTime);
-    durationEl.textContent = formatDuration(remaining);
-
-    // ✅ به‌روزرسانی Progress Bar
-    if (progressFill) {
-        const percent = (audio.currentTime / audio.duration) * 100;
-        progressFill.style.width = `${percent}%`;
-    }
-}
-
-function resetVoiceUI(fileId) {
-    const audio = document.getElementById(`audio_${fileId}`);
-    const durationEl = document.getElementById(`duration_${fileId}`);
-    const progressFill = document.getElementById(`progress_${fileId}`);
-
-    if (audio && durationEl && audio.duration) {
-        durationEl.textContent = formatDuration(Math.ceil(audio.duration));
-    }
-
-    // ✅ ریست Progress Bar
-    if (progressFill) {
-        progressFill.style.width = '0%';
-    }
-
-    stopWaveformAnimation();
-}
 function generateWaveformBars(count) {
     const bars = [];
     for (let i = 0; i < count; i++) {
@@ -2816,9 +2642,12 @@ function toggleVoicePlay(fileId) {
         btn.classList.add('playing');
         currentPlayingAudio = audio;
 
-        startWaveformAnimation(fileId);
+        // ✅ به‌روزرسانی Progress Bar و Duration
+        audio.ontimeupdate = () => {
+            updateVoiceDuration(fileId, audio);
+            updateProgressBar(fileId, audio);
+        };
 
-        audio.ontimeupdate = () => updateVoiceDuration(fileId, audio);
         audio.onended = () => {
             stopVoicePlay(audio);
             resetVoiceUI(fileId);
@@ -2842,41 +2671,23 @@ function stopVoicePlay(audio) {
         btn.classList.remove('playing');
     }
 
-    stopWaveformAnimation();
     currentPlayingAudio = null;
 }
 
-function startWaveformAnimation(fileId) {
-    stopWaveformAnimation();
+// ✅ به‌روزرسانی Progress Bar
+function updateProgressBar(fileId, audio) {
+    const progressFill = document.getElementById(`progress_${fileId}`);
 
-    const container = document.querySelector(`.message-file[data-audio-id="${fileId}"]`);
-    const bars = container?.querySelectorAll('.wave-bar');
+    if (!progressFill || !audio.duration) return;
 
-    if (!bars || bars.length === 0) return;
-
-    let index = 0;
-    waveformInterval = setInterval(() => {
-        bars.forEach((bar, i) => {
-            bar.classList.toggle('active', i === index);
-        });
-
-        index = (index + 1) % bars.length;
-    }, 120);
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = `${percent}%`;
 }
 
-function stopWaveformAnimation() {
-    if (waveformInterval) {
-        clearInterval(waveformInterval);
-        waveformInterval = null;
-    }
-
-    document.querySelectorAll('.wave-bar').forEach(bar => {
-        bar.classList.remove('active');
-    });
-}
-
+// ✅ به‌روزرسانی Duration
 function updateVoiceDuration(fileId, audio) {
     const durationEl = document.getElementById(`duration_${fileId}`);
+
     if (!durationEl || !audio.duration) return;
 
     const remaining = Math.ceil(audio.duration - audio.currentTime);
@@ -2886,12 +2697,34 @@ function updateVoiceDuration(fileId, audio) {
 function resetVoiceUI(fileId) {
     const audio = document.getElementById(`audio_${fileId}`);
     const durationEl = document.getElementById(`duration_${fileId}`);
+    const progressFill = document.getElementById(`progress_${fileId}`);
 
     if (audio && durationEl && audio.duration) {
         durationEl.textContent = formatDuration(Math.ceil(audio.duration));
     }
 
-    stopWaveformAnimation();
+    // ✅ ریست Progress Bar
+    if (progressFill) {
+        progressFill.style.width = '0%';
+    }
+}
+
+// ✅ جست‌وجو در صوت
+function seekVoice(event, fileId) {
+    event.stopPropagation();
+
+    const audio = document.getElementById(`audio_${fileId}`);
+    const progressContainer = event.currentTarget;
+
+    if (!audio || !audio.duration) return;
+
+    const rect = progressContainer.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const percent = clickX / rect.width;
+
+    audio.currentTime = percent * audio.duration;
+
+    console.log(`⏩ Seek to ${Math.floor(percent * 100)}%`);
 }
 
 function changeVoiceSpeed(fileId) {
@@ -2924,208 +2757,409 @@ function formatDuration(seconds) {
 
 
 
-// ✅ حداقل زمان ضبط
-const MIN_RECORDING_DURATION = 1000; // 1 ثانیه
 
-async function startRecording(e) {
-    e.preventDefault();
 
-    if (!currentChat) {
-        alert('لطفاً ابتدا یک چت را انتخاب کنید');
-        return;
+
+
+function toggleEmojiPicker() {
+    let container = document.getElementById('emojiPickerContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'emojiPickerContainer';
+        document.body.appendChild(container);
     }
 
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (!container.innerHTML) {
+        container.innerHTML = createMatrixEmojiPickerHTML();
+        setupEmojiPickerEvents();
+    }
 
-        mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'audio/webm;codecs=opus'
-        });
+    emojiPickerVisible = !emojiPickerVisible;
 
-        audioChunks = [];
+    if (emojiPickerVisible) {
+        container.style.display = 'block';
 
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                audioChunks.push(event.data);
-            }
-        };
+        const emojiBtn = document.getElementById('emojiBtn');
+        const pickerEl = container.querySelector('.mx_ContextualMenu');
 
-        mediaRecorder.onstop = async () => {
-            const recordingDuration = Date.now() - recordingStartTime;
-
-            // ✅ چک حداقل زمان
-            if (recordingDuration < MIN_RECORDING_DURATION) {
-                console.log('⚠️ Recording too short, cancelled');
-                stream.getTracks().forEach(track => track.stop());
-                return;
-            }
-
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            await sendVoiceMessage(audioBlob);
-            stream.getTracks().forEach(track => track.stop());
-        };
-
-        mediaRecorder.start();
-        isRecording = true;
-        recordingStartTime = Date.now();
-
-        const micBtn = document.getElementById('micBtn');
-        micBtn.classList.add('recording');
-        micBtn.innerHTML = '<i class="fas fa-stop"></i>';
-
-        showRecordingTimer();
-        console.log('🎤 Recording started');
-
-    } catch (error) {
-        console.error('❌ Microphone error:', error);
-        alert('دسترسی به میکروفون رد شد');
+        if (emojiBtn && pickerEl) {
+            // ✅ صبر کنید تا picker رندر شود
+            setTimeout(() => {
+                adjustEmojiPickerPosition(); // ✅ استفاده از تابع مشترک
+            }, 50);
+        }
+    } else {
+        container.style.display = 'none';
     }
 }
 
-function stopRecording(e) {
-    e.preventDefault();
-    if (!isRecording || !mediaRecorder) return;
-
-    const recordingDuration = Date.now() - recordingStartTime;
-
-    // ✅ اگر کمتر از 1 ثانیه بود، نمایش پیام
-    if (recordingDuration < MIN_RECORDING_DURATION) {
-        console.log('⚠️ Recording cancelled - too short');
-
-        // نمایش پیام به کاربر
-        const micBtn = document.getElementById('micBtn');
-        micBtn.style.background = '#ffa500';
-        micBtn.innerHTML = '<i class="fas fa-exclamation"></i>';
-
-        setTimeout(() => {
-            micBtn.style.background = '';
-            micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-        }, 1000);
-    }
-
-    isRecording = false;
-    mediaRecorder.stop();
-
-    const micBtn = document.getElementById('micBtn');
-    micBtn.classList.remove('recording');
-    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-
-    hideRecordingTimer();
+function getRecentEmojis() {
+    return ['😂', '❤️', '😍', '👍', '🔥', '🙏', '😊', '😘', '💯', '✨', '🎉', '👏', '💪', '🌹', '☺️', '😭', '🥰', '😁', '🤗', '💕', '🙌', '✅', '👌', '💖'];
 }
 
-function cancelRecording(e) {
-    if (!isRecording || !mediaRecorder) return;
-
-    isRecording = false;
-    mediaRecorder.stop();
-    audioChunks = [];
-
-    const micBtn = document.getElementById('micBtn');
-    micBtn.classList.remove('recording');
-    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-
-    hideRecordingTimer();
-    console.log('🎤 Recording cancelled');
+function getPeopleEmojis() {
+    return [
+        '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+        '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+        '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+        '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
+        '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐'
+    ];
 }
 
-function showRecordingTimer() {
-    const inputWrapper = document.querySelector('.input-wrapper');
+function getNatureEmojis() {
+    return [
+        '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵',
+        '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗',
+        '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎',
+        '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅',
+        '🌸', '🌺', '🌻', '🌹', '🥀', '🌷', '🌼', '🌾', '🍀', '☘️', '🍃', '🍂', '🍁', '🌿', '🌱', '🌲',
+        '🌳', '🌴', '🌵', '🌾', '🌿', '🍀', '☘️', '🍃', '🍂', '🍁', '🪴', '🌾', '💐', '🏵️', '🌹', '🥀'
+    ];
+}
 
-    const timer = document.createElement('div');
-    timer.id = 'recordingTimer';
-    timer.className = 'recording-timer';
-    timer.innerHTML = `
-        <div class="recording-indicator">
-            <div class="recording-pulse"></div>
-            <span class="recording-time">00:00</span>
-        </div>
-        <div class="recording-actions">
-            <button class="recording-cancel-btn" onclick="cancelRecordingManually()">
-                <i class="fas fa-times"></i> لغو
-            </button>
-            <span class="recording-hint">رها کنید برای ارسال</span>
+function getFoodEmojis() {
+    return [
+        '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝',
+        '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥖',
+        '🍞', '🥨', '🥯', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔',
+        '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲',
+        '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨'
+    ];
+}
+
+function getActivityEmojis() {
+    return [
+        '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍',
+        '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌',
+        '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '⛹️', '🤾', '🏌️', '🏇', '🧘', '🏊', '🤽', '🚣',
+        '🧗', '🚴', '🚵', '🤹', '🎪', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🪘', '🎷', '🎺'
+    ];
+}
+
+function getTravelEmojis() {
+    return [
+        '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🛴', '🚲',
+        '🛵', '🏍️', '🛺', '🚨', '🚔', '🚍', '🚘', '🚖', '🛞', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝',
+        '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊', '🚉', '✈️', '🛫', '🛬', '🛩️', '💺', '🛰️', '🚁', '🛸',
+        '🚀', '🛶', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🪝', '⛽', '🚧', '🚦', '🚥', '🗺️', '🗿',
+        '🗽', '🗼', '🏰', '🏯', '🏟️', '🎡', '🎢', '🎠', '⛲', '⛱️', '🏖️', '🏝️', '🏜️', '🌋', '⛰️', '🏔️'
+    ];
+}
+
+function getObjectsEmojis() {
+    return [
+        '⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💾', '💿', '📀', '📼', '📷',
+        '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️',
+        '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🪫', '🔌', '💡', '🔦', '🕯️', '🪔', '🧯', '🛢️', '💸',
+        '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '💎', '⚖️', '🪜', '🧰', '🪛', '🔧', '🔨', '⚒️', '🛠️',
+        '⛏️', '🪚', '🔩', '⚙️', '🪤', '🧱', '⛓️', '🧲', '🔫', '💣', '🧨', '🪓', '🔪', '🗡️', '⚔️', '🛡️'
+    ];
+}
+
+function getSymbolsEmojis() {
+    return [
+        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+        '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
+        '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️', '📴',
+        '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️', '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹', '🈲',
+        '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌', '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️', '🚷'
+    ];
+}
+
+
+
+
+function createMatrixEmojiPickerHTML() {
+    return `
+        <div class="mx_ContextualMenu mx_visible">
+            <section class="mx_EmojiPicker">
+                <nav class="mx_EmojiPicker_header">
+                    <button class="mx_EmojiPicker_anchor active" data-category="recent" title="پرکاربرد">🕒</button>
+                    <button class="mx_EmojiPicker_anchor" data-category="people" title="افراد">😀</button>
+                    <button class="mx_EmojiPicker_anchor" data-category="nature" title="طبیعت">🐱</button>
+                    <button class="mx_EmojiPicker_anchor" data-category="food" title="غذا">🍔</button>
+                    <button class="mx_EmojiPicker_anchor" data-category="symbols" title="نمادها">❤️</button>
+                </nav>
+                <div class="mx_EmojiPicker_body">
+                    <section class="mx_EmojiPicker_category active" data-category="recent">
+                        <h2 class="mx_EmojiPicker_category_label">پرکاربرد</h2>
+                        <div class="mx_EmojiPicker_list">
+                            ${getRecentEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
+                        </div>
+                    </section>
+                    <section class="mx_EmojiPicker_category" data-category="people">
+                        <h2 class="mx_EmojiPicker_category_label">افراد</h2>
+                        <div class="mx_EmojiPicker_list">
+                            ${getPeopleEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
+                        </div>
+                    </section>
+                    <section class="mx_EmojiPicker_category" data-category="nature">
+                        <h2 class="mx_EmojiPicker_category_label">طبیعت</h2>
+                        <div class="mx_EmojiPicker_list">
+                            ${getNatureEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
+                        </div>
+                    </section>
+                    <section class="mx_EmojiPicker_category" data-category="food">
+                        <h2 class="mx_EmojiPicker_category_label">غذا</h2>
+                        <div class="mx_EmojiPicker_list">
+                            ${getFoodEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
+                        </div>
+                    </section>
+                    <section class="mx_EmojiPicker_category" data-category="symbols">
+                        <h2 class="mx_EmojiPicker_category_label">نمادها</h2>
+                        <div class="mx_EmojiPicker_list">
+                            ${getSymbolsEmojis().map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
+                        </div>
+                    </section>
+                </div>
+                <section class="mx_EmojiPicker_footer">
+                    <h2 class="mx_EmojiPicker_quick_header">واکنش سریع</h2>
+                    <div class="mx_EmojiPicker_quick_list">
+                        ${['👍', '👎', '😂', '❤️', '🎉', '😢', '🔥', '👀'].map(e => `<div class="mx_EmojiPicker_item" data-emoji="${e}">${e}</div>`).join('')}
+                    </div>
+                </section>
+            </section>
         </div>
     `;
+}
 
-    inputWrapper.parentNode.insertBefore(timer, inputWrapper);
 
-    recordingTimer = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-        const seconds = (elapsed % 60).toString().padStart(2, '0');
 
-        const timeEl = document.querySelector('.recording-time');
-        if (timeEl) timeEl.textContent = `${minutes}:${seconds}`;
+function insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    if (!input) return;
 
-        // حداکثر 5 دقیقه
-        if (elapsed >= 300) {
-            stopRecording(new Event('mouseup'));
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    input.value = input.value.substring(0, start) + emoji + input.value.substring(end);
+    input.focus();
+    const newPos = start + emoji.length;
+    input.setSelectionRange(newPos, newPos);
+
+    hideEmojiPicker();
+}
+
+function hideEmojiPicker() {
+    const container = document.getElementById('emojiPickerContainer');
+    if (container) container.style.display = 'none';
+    emojiPickerVisible = false;
+}
+
+function setupEmojiPickerEvents() {
+    const container = document.getElementById('emojiPickerContainer');
+    if (!container) return;
+
+    container.addEventListener('click', function (e) {
+        const emojiItem = e.target.closest('.mx_EmojiPicker_item');
+        if (emojiItem) {
+            insertEmoji(emojiItem.dataset.emoji);
+            e.stopPropagation();
+            return;
         }
-    }, 1000);
+
+        const categoryBtn = e.target.closest('.mx_EmojiPicker_anchor');
+        if (categoryBtn) {
+            document.querySelectorAll('.mx_EmojiPicker_anchor').forEach(btn => btn.classList.remove('active'));
+            categoryBtn.classList.add('active');
+
+            document.querySelectorAll('.mx_EmojiPicker_category').forEach(cat => cat.classList.remove('active'));
+            const targetCategory = container.querySelector(`.mx_EmojiPicker_category[data-category="${categoryBtn.dataset.category}"]`);
+            if (targetCategory) targetCategory.classList.add('active');
+
+            // ✅ تنظیم مجدد موقعیت بعد از تغییر دسته
+            setTimeout(() => {
+                adjustEmojiPickerPosition();
+            }, 50);
+
+            e.stopPropagation();
+        }
+    });
 }
 
-// ✅ لغو دستی
-function cancelRecordingManually() {
-    if (!isRecording || !mediaRecorder) return;
+// ✅ تابع جدید برای تنظیم موقعیت
+function adjustEmojiPickerPosition() {
+    const emojiBtn = document.getElementById('emojiBtn');
+    const pickerEl = document.querySelector('.mx_ContextualMenu');
 
-    isRecording = false;
-    mediaRecorder.stop();
-    audioChunks = [];
+    if (!emojiBtn || !pickerEl) return;
 
-    const micBtn = document.getElementById('micBtn');
-    micBtn.classList.remove('recording');
-    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    const btnRect = emojiBtn.getBoundingClientRect();
+    const pickerRect = pickerEl.getBoundingClientRect();
+    const pickerHeight = pickerRect.height;
+    const pickerWidth = pickerRect.width;
 
-    hideRecordingTimer();
+    const spaceAbove = btnRect.top;
+    const spaceBelow = window.innerHeight - btnRect.bottom;
 
-    console.log('🎤 Recording cancelled manually');
-}
+    let top, left;
 
-async function sendVoiceMessage(audioBlob) {
-    if (!currentChat) return;
-
-    const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
-
-    // ✅ چک نهایی
-    if (duration < 1) {
-        console.log('⚠️ Audio too short, not sending');
-        return;
+    // ✅ باز کردن بالای دکمه
+    if (spaceAbove > pickerHeight + 20) {
+        top = btnRect.top - pickerHeight - 10;
+    }
+    // ✅ باز کردن پایین دکمه
+    else if (spaceBelow > pickerHeight + 20) {
+        top = btnRect.bottom + 10;
+    }
+    // ✅ وسط صفحه
+    else {
+        top = Math.max(20, (window.innerHeight - pickerHeight) / 2);
     }
 
-    try {
-        showUploadProgress('پیام صوتی');
+    // ✅ تراز راست (RTL)
+    left = btnRect.right - pickerWidth;
 
-        const audioFile = new File([audioBlob], `voice_${Date.now()}.webm`, {
-            type: 'audio/webm'
+    // ✅ محدودیت‌ها
+    left = Math.max(10, Math.min(left, window.innerWidth - pickerWidth - 10));
+    top = Math.max(10, Math.min(top, window.innerHeight - pickerHeight - 10));
+
+    pickerEl.style.top = `${top}px`;
+    pickerEl.style.left = `${left}px`;
+
+    console.log('📍 Adjusted Emoji Picker:', { top, left, pickerHeight });
+}
+
+
+
+
+
+function openImagePreview(url) {
+    const modal = document.createElement('div');
+    modal.className = 'image-preview-modal';
+    modal.innerHTML = `
+        <div class="image-preview-overlay">
+            <button class="close-preview" onclick="closeImagePreview(); event.stopPropagation()">✕</button>
+            
+            <!-- ✅ دکمه اسکرول به بالا -->
+            <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop(); event.stopPropagation()" style="display: none;">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            <div class="image-preview-container" id="imageContainer">
+                <img id="previewImage" src="${url}" alt="Preview">
+            </div>
+            
+            <div class="image-preview-controls">
+                <div class="zoom-control">
+                    <i class="fas fa-search-minus"></i>
+                    <input type="range" 
+                           id="zoomSlider" 
+                           min="100" 
+                           max="300" 
+                           value="100" 
+                           step="10"
+                           oninput="updateZoom(this.value)">
+                    <i class="fas fa-search-plus"></i>
+                    <span id="zoomValue">100%</span>
+                </div>
+                <a href="${url}" download class="download-btn" onclick="event.stopPropagation()">
+                    <i class="fas fa-download"></i> دانلود
+                </a>
+                <button class="reset-zoom-btn" onclick="resetZoom(); event.stopPropagation()">
+                    <i class="fas fa-undo"></i> بازنشانی
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    currentPreviewImage = document.getElementById('previewImage');
+
+    // ✅ نمایش دکمه scroll وقتی اسکرول می‌شود
+    const container = document.getElementById('imageContainer');
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+    if (container && scrollTopBtn) {
+        container.addEventListener('scroll', function () {
+            if (this.scrollTop > 100) {
+                scrollTopBtn.style.display = 'flex';
+            } else {
+                scrollTopBtn.style.display = 'none';
+            }
         });
+    }
 
-        const formData = new FormData();
-        formData.append('file', audioFile);
-        formData.append('duration', duration);
-        formData.append('caption', '🎤 پیام صوتی');
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+}
 
-        const response = await fetch('/api/File/upload', {
-            method: 'POST',
-            headers: {
-                'RequestVerificationToken': getCsrfToken()
-            },
-            body: formData
+function scrollToTop() {
+    const container = document.getElementById('imageContainer');
+    if (container) {
+        container.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
         });
-
-        if (!response.ok) throw new Error('Upload failed');
-
-        const result = await response.json();
-
-        if (result.success) {
-            await sendFileMessage(result.file, result.caption || '🎤 پیام صوتی');
-            hideUploadProgress();
-        } else {
-            alert(result.message || 'خطا در آپلود');
-            hideUploadProgress();
-        }
-    } catch (error) {
-        console.error('❌ Voice error:', error);
-        alert('خطا در ارسال پیام صوتی');
-        hideUploadProgress();
     }
 }
+
+function closeImagePreview() {
+    const modal = document.querySelector('.image-preview-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = 'auto';
+            currentPreviewImage = null;
+        }, 300);
+    }
+}
+
+function updateZoom(value) {
+    if (!currentPreviewImage) return;
+
+    const scale = value / 100;
+    const container = document.getElementById('imageContainer');
+
+    // ✅ ذخیره موقعیت فعلی scroll
+    const scrollTopBefore = container ? container.scrollTop : 0;
+    const scrollLeftBefore = container ? container.scrollLeft : 0;
+
+    currentPreviewImage.style.transform = `scale(${scale})`;
+
+    const zoomValueEl = document.getElementById('zoomValue');
+    if (zoomValueEl) {
+        zoomValueEl.textContent = `${value}%`;
+    }
+
+    // ✅ اگر Zoom شد، اسکرول را تنظیم کن
+    if (container && scale > 1) {
+        setTimeout(() => {
+            // نگه داشتن نسبت scroll
+            container.scrollTop = scrollTopBefore * (scale / (scale - 0.1));
+            container.scrollLeft = scrollLeftBefore;
+        }, 50);
+    }
+
+    console.log('🔍 Zoom:', value + '%');
+}
+
+function resetZoom() {
+    const slider = document.getElementById('zoomSlider');
+    const container = document.getElementById('imageContainer');
+
+    if (slider) {
+        slider.value = 100;
+        updateZoom(100);
+    }
+
+    // ✅ اسکرول به بالا
+    if (container) {
+        container.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
+        });
+    }
+}
+
+// ✅ بستن با ESC
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        closeImagePreview();
+    }
+});

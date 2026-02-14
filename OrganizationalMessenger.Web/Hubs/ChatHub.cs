@@ -103,7 +103,7 @@ namespace OrganizationalMessenger.Web.Hubs
                     Content = messageText,
                     MessageText = messageText,
                     Type = MessageType.Text,
-                    SentAt = DateTime.Now, // ✅ تاریخ میلادی
+                    SentAt = DateTime.UtcNow, // ✅ UTC
                     IsDelivered = false,
                     ReplyToMessageId = replyToMessageId
                 };
@@ -124,7 +124,7 @@ namespace OrganizationalMessenger.Web.Hubs
                     content = message.Content,
                     messageText = message.MessageText,
                     type = message.Type,
-                    sentAt = message.SentAt.ToString("o"), // ✅ فرمت ISO 8601
+                    sentAt = message.SentAt.ToString("o"), // ✅ ISO 8601
                     isDelivered = false,
                     isRead = false,
                     isEdited = false,
@@ -136,14 +136,10 @@ namespace OrganizationalMessenger.Web.Hubs
                     attachments = new List<object>()
                 };
 
-                // ارسال به گیرنده
+                Console.WriteLine($"✅ Message {message.Id} - SentAt: {messageDto.sentAt}");
+
                 await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", messageDto);
-
-                // ارسال به فرستنده
                 await Clients.Caller.SendAsync("MessageSent", messageDto);
-
-                Console.WriteLine($"✅ Private message sent: {message.Id} from {senderId} to {receiverId}");
-                Console.WriteLine($"📅 SentAt: {message.SentAt:o}"); // ✅ لاگ تاریخ
             }
             catch (Exception ex)
             {
@@ -151,7 +147,6 @@ namespace OrganizationalMessenger.Web.Hubs
                 await Clients.Caller.SendAsync("Error", "خطا در ارسال پیام");
             }
         }
-
 
         // ✅ تأیید Delivered از Frontend
         public async Task ConfirmDelivery(long messageId)
@@ -322,6 +317,11 @@ namespace OrganizationalMessenger.Web.Hubs
                     return;
                 }
 
+                // ✅ تبدیل به UTC اگر Local است
+                var sentAtUtc = message.SentAt.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(message.SentAt, DateTimeKind.Utc)
+                    : message.SentAt.ToUniversalTime();
+
                 var messageDto = new
                 {
                     id = message.Id,
@@ -331,11 +331,11 @@ namespace OrganizationalMessenger.Web.Hubs
                     content = message.Content,
                     messageText = message.MessageText,
                     type = message.Type,
-                    sentAt = message.SentAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    sentAt = sentAtUtc.ToString("o"), // ✅ ISO 8601 با "o"
                     isDelivered = false,
                     isRead = false,
-                    isEdited = message.IsEdited,  // ✅ اضافه کنید
-                    editedAt = message.EditedAt,  // ✅ اضافه کنید
+                    isEdited = message.IsEdited,
+                    editedAt = message.EditedAt,
                     chatId = receiverId,
                     attachments = new[]
                     {
@@ -350,10 +350,15 @@ namespace OrganizationalMessenger.Web.Hubs
                     extension = file.Extension,
                     readableSize = file.ReadableFileSize,
                     width = file.Width,
-                    height = file.Height
+                    height = file.Height,
+                    duration = file.Duration,
+                    readableDuration = file.ReadableDuration
                 }
             }
                 };
+
+                Console.WriteLine($"✅ Message {message.Id} - SentAt (Local): {message.SentAt}");
+                Console.WriteLine($"✅ Message {message.Id} - SentAt (UTC): {messageDto.sentAt}");
 
                 // تأیید برای فرستنده
                 await Clients.Caller.SendAsync("MessageSent", messageDto);
@@ -382,8 +387,6 @@ namespace OrganizationalMessenger.Web.Hubs
                 _logger.LogError(ex, $"❌ SendPrivateMessageWithFile error: {ex.Message}");
             }
         }
-
-
         // ✅ اطلاع‌رسانی ویرایش پیام
         // ✅ اطلاع‌رسانی ویرایش پیام
         public async Task NotifyMessageEdited(int messageId, string newContent, DateTime editedAt)
