@@ -57,6 +57,7 @@
         public const string MessageDeleteAfterRead = "Message.DeleteAfterRead";
         public const string AdminCanDeleteMessages = "Message.AdminCanDelete";
         public const string EncryptionEnabled = "Message.EncryptionEnabled";
+        public const string ShowDeletedMessageNotice = "Message.ShowDeletedMessageNotice ";
 
         // گروه و کانال
         public const string AllUsersCanCreateGroup = "Group.AllCanCreate";

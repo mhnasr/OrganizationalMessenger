@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrganizationalMessenger.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using OrganizationalMessenger.Infrastructure.Data;
 namespace OrganizationalMessenger.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260213121527_AddDeletedFieldsToMessage")]
+    partial class AddDeletedFieldsToMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,12 +77,12 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 697, DateTimeKind.Local).AddTicks(5634),
+                            CreatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 664, DateTimeKind.Local).AddTicks(1041),
                             Email = "admin@company.com",
                             FirstName = "مدیر",
                             IsActive = true,
                             LastName = "سیستم",
-                            PasswordHash = "$2a$11$OsGP0yI.judOh0aBnGLYMOLgcEvOm6R5jhm.ir4oCV4L8Stts7RF6",
+                            PasswordHash = "$2a$11$R7gC3VDjPOrYFBE8IgjXXu/ssUNR3u/7uNYuqRPn8OVZ1VeSgjLDq",
                             Username = "admin"
                         });
                 });
@@ -714,9 +717,6 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                     b.Property<int?>("ForwardedFromMessageId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ForwardedFromUserId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("GroupId")
                         .HasColumnType("int");
 
@@ -762,8 +762,6 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("ForwardedFromMessageId");
-
-                    b.HasIndex("ForwardedFromUserId");
 
                     b.HasIndex("GroupId");
 
@@ -1270,7 +1268,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "نوع احراز هویت: Database, ActiveDirectory, ERP",
                             Key = "AuthenticationType",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8131),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7031),
                             Value = "Database"
                         },
                         new
@@ -1279,7 +1277,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آیا کاربران می‌توانند گروه ایجاد کنند",
                             Key = "AllowUserGroupCreation",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8148),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7045),
                             Value = "true"
                         },
                         new
@@ -1288,7 +1286,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آیا کاربران می‌توانند کانال ایجاد کنند",
                             Key = "AllowUserChannelCreation",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8150),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7047),
                             Value = "true"
                         },
                         new
@@ -1297,7 +1295,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان مجاز ویرایش پیام (ثانیه)",
                             Key = "MessageEditTimeLimit",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8151),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7048),
                             Value = "3600"
                         },
                         new
@@ -1306,7 +1304,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان مجاز حذف پیام (ثانیه)",
                             Key = "MessageDeleteTimeLimit",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8152),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7049),
                             Value = "7200"
                         },
                         new
@@ -1315,7 +1313,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "فعال بودن تماس VoIP",
                             Key = "VoipEnabled",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8153),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7050),
                             Value = "true"
                         },
                         new
@@ -1324,7 +1322,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "فعال بودن یکپارچگی تلگرام",
                             Key = "TelegramIntegrationEnabled",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8155),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7051),
                             Value = "false"
                         },
                         new
@@ -1333,7 +1331,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "حداکثر تعداد اعضای گروه",
                             Key = "MaxGroupMembers",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8156),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7052),
                             Value = "200"
                         },
                         new
@@ -1342,7 +1340,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان انقضای کد OTP (دقیقه)",
                             Key = "OtpExpiryMinutes",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8157),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7053),
                             Value = "5"
                         },
                         new
@@ -1351,7 +1349,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "نام سازمان",
                             Key = "CompanyName",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8158),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7054),
                             Value = "سازمان"
                         },
                         new
@@ -1360,7 +1358,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آدرس لوگوی سازمان",
                             Key = "CompanyLogoUrl",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8159),
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7055),
                             Value = "/images/logo.png"
                         });
                 });
@@ -1865,10 +1863,6 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                         .HasForeignKey("ForwardedFromMessageId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "ForwardedFromUser")
-                        .WithMany()
-                        .HasForeignKey("ForwardedFromUserId");
-
                     b.HasOne("OrganizationalMessenger.Domain.Entities.Group", "Group")
                         .WithMany("Messages")
                         .HasForeignKey("GroupId")
@@ -1895,8 +1889,6 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                     b.Navigation("Channel");
 
                     b.Navigation("ForwardedFromMessage");
-
-                    b.Navigation("ForwardedFromUser");
 
                     b.Navigation("Group");
 

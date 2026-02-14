@@ -7,7 +7,7 @@ namespace OrganizationalMessenger.Domain.Entities
         // فرستنده و گیرنده
         public int SenderId { get; set; }
         public int? ReceiverId { get; set; } // برای پیام خصوصی
-
+         
         // گروه یا کانال
         public int? GroupId { get; set; }
         public int? ChannelId { get; set; }
@@ -26,6 +26,7 @@ namespace OrganizationalMessenger.Domain.Entities
         public string? AttachmentType { get; set; }
         public long? AttachmentSize { get; set; }
 
+
         // زمان‌ها
         public DateTime SentAt { get; set; } = DateTime.Now; // ⭐ اضافه شد
         public DateTime? DeliveredAt { get; set; }
@@ -35,9 +36,26 @@ namespace OrganizationalMessenger.Domain.Entities
         public bool IsEdited { get; set; } = false;
         public DateTime? EditedAt { get; set; }
 
+
+        public bool IsDeleted { get; set; } = false;  // ✅ اضافه کنید
+        public DateTime? DeletedAt { get; set; }      // ✅ اضافه کنید
+        public int? DeletedByUserId { get; set; }     // ✅ اختیاری: چه کسی حذف کرده
+
+
         // Reply و Forward
         public int? ReplyToMessageId { get; set; }
         public int? ForwardedFromMessageId { get; set; }
+
+
+
+        
+
+        // ✅ Forward
+        public int? ForwardedFromUserId { get; set; }  // فرستنده اصلی
+        public Message? ForwardedFromMessage { get; set; }  // Navigation
+        public User? ForwardedFromUser { get; set; }  // Navigation
+
+
 
         // تماس مرتبط
         public int? CallId { get; set; }
@@ -51,7 +69,6 @@ namespace OrganizationalMessenger.Domain.Entities
         public Group? Group { get; set; }
         public Channel? Channel { get; set; }
         public Message? ReplyToMessage { get; set; }
-        public Message? ForwardedFromMessage { get; set; }
         public Call? Call { get; set; }
 
         public ICollection<Message> Replies { get; set; } = new List<Message>();

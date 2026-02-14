@@ -8,7 +8,9 @@
     @Html.AntiForgeryToken()
 </form>
 
-<input type="hidden" name="currentUserId" value="@(((dynamic)ViewBag.CurrentUser)?.Id ?? 0)" />
+<input type="hidden" id="currentUserId" value="@ViewBag.CurrentUser.Id" />
+
+
 
 <div class="chat-container">
     <!-- Sidebar - لیست چتها -->
@@ -22,12 +24,13 @@
                 <span class="user-name">@(((dynamic)ViewBag.CurrentUser)?.FullName ?? "کاربر")</span>
                 <img src="@ViewBag.CurrentUser.AvatarUrl" class="logo">
                 <!-- دکمه خروج زیبا -->
-                <form asp-action="SignOut" asp-controller="Account" method="post" class="logout-form">
+                <form asp-action="SignOut" asp-controller="Chat" method="post" class="logout-form">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="logout-btn" title="خروج">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </form>
+
             </div>
         </div>
 
@@ -70,25 +73,40 @@
         </div>
 
         <!-- Message Input -->
-        <div class="message-input-area" id="messageInputArea">
-            <div class="input-actions">
-                <button id="micBtn" title="پیام صوتی">
+        <!-- در message-input-area -->
+        <!-- Message Input -->
+        <div id="replyPreviewContainer"></div>
+        <div class="message-input-area" id="messageInputArea" style="display: none;">
+            <!-- ✅ Reply Preview -->
+            
+
+            <!-- ✅ Input Actions -->
+            <div class="input-wrapper">
+                <button id="micBtn" class="input-btn" title="پیام صوتی">
                     <i class="fas fa-microphone"></i>
                 </button>
-                <input type="text" id="messageInput" placeholder="پیام خود را بنویسید...">
-                <button id="attachBtn" title="فایل الحاق کنید">
+
+                <textarea id="messageInput"
+                          class="message-textarea"
+                          placeholder="پیام خود را بنویسید... (Shift+Enter برای خط جدید)"
+                          rows="1"></textarea>
+
+                <input type="file" id="fileInput" style="display:none">
+
+                <button id="attachBtn" class="input-btn" title="فایل ضمیمه کنید">
                     <i class="fas fa-paperclip"></i>
                 </button>
-                <button id="emojiBtn" title="ایموجی">
-                    <i class="fas fa-smile"></i>
-                </button>
-                <button id="sendBtn" title="ارسال">
+
+                <button id="emojiBtn" class="input-btn" title="ایموجی">😀</button>
+
+                <button id="sendBtn" class="input-btn send-btn" title="��رسال">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
         </div>
     </div>
 </div>
+<div id="emojiPickerContainer" style="display:none;"></div>
 
 <!-- Bottom Navigation -->
 <nav class="bottom-nav">
@@ -114,539 +132,16 @@
     </button>
 </nav>
 
-<style>
-    /* Chat Container */
-    .chat-container {
-        display: flex;
-        height: calc(100vh - 70px); /* ارتفاع bottom-nav کم شد */
-        background: #f5f5f5;
-        position: relative;
-    }
 
-    .chat-sidebar {
-        width: 300px;
-        background: #fff;
-        border-left: 1px solid #e0e0e0;
-        display: flex;
-        flex-direction: column;
-        box-shadow: -2px 0 10px rgba(0,0,0,0.05);
-    }
+<script>
+    // ✅ اول currentUserId رو درست بگیر
+    const currentUserId = parseInt(document.getElementById('currentUserId')?.value || '0');
+    console.log('Current User ID:', currentUserId); // ❌ چک کن console
+</script>
 
-    .chat-main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        background: #fff;
-        position: relative;
-    }
 
-    /* Header */
-    .chat-header {
-        padding: 12px 15px;
-        border-bottom: 1px solid #e0e0e0;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        height: 56px; /* ارتفاع ثابت */
-    }
 
-    .search-box {
-        flex: 1;
-        position: relative;
-    }
-
-        .search-box input {
-            width: 100%;
-            padding: 8px 10px 8px 35px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        .search-box i {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .user-name {
-        font-size: 13px;
-        font-weight: 500;
-        color: #2d3748;
-        max-width: 80px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        display: none; /* موبایل مخفی */
-    }
-
-    .logout-form {
-        margin: 0;
-        display: inline-block;
-    }
-
-    .logout-btn {
-        background: #ff6b6b;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        cursor: pointer;
-        font-size: 12px;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-        .logout-btn:hover {
-            background: #ff5252;
-            transform: scale(1.05);
-        }
-
-    /* Tabs */
-    .chat-tabs {
-        display: flex;
-        border-bottom: 1px solid #e0e0e0;
-        padding: 0 5px;
-        height: 48px;
-    }
-
-    .tab-btn {
-        flex: 1;
-        padding: 12px 8px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #999;
-        font-weight: 500;
-        font-size: 13px;
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s;
-    }
-
-        .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-    /* Chat List */
-    .chat-list {
-        flex: 1;
-        overflow-y: auto;
-    }
-
-    .chat-item {
-        padding: 12px 15px;
-        border-bottom: 1px solid #f0f0f0;
-        cursor: pointer;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        transition: background 0.3s;
-    }
-
-        .chat-item:hover {
-            background: #f9f9f9;
-        }
-
-        .chat-item.active {
-            background: #f0f4ff;
-            border-right: 4px solid #667eea;
-        }
-
-    .chat-avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        object-fit: cover;
-        position: relative;
-    }
-
-        .chat-avatar.online::after {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: #4caf50;
-            border-radius: 50%;
-            bottom: 0;
-            right: 0;
-            border: 2px solid #fff;
-        }
-
-    .chat-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .chat-name {
-        font-weight: 600;
-        color: #2d3748;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .chat-preview {
-        font-size: 13px;
-        color: #a0aec0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .chat-time {
-        font-size: 12px;
-        color: #cbd5e0;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-
-    .chat-badge {
-        background: #f56565;
-        color: #fff;
-        border-radius: 12px;
-        width: 22px;
-        height: 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-
-    /* Chat Top Header - اصلاح شده */
-    .chat-top-header {
-        padding: 12px 16px; /* ارتفاع کم شد */
-        border-bottom: 1px solid #e0e0e0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #fff;
-        height: 56px; /* ارتفاع ثابت */
-        flex-shrink: 0;
-    }
-
-    .chat-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    #chatTitle {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 16px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* دکمه‌های تماس در یک خط */
-    .chat-actions {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-        .chat-actions button {
-            background: none;
-            border: none;
-            color: #667eea;
-            cursor: pointer;
-            padding: 8px;
-            font-size: 18px;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-            .chat-actions button:hover {
-                background: rgba(102, 126, 234, 0.1);
-                transform: scale(1.05);
-            }
-
-    /* Messages Container */
-    .messages-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .empty-state {
-        margin: auto;
-        color: #a0aec0;
-        text-align: center;
-        font-size: 15px;
-    }
-
-    /* Message Input Area - ثابت در پایین */
-    .message-input-area {
-        padding: 12px 16px;
-        border-top: 1px solid #e0e0e0;
-        background: #fff;
-        flex-shrink: 0; /* مهم: کوچک نمیشه */
-        height: 64px; /* ارتفاع ثابت */
-        display: flex;
-        align-items: flex-end;
-    }
-
-    .input-actions {
-        flex: 1;
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-        .input-actions input {
-            flex: 1;
-            border: 1px solid #e0e0e0;
-            border-radius: 24px;
-            padding: 12px 16px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-            height: 44px;
-        }
-
-            .input-actions input:focus {
-                border-color: #667eea;
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            }
-
-        .input-actions button {
-            background: none;
-            border: none;
-            color: #667eea;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 8px;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-            .input-actions button:hover {
-                background: rgba(102, 126, 234, 0.1);
-                transform: scale(1.05);
-            }
-
-    /* Bottom Navigation */
-    .bottom-nav {
-        display: flex;
-        border-top: 1px solid #e0e0e0;
-        background: #fff;
-        justify-content: space-around;
-        padding: 8px 0;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        height: 70px;
-    }
-
-    .nav-btn {
-        flex: 1;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 8px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        color: #a0aec0;
-        font-size: 12px;
-        transition: color 0.3s;
-    }
-
-        .nav-btn.active,
-        .nav-btn:hover {
-            color: #667eea;
-        }
-
-    /* Messages */
-    .message {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 4px;
-        animation: slideIn 0.3s ease;
-    }
-
-    @@keyframes slideIn {
-        from
-
-    {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    }
-
-    .message.sent {
-        justify-content: flex-start;
-    }
-
-    .message.received {
-        justify-content: flex-end;
-    }
-
-    .message-bubble {
-        max-width: 70%;
-        padding: 10px 14px;
-        border-radius: 18px;
-        word-wrap: break-word;
-        position: relative;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-
-    .message.sent .message-bubble {
-        background: #e8f5ff;
-        color: #1a365d;
-        border-radius: 18px 18px 18px 5px;
-    }
-
-    .message.received .message-bubble {
-        background: #f0f0f0;
-        color: #2d3748;
-        border-radius: 18px 18px 5px 18px;
-    }
-
-    .message-time {
-        font-size: 11px;
-        color: #a0aec0;
-        margin-top: 4px;
-        text-align: right;
-    }
-
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .chat-container
-
-    {
-        flex-direction: column;
-        height: calc(100vh - 70px);
-    }
-
-    .chat-sidebar {
-        width: 100%;
-        height: 50vh;
-        order: 2;
-    }
-
-    .chat-main {
-        order: 1;
-        flex: none;
-        height: 50vh;
-    }
-
-    .user-name {
-        display: none;
-    }
-
-    .chat-header {
-        padding: 10px;
-    }
-
-    }
-
-    .chat-badge {
-        background: #ff4444;
-        color: white;
-        border-radius: 12px;
-        padding: 4px 8px;
-        font-size: 12px;
-        font-weight: bold;
-        min-width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 8px;
-    }
-
-        .chat-badge.overflow {
-            min-width: 24px;
-        }
-
-    .notification-toast {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 16px 20px;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        z-index: 10000;
-        max-width: 300px;
-        animation: slideIn 0.3s ease;
-    }
-
-    @@keyframes slideIn {
-        from
-
-    {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-
-    }
-
-
-    .chat-preview.message-sent {
-        color: #00a884; /* سبز واتساپ */
-        font-weight: 500;
-    }
-
-    .chat-preview.message-received {
-        color: #667781; /* خاکستری */
-    }
-
-
-
-
-</style>
+<link href="~/css/chat..css" rel="stylesheet" />
 
 <!-- SignalR Client -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>

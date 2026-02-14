@@ -29,6 +29,10 @@ namespace OrganizationalMessenger.Web.Areas.Admin.Models
         [Display(Name = "نام خانوادگی")]
         public string LastName { get; set; }
 
+
+        public string? AvatarUrl { get; set; }       // برای نمایش فعلی
+        public IFormFile? AvatarFile { get; set; }   // فایل جدید 
+
         [Required(ErrorMessage = "شماره موبایل الزامی است")]
         [Phone(ErrorMessage = "فرمت شماره موبایل صحیح نیست")]
         [Display(Name = "شماره موبایل")]
@@ -85,6 +89,10 @@ namespace OrganizationalMessenger.Web.Areas.Admin.Models
         [Phone(ErrorMessage = "فرمت شماره موبایل صحیح نیست")]
         [Display(Name = "شماره موبایل")]
         public string PhoneNumber { get; set; }
+
+        public string? AvatarUrl { get; set; }       // برای نمایش فعلی
+        public IFormFile? AvatarFile { get; set; }   // فایل جدید
+
 
         [EmailAddress(ErrorMessage = "فرمت ایمیل صحیح نیست")]
         [Display(Name = "ایمیل")]

@@ -153,6 +153,12 @@ namespace OrganizationalMessenger.Web.Areas.Admin.Models
         [Display(Name = "امکان حذف پیام")]
         public bool MessageDeleteEnabled { get; set; } = true;
 
+
+        [Display(Name = "باقی مانده اثر حذف پیام")]
+        public bool ShowDeletedMessageNotice { get; set; } = true;
+
+
+
         [Display(Name = "مهلت ویرایش پیام (دقیقه)")]
         [Range(0, 1440)]
         public int MessageEditTimeLimit { get; set; } = 15;
