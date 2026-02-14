@@ -2305,6 +2305,83 @@
 }
 
 /* ============================================
+   Voice Recording
+============================================ */
+.recording-timer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    animation: slideDown 0.3s ease;
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.recording-pulse {
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+.recording-time {
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.recording-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.recording-cancel-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+    .recording-cancel-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+.recording-hint {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+#micBtn.recording {
+    background: #ff6b6b !important;
+    animation: recordingPulse 1s infinite;
+}
+
+@keyframes recordingPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+    }
+}
+
+/* ============================================
    Voice Player - واتساپ استایل
 ============================================ */
 .voice-message {
@@ -2314,23 +2391,23 @@
     padding: 10px 12px !important;
     background: transparent !important;
     border-radius: 12px;
-    max-width: 280px;
-    min-width: 200px;
+    max-width: 300px;
+    min-width: 220px;
 }
 
 .message.sent .voice-message {
-    background: rgba(255, 255, 255, 0.12) !important;
+    background: rgba(102, 126, 234, 0.15) !important;
 }
 
 .message.received .voice-message {
     background: white !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .voice-play-btn {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
     border-radius: 50%;
     background: var(--primary-color);
     color: white;
@@ -2339,13 +2416,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 16px;
     transition: all 0.2s;
     flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
     .voice-play-btn:hover {
-        transform: scale(1.05);
+        transform: scale(1.08);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
     }
 
     .voice-play-btn.playing {
@@ -2360,84 +2439,92 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     min-width: 0;
 }
 
-/* ✅ Progress Container - بزرگ‌تر و واضح‌تر */
+/* ✅ Progress Container - بزرگ و واضح */
 .voice-progress-container {
     width: 100%;
     cursor: pointer;
-    padding: 6px 0;
+    padding: 8px 0;
+    position: relative;
 }
 
 .voice-progress-bar {
     width: 100%;
-    height: 5px; /* ✅ از 3px به 5px */
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: 3px;
+    height: 6px; /* ✅ از 5px به 6px */
+    background: #e0e0e0; /* ✅ رنگ خاکستری روشن */
+    border-radius: 4px;
     position: relative;
     overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .message.sent .voice-progress-bar {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.4); /* ✅ سفید کم‌رنگ */
 }
 
 .voice-progress-fill {
     height: 100%;
-    background: var(--primary-color);
-    border-radius: 3px;
+    background: var(--primary-color); /* ✅ آبی */
+    border-radius: 4px;
     width: 0%;
     transition: width 0.1s linear;
+    box-shadow: 0 0 4px rgba(102, 126, 234, 0.5);
 }
 
 .message.sent .voice-progress-fill {
-    background: white;
+    background: white; /* ✅ سفید */
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
 }
 
-/* ✅ Meta - بهتر */
+/* ✅ Meta - واضح‌تر */
 .voice-meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 11px;
-    margin-top: 2px;
+    font-size: 12px;
+    padding: 0 2px;
 }
 
 .voice-duration {
     font-family: 'Courier New', monospace;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #555;
+    letter-spacing: 0.5px;
 }
 
 .message.sent .voice-duration {
-    color: rgba(255, 255, 255, 0.85);
+    color: #333;
 }
 
 .voice-speed {
-    background: rgba(102, 126, 234, 0.15);
+    background: rgba(102, 126, 234, 0.2);
     color: var(--primary-color);
-    border: none;
-    padding: 3px 8px;
-    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    padding: 4px 10px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     transition: all 0.2s;
     line-height: 1.2;
 }
 
     .voice-speed:hover {
-        background: rgba(102, 126, 234, 0.25);
-        transform: scale(1.05);
+        background: rgba(102, 126, 234, 0.3);
+        transform: scale(1.08);
+        border-color: rgba(102, 126, 234, 0.5);
     }
 
 .message.sent .voice-speed {
-    background: rgba(255, 255, 255, 0.25);
-    color: white;
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #333;
 }
 
     .message.sent .voice-speed:hover {
-        background: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.5);
+        border-color: rgba(255, 255, 255, 0.6);
     }
