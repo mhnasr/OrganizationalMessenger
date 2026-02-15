@@ -1,0 +1,61 @@
+﻿/* ============================================
+   Utilities - Helper Classes & Components
+============================================ */
+.unread-separator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+    padding: 0 16px;
+    animation: slideInSeparator 0.4s ease;
+}
+
+.unread-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff6b6b, transparent);
+    opacity: 0.6;
+}
+
+.unread-label {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 16px;
+    color: #999;
+    font-size: 13px;
+    animation: pulse 1.5s infinite;
+}
+
+.upload-progress {
+    padding: 16px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.upload-progress-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    color: var(--primary-color);
+    font-size: 14px;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}

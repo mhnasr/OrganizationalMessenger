@@ -1,0 +1,107 @@
+﻿/* ============================================
+   File Attachments - Images, Videos, Documents
+============================================ */
+.message-file {
+    margin-bottom: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+    .message-file.image-file {
+        max-width: 300px;
+    }
+
+        .message-file.image-file img {
+            width: 100%;
+            display: block;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+    .message-file.document-file {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #f5f5f5;
+        border-radius: 12px;
+        max-width: 350px;
+    }
+
+    .message-file i {
+        font-size: 22px;
+        color: #000416;
+    }
+
+.file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-size {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.file-download-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.message-file .file-download-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+}
+
+.message-file.document-file .file-download-btn,
+.message-file.audio-file .file-download-btn {
+    position: static;
+}
+
+.file-download-btn:hover {
+    background: var(--primary-hover);
+    transform: scale(1.1);
+}
+
+.message-file.video-file {
+    max-width: 400px;
+}
+
+    .message-file.video-file video {
+        display: block;
+        width: 100%;
+        border-radius: 12px;
+        background: #000;
+    }
+
+.message-file.audio-file {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: #f5f5f5;
+    border-radius: 12px;
+    max-width: 350px;
+}

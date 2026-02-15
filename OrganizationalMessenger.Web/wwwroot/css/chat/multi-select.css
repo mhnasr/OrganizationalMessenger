@@ -1,0 +1,92 @@
+﻿/* ============================================
+   Multi-Select Mode - Checkbox Selection
+============================================ */
+.message-checkbox {
+    position: absolute;
+    top: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+.message.sent .message-checkbox {
+    left: 8px;
+}
+
+.message.received .message-checkbox {
+    right: 8px;
+}
+
+.message-checkbox i {
+    font-size: 20px;
+    color: #999;
+}
+
+.message-checkbox.selected i {
+    color: var(--primary-color);
+}
+
+.message-checkbox:hover {
+    transform: scale(1.1);
+}
+
+.multi-select-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease;
+}
+
+.toolbar-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+    .toolbar-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .toolbar-btn.primary {
+        background: white;
+        color: var(--primary-color);
+    }
+
+        .toolbar-btn.primary:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+    .toolbar-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+.selected-count {
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+}

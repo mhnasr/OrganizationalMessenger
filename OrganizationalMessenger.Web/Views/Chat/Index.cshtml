@@ -1,6 +1,6 @@
-﻿@{
-    ViewData["Title"] = "چت";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+﻿﻿@{
+ViewData["Title"] = "چت";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <!-- Anti-forgery token -->
@@ -78,8 +78,6 @@
         <div id="replyPreviewContainer"></div>
         <div class="message-input-area" id="messageInputArea" style="display: none;">
             <!-- ✅ Reply Preview -->
-            
-
             <!-- ✅ Input Actions -->
             <div class="input-wrapper">
                 <button id="micBtn" class="input-btn" title="پیام صوتی">
@@ -146,4 +144,5 @@
 <!-- SignalR Client -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 
-<script src="~/js/chat.js"></script>
+@* <script src="~/js/chat1.js"></script> *@
+<script type="module" src="/js/chat.js"></script>

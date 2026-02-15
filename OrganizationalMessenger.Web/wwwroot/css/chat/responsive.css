@@ -1,0 +1,71 @@
+﻿body {
+}
+/* ============================================
+   Responsive Design - Mobile & Tablet
+============================================ */
+@media (max-width: 768px) {
+    .chat-container {
+        flex-direction: column;
+        height: calc(100vh - 70px);
+    }
+
+    .chat-sidebar {
+        width: 100%;
+        height: 50vh;
+        order: 2;
+    }
+
+    .chat-main {
+        order: 1;
+        flex: none;
+        height: 50vh;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .chat-header {
+        padding: 10px;
+    }
+
+    .mx_ContextualMenu {
+        width: 300px;
+        max-height: 350px;
+    }
+
+    .forward-dialog,
+    .caption-dialog,
+    .edit-dialog {
+        max-width: 95%;
+    }
+
+    .image-preview-controls {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 15px;
+    }
+
+    .zoom-control {
+        width: 100%;
+    }
+
+    #zoomSlider {
+        width: 100%;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .unread-badge {
+        background: linear-gradient(135deg, #ff8a80, #ff5252);
+        box-shadow: 0 2px 8px rgba(255, 138, 128, 0.5);
+    }
+
+    .unread-label {
+        background: linear-gradient(135deg, #ff8a80, #ff5252);
+    }
+
+    .unread-line {
+        background: linear-gradient(90deg, transparent, #ff8a80, transparent);
+    }
+}

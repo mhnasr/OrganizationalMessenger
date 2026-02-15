@@ -1,0 +1,219 @@
+﻿/* ============================================
+   Dialogs - Edit, Delete, Caption
+============================================ */
+.caption-dialog-overlay,
+.edit-dialog-overlay,
+.confirm-dialog-overlay,
+.forward-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.caption-dialog,
+.edit-dialog,
+.confirm-dialog,
+.forward-dialog {
+    background: white;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+}
+
+.confirm-dialog {
+    max-width: 400px;
+}
+
+.caption-dialog-header,
+.edit-dialog-header,
+.confirm-dialog-header,
+.forward-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+    .caption-dialog-header h3,
+    .edit-dialog-header h3,
+    .confirm-dialog-header h3,
+    .forward-dialog-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: var(--text-primary);
+    }
+
+.close-dialog {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+    .close-dialog:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+.caption-dialog-body,
+.edit-dialog-body,
+.confirm-dialog-body,
+.forward-dialog-body {
+    padding: 24px;
+}
+
+.forward-dialog-body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+.file-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    max-height: 300px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f5f5f5;
+}
+
+.file-preview-image {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+.file-preview-video {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 12px;
+}
+
+.file-preview-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    color: #667eea;
+}
+
+    .file-preview-icon p {
+        margin-top: 16px;
+        font-weight: 500;
+        color: #2d3748;
+        text-align: center;
+    }
+
+.file-info-caption {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
+.caption-input,
+.edit-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+    transition: border-color 0.3s;
+}
+
+.edit-input {
+    min-height: 100px;
+}
+
+    .caption-input:focus,
+    .edit-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+.caption-dialog-footer,
+.edit-dialog-footer,
+.confirm-dialog-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-cancel,
+.btn-send,
+.btn-save,
+.btn-confirm {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+}
+
+    .btn-cancel:hover {
+        background: #e0e0e0;
+    }
+
+.btn-send,
+.btn-save {
+    background: var(--primary-color);
+    color: white;
+}
+
+    .btn-send:hover,
+    .btn-save:hover {
+        background: var(--primary-hover);
+        transform: scale(1.02);
+    }
+
+.btn-confirm {
+    background: var(--danger-color);
+    color: white;
+}
+
+    .btn-confirm:hover {
+        background: var(--danger-hover);
+        transform: scale(1.02);
+    }

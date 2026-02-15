@@ -1,0 +1,89 @@
+﻿/* ============================================
+   Input Area - Message Input & Buttons
+============================================ */
+.message-input-area {
+    display: none;
+    flex-direction: column;
+    background: white;
+    border-top: 1px solid var(--border-color);
+    padding: 0;
+    width: 100%;
+    z-index: 10;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+    .message-input-area.show {
+        display: flex !important;
+        opacity: 1;
+    }
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#messageInput,
+.message-textarea {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s;
+    min-height: 40px;
+    max-height: 120px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    line-height: 1.5;
+}
+
+    #messageInput:focus,
+    .message-textarea:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+.input-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+    .input-btn:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .input-btn.send-btn {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .input-btn.send-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+    .input-btn i {
+        pointer-events: none;
+    }

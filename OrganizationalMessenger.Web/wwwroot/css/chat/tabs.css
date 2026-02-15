@@ -1,0 +1,34 @@
+﻿/* ============================================
+   Tabs - Chat Categories
+============================================ */
+.chat-tabs {
+    display: flex;
+    border-bottom: 1px solid #e9e9e9;
+    padding: 0 8px;
+    height: 49px;
+    background: #f0f2f5;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #667781;
+    font-weight: 500;
+    font-size: 13px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+    .tab-btn:hover {
+        color: #111b21;
+        background: rgba(0, 0, 0, 0.03);
+    }
+
+    .tab-btn.active {
+        color: #00a884 !important;
+        border-bottom-color: #00a884 !important;
+    }

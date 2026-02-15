@@ -1,0 +1,132 @@
+﻿body {
+}
+/* ============================================
+   Reply - Message Reply Feature
+============================================ */
+#replyPreviewContainer {
+    width: 100%;
+}
+
+.reply-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f0f4ff;
+    border-right: 4px solid var(--primary-color);
+    border-radius: 8px 8px 0 0;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.reply-preview-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+    .reply-preview-content i {
+        color: var(--primary-color);
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+.reply-preview-thumbnail {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f0f0f0;
+}
+
+    .reply-preview-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.reply-preview-text {
+    flex: 1;
+    min-width: 0;
+}
+
+    .reply-preview-text strong {
+        font-size: 13px;
+        color: var(--primary-color);
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .reply-preview-text p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.reply-preview-close {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .reply-preview-close:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: #666;
+    }
+
+.message-reply {
+    background: rgba(102, 126, 234, 0.08);
+    border-right: 3px solid var(--primary-color);
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .message-reply:hover {
+        background: rgba(102, 126, 234, 0.12);
+    }
+
+    .message-reply i {
+        color: var(--primary-color);
+        font-size: 12px;
+        margin-left: 6px;
+    }
+
+.message-reply-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+    .message-reply-content strong {
+        font-size: 12px;
+        color: var(--primary-color);
+    }
+
+    .message-reply-content p {
+        margin: 0;
+        font-size: 13px;
+        color: #555;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
