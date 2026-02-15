@@ -109,14 +109,17 @@ export function cancelReply() {
     if (preview) preview.remove();
 }
 
+// در تابع sendMessage:
+
 export async function sendMessage() {
     const input = document.getElementById('messageInput');
     const text = input.value.trim();
 
-    if (!text || !currentChat || !connection) return;
+    // ✅ استفاده از window.connection
+    if (!text || !currentChat || !window.connection) return;
 
     if (currentChat.type === 'private') {
-        await connection.invoke("SendPrivateMessage",
+        await window.connection.invoke("SendPrivateMessage",
             currentChat.id,
             text,
             replyingToMessage ? replyingToMessage.id : null
@@ -130,7 +133,6 @@ export async function sendMessage() {
     cancelReply();
     hideTypingIndicator();
 }
-
 function hideTypingIndicator() {
     const typingEl = document.getElementById('typingIndicator');
     if (typingEl) typingEl.style.display = 'none';

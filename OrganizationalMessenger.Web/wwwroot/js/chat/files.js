@@ -156,7 +156,10 @@ async function uploadFile(file, caption = '') {
     }
 }
 
+// در تابع sendFileMessage:
+
 async function sendFileMessage(file, caption = '') {
+    // ✅ استفاده از window.connection بجای import
     if (!currentChat || !window.connection) return;
 
     const messageText = caption || `📎 ${file.originalFileName}`;
@@ -179,6 +182,7 @@ async function sendFileMessage(file, caption = '') {
 
         const result = await response.json();
         if (result.success) {
+            // ✅ استفاده از window.connection
             if (window.connection?.state === signalR.HubConnectionState.Connected) {
                 if (currentChat.type === 'private') {
                     await window.connection.invoke(
@@ -195,7 +199,6 @@ async function sendFileMessage(file, caption = '') {
         console.error('❌ Send file message error:', error);
     }
 }
-
 function getMessageType(fileType) {
     const typeMap = {
         'Image': 1,
@@ -306,6 +309,13 @@ function getFileIcon(fileType, extension) {
     return 'fas fa-file';
 }
 
-// Export to window
+
+
+// ✅ Export to window for onclick handlers
 window.closeCaptionDialog = closeCaptionDialog;
 window.sendFileWithCaption = sendFileWithCaption;
+window.openImagePreview = function (url) {
+    import('./image-preview.js').then(module => {
+        module.openImagePreview(url);
+    });
+};

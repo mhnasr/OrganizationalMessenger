@@ -359,6 +359,9 @@ export function removeUnreadSeparator() {
     }
 }
 
+
+// در تابع markMessagesAsRead:
+
 export async function markMessagesAsRead() {
     if (!currentChat?.id || currentChat.type !== 'private') return;
 
@@ -384,8 +387,9 @@ export async function markMessagesAsRead() {
             body: JSON.stringify({ messageIds: unreadReceivedIds })
         });
 
-        if (connection?.state === signalR.HubConnectionState.Connected) {
-            await connection.invoke("NotifyMessagesRead", unreadReceivedIds);
+        // ✅ استفاده از window.connection
+        if (window.connection?.state === signalR.HubConnectionState.Connected) {
+            await window.connection.invoke("NotifyMessagesRead", unreadReceivedIds);
         }
 
         removeUnreadBadge();

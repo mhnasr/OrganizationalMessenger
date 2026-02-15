@@ -9,6 +9,8 @@ import { formatPersianTime, scrollToBottom } from './utils.js';
 import { hasMoreMessages, isLoadingMessages } from './variables.js';
 import { loadMessages } from './messages.js';
 
+import { currentChat, isPageFocused } from './variables.js';
+
 export function handleReceiveMessage(data) {
     console.log('📨 ReceiveMessage:', data);
 
@@ -34,8 +36,9 @@ export function handleReceiveMessage(data) {
             }, 100);
         } else {
             setTimeout(() => {
-                if (connection?.state === signalR.HubConnectionState.Connected) {
-                    connection.invoke("ConfirmDelivery", data.id);
+                // ✅ استفاده از window.connection
+                if (window.connection?.state === signalR.HubConnectionState.Connected) {
+                    window.connection.invoke("ConfirmDelivery", data.id);
                 }
             }, 100);
         }
@@ -44,7 +47,6 @@ export function handleReceiveMessage(data) {
         showNotification(data.senderName, data.content);
     }
 }
-
 export function handleMessageSent(data) {
     console.log('✅ MessageSent received:', data);
 

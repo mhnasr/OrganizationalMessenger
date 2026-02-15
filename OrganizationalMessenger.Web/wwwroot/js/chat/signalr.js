@@ -6,8 +6,8 @@ import { getCsrfToken } from './utils.js';
 import { loadChats } from './chats.js';
 import { handleReceiveMessage, handleMessageSent, updateMessageStatus } from './message-handlers.js';
 import { replaceWithDeletedNotice } from './messages.js';
-import { formatPersianTime, escapeHtml } from './utils.js';
-import { currentChat, connection as globalConnection } from './variables.js';
+import { formatPersianTime } from './utils.js';
+import { currentChat } from './variables.js';
 
 export async function setupSignalR() {
     console.log('🔌 Setting up SignalR...');
@@ -22,6 +22,9 @@ export async function setupSignalR() {
             .build();
 
         console.log('✅ SignalR HubConnection created');
+
+        // ✅ ذخیره در window برای دسترسی global
+        window.connection = connection;
 
         // Event handlers
         connection.on("ReceiveMessage", (data) => handleReceiveMessage(data));
@@ -115,12 +118,16 @@ export async function setupSignalR() {
         // شروع اتصال
         await connection.start();
         console.log('✅ SignalR Connected');
+
+        // ✅ بارگذاری چت‌ها بعد از اتصال
         await loadChats('all');
 
         return connection;
 
     } catch (error) {
         console.error('❌ SignalR Setup Error:', error);
+
+        // ✅ حتی اگر SignalR خطا داد، چت‌ها را لود کن
         await loadChats('all');
         return null;
     }

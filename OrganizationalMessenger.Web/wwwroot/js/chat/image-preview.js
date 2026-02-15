@@ -2,9 +2,11 @@
 // Image Preview & Zoom
 // ============================================
 
-import { currentPreviewImage, setCurrentPreviewImage, setIsZoomed } from './variables.js';
+import { currentPreviewImage, setCurrentPreviewImage } from './variables.js';
 
 export function openImagePreview(url) {
+    console.log('🖼️ Opening image preview:', url);
+
     const modal = document.createElement('div');
     modal.className = 'image-preview-modal';
     modal.innerHTML = `
@@ -91,37 +93,22 @@ export function updateZoom(value) {
     if (!currentPreviewImage) return;
 
     const scale = value / 100;
-    const container = document.getElementById('imageContainer');
-
-    const scrollTopBefore = container ? container.scrollTop : 0;
-    const scrollLeftBefore = container ? container.scrollLeft : 0;
-
     currentPreviewImage.style.transform = `scale(${scale})`;
 
     const zoomValueEl = document.getElementById('zoomValue');
     if (zoomValueEl) {
         zoomValueEl.textContent = `${value}%`;
     }
-
-    if (container && scale > 1) {
-        setTimeout(() => {
-            container.scrollTop = scrollTopBefore * (scale / (scale - 0.1));
-            container.scrollLeft = scrollLeftBefore;
-        }, 50);
-    }
-
-    console.log('🔍 Zoom:', value + '%');
 }
 
 export function resetZoom() {
     const slider = document.getElementById('zoomSlider');
-    const container = document.getElementById('imageContainer');
-
     if (slider) {
         slider.value = 100;
         updateZoom(100);
     }
 
+    const container = document.getElementById('imageContainer');
     if (container) {
         container.scrollTo({
             top: 0,
@@ -131,7 +118,7 @@ export function resetZoom() {
     }
 }
 
-// Escape key listener
+// Escape key
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         closeImagePreview();

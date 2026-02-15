@@ -7,6 +7,7 @@ import { loadMessages, markMessagesAsRead } from './messages.js';
 import { escapeHtml, formatPersianTime, getInitials, scrollToBottom } from './utils.js';
 import { toggleMessageInput } from './init.js';
 
+// ✅ اضافه کردن export
 export async function loadChats(tab = 'all') {
     console.log('📋 Loading chats, tab:', tab);
 
@@ -36,6 +37,7 @@ export async function loadChats(tab = 'all') {
     }
 }
 
+// ✅ اضافه کردن export
 export function renderChatItem(chat) {
     const container = document.getElementById('chatList');
     const chatEl = document.createElement('div');
@@ -71,6 +73,7 @@ export function renderChatItem(chat) {
     container.appendChild(chatEl);
 }
 
+// ✅ اضافه کردن export
 export async function selectChat(chatEl) {
     console.log('🔄 Selecting chat:', chatEl.dataset.chatId);
 
@@ -107,6 +110,7 @@ export async function selectChat(chatEl) {
     }, 100);
 }
 
+// ✅ اضافه کردن export
 export function handleTabClick(tabBtn) {
     const tab = tabBtn.dataset.tab;
 

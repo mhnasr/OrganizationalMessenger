@@ -93,13 +93,15 @@ export async function editMessage(messageId) {
             const result = await response.json();
 
             if (result.success) {
-                if (connection?.state === signalR.HubConnectionState.Connected) {
-                    await connection.invoke("NotifyMessageEdited", messageId, newText, new Date());
+                // ✅ استفاده از window.connection
+                if (window.connection?.state === signalR.HubConnectionState.Connected) {
+                    await window.connection.invoke("NotifyMessageEdited", messageId, newText, new Date());
                 }
                 console.log('✅ Message edited successfully');
             } else {
                 alert(result.message || 'خطا در ویرایش پیام');
             }
+        
         } catch (error) {
             console.error('❌ Edit message error:', error);
             alert('خطا در ویرایش پیام');
@@ -266,3 +268,13 @@ document.addEventListener('click', function (e) {
         });
     }
 });
+
+
+// ✅ Export to window
+window.toggleMessageMenu = toggleMessageMenu;
+window.editMessage = editMessage;
+window.deleteMessage = deleteMessage;
+window.reportMessage = function (messageId) {
+    console.log('Report message:', messageId);
+    alert('این قابلیت به زودی اضافه می‌شود');
+};

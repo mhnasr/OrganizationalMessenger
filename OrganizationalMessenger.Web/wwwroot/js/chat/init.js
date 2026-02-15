@@ -1,20 +1,7 @@
-﻿// ============================================
-// Initialization
-// ============================================
-
-import { setConnection, setIsPageFocused } from './variables.js';
-import { loadMessageSettings } from './messages.js';
+﻿// ✅ مسیرها نسبی به پوشه chat/ هستند
+import { setConnection, setIsPageFocused, currentChat } from './variables.js';
 import { setupSignalR } from './signalr.js';
-// import { setupEventListeners } from './event-listeners.js'; // ❌ غیرفعال کنید
-import { setupScrollListener } from './message-handlers.js';
-import { markMessagesAsRead, removeUnreadSeparator } from './messages.js';
-import { currentChat } from './variables.js';
-import { sendMessage } from './reply.js';
-import { handleFileSelect } from './files.js';
-import { toggleEmojiPicker } from './emoji.js';
-import { setupVoiceRecording } from './voice.js';
-import { selectChat, handleTabClick } from './chats.js';
-import { connection, emojiPickerVisible } from './variables.js';
+import { markMessagesAsRead } from './messages.js';
 
 export async function initChat() {
     window.currentUserId = parseInt(document.getElementById('currentUserId')?.value || '0');
@@ -27,37 +14,32 @@ export async function initChat() {
 
     console.log('🚀 Initializing chat...');
 
-    toggleMessageInput(false);
-
-    await loadMessageSettings().catch(err => console.warn('⚠️ Settings load failed:', err));
-
     const conn = await setupSignalR();
     setConnection(conn);
 
-    // ✅ setupEventListeners را اینجا inline بنویسید
-    setupEventListenersInline();
-
-    setupScrollListener();
+    setupEventListeners();
 
     window.addEventListener('focus', function () {
         setIsPageFocused(true);
-        console.log('🟢 Page focused');
-        if (currentChat) {
-            markMessagesAsRead();
-            removeUnreadSeparator();
-        }
+        if (currentChat) markMessagesAsRead();
     });
 
     window.addEventListener('blur', function () {
         setIsPageFocused(false);
-        console.log('🔴 Page blurred');
     });
 
     console.log('✅ Init complete');
 }
 
-function setupEventListenersInline() {
+async function setupEventListeners() {
     console.log('🎯 Setting up event listeners...');
+
+    // Dynamic import برای جلوگیری از circular dependency
+    const { selectChat, handleTabClick } = await import('./chats.js');
+    const { sendMessage } = await import('./reply.js');
+    const { handleFileSelect } = await import('./files.js');
+    const { toggleEmojiPicker } = await import('./emoji.js');
+    const { setupVoiceRecording } = await import('./voice.js');
 
     const sendBtn = document.getElementById('sendBtn');
     if (sendBtn) {
@@ -70,19 +52,6 @@ function setupEventListenersInline() {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
-            }
-        });
-
-        messageInput.addEventListener('input', function () {
-            this.style.height = 'auto';
-            const maxHeight = 120;
-            const newHeight = Math.min(this.scrollHeight, maxHeight);
-            this.style.height = newHeight + 'px';
-
-            if (this.scrollHeight > maxHeight) {
-                this.style.overflowY = 'auto';
-            } else {
-                this.style.overflowY = 'hidden';
             }
         });
     }
@@ -119,19 +88,6 @@ function setupEventListenersInline() {
             handleTabClick(tabBtn);
             return;
         }
-
-        const isEmojiBtn = e.target.closest('#emojiBtn');
-        const isPickerContainer = e.target.closest('#emojiPickerContainer');
-        if (!isEmojiBtn && !isPickerContainer && emojiPickerVisible) {
-            toggleEmojiPicker();
-        }
-
-        if (!e.target.closest('.message-menu')) {
-            document.querySelectorAll('.message-menu-dropdown').forEach(m => {
-                m.style.display = 'none';
-                m.closest('.message')?.classList.remove('menu-open');
-            });
-        }
     });
 
     setupVoiceRecording();
@@ -141,15 +97,7 @@ function setupEventListenersInline() {
 
 export function toggleMessageInput(show) {
     const inputArea = document.getElementById('messageInputArea');
-    if (!inputArea) return;
-
-    console.log('🔄 toggleMessageInput:', show);
-
-    if (show) {
-        inputArea.classList.add('show');
-        inputArea.style.display = 'flex';
-    } else {
-        inputArea.classList.remove('show');
-        inputArea.style.display = 'none';
+    if (inputArea) {
+        inputArea.style.display = show ? 'flex' : 'none';
     }
 }
