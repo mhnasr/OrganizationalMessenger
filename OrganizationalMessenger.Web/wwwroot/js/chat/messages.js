@@ -2,6 +2,7 @@
 // Messages - Load, Display, Settings
 // ============================================
 
+export { scrollToBottom } from './utils.js';
 import {
     currentChat, isLoadingMessages, setIsLoadingMessages, hasMoreMessages, setHasMoreMessages,
     lastSenderId, setLastSenderId, messageGroupCount, setMessageGroupCount,
@@ -10,6 +11,13 @@ import {
 import { escapeHtml, formatPersianTime, scrollToBottom, getInitials, getCsrfToken } from './utils.js';
 import { renderFileAttachment } from './files.js';
 import { connection } from './variables.js';
+
+// ✅ فقط یک بار import کنید و re-export کنید
+
+// ✅ Export کردن messageSettings برای دسترسی global
+window.messageSettings = messageSettings;
+
+
 
 export async function loadMessageSettings() {
     try {
@@ -48,6 +56,77 @@ export async function loadMessageSettings() {
     }
 }
 
+// ✅ توابع کمکی - قبل از loadMessages تعریف شوند
+function getMessageDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('fa-IR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+
+function isSameDay(date1, date2) {
+    return date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate();
+}
+
+export function addDateSeparator(container, dateStr) {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let label = '';
+    const persianDate = date.toLocaleDateString('fa-IR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+
+    if (isSameDay(date, today)) {
+        label = `امروز ${persianDate}`;
+    } else if (isSameDay(date, yesterday)) {
+        label = `دیروز ${persianDate}`;
+    } else {
+        label = persianDate;
+    }
+
+    const separator = document.createElement('div');
+    separator.className = 'date-separator';
+    separator.innerHTML = `
+        <div class="date-line"></div>
+        <span class="date-label">${label}</span>
+        <div class="date-line"></div>
+    `;
+
+    container.appendChild(separator);
+}
+
+export function addUnreadSeparator(container, count) {
+    const separator = document.createElement('div');
+    separator.className = 'unread-separator';
+    separator.innerHTML = `
+        <div class="unread-line"></div>
+        <span class="unread-label">${count} پیام جدید</span>
+        <div class="unread-line"></div>
+    `;
+    container.appendChild(separator);
+}
+
+export function removeUnreadSeparator() {
+    const separator = document.querySelector('.unread-separator');
+    if (!separator) {
+        console.log('⚠️ No separator to remove');
+        return;
+    }
+
+    console.log('🗑️ Removing separator');
+    separator.remove();
+}
+
+// ✅ حالا loadMessages می‌تواند از getMessageDate استفاده کند
 export async function loadMessages(append = false) {
     if (!currentChat) return;
     if (isLoadingMessages) return;
@@ -55,7 +134,7 @@ export async function loadMessages(append = false) {
     setIsLoadingMessages(true);
 
     try {
-        let url = `/Chat/GetMessages?pageSize=50`;
+        let url = `/Chat/GetMessages?pageSize=20`;
 
         if (currentChat.type === 'private') {
             url += `&userId=${currentChat.id}`;
@@ -68,6 +147,7 @@ export async function loadMessages(append = false) {
             if (firstMessage) {
                 const oldestId = firstMessage.dataset.messageId;
                 url += `&beforeMessageId=${oldestId}`;
+                console.log(`📜 Loading more before message: ${oldestId}`);
             }
         }
 
@@ -83,38 +163,62 @@ export async function loadMessages(append = false) {
         }
 
         const previousScrollHeight = container.scrollHeight;
+        const previousScrollTop = container.scrollTop;
 
         if (append && data.messages.length > 0) {
-            const existingMessages = container.innerHTML;
+            console.log(`📜 Appending ${data.messages.length} older messages`);
+
+            const existingHTML = container.innerHTML;
             container.innerHTML = '';
-            data.messages.forEach(msg => displayMessage(msg));
-            container.innerHTML += existingMessages;
+
+            setLastSenderId(null);
+            setMessageGroupCount(0);
+
+            let lastDate = null;
+            data.messages.forEach(msg => {
+                const messageDate = getMessageDate(msg.sentAt);
+                if (messageDate !== lastDate) {
+                    addDateSeparator(container, msg.sentAt);
+                    lastDate = messageDate;
+                }
+                displayMessage(msg);
+            });
+
+            container.innerHTML += existingHTML;
 
             const newScrollHeight = container.scrollHeight;
-            container.scrollTop = newScrollHeight - previousScrollHeight;
+            container.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
+
+            console.log(`✅ Scroll adjusted from ${previousScrollHeight} to ${newScrollHeight}`);
         } else {
             const unreadMessages = data.messages.filter(msg =>
                 msg.senderId !== window.currentUserId && !msg.isRead && !msg.isDeleted
             );
 
-            const shouldShowSeparator = !isPageFocused && unreadMessages.length > 0;
+            const shouldShowUnreadSeparator = unreadMessages.length > 0;
             let unreadSeparatorAdded = false;
+            let lastDate = null;
 
-            if (shouldShowSeparator) {
-                const firstUnreadId = unreadMessages[0].id;
+            console.log(`📊 Total messages: ${data.messages.length}, Unread: ${unreadMessages.length}`);
 
-                data.messages.forEach((msg) => {
-                    if (!unreadSeparatorAdded && firstUnreadId && msg.id === firstUnreadId) {
-                        addUnreadSeparator(container, unreadMessages.length);
-                        unreadSeparatorAdded = true;
-                    }
-                    displayMessage(msg);
-                });
-            } else {
-                data.messages.forEach(msg => displayMessage(msg));
-            }
+            data.messages.forEach((msg) => {
+                const messageDate = getMessageDate(msg.sentAt);
 
-            scrollToBottom();
+                if (messageDate !== lastDate) {
+                    console.log(`📅 Adding date separator: ${messageDate}`);
+                    addDateSeparator(container, msg.sentAt);
+                    lastDate = messageDate;
+                }
+
+                if (!unreadSeparatorAdded && shouldShowUnreadSeparator &&
+                    unreadMessages.length > 0 && msg.id === unreadMessages[0].id) {
+                    console.log(`🔔 Adding unread separator before message ${msg.id}, count: ${unreadMessages.length}`);
+                    addUnreadSeparator(container, unreadMessages.length);
+                    unreadSeparatorAdded = true;
+                }
+
+                displayMessage(msg);
+            });
         }
 
         setHasMoreMessages(data.hasMore);
@@ -128,10 +232,21 @@ export async function loadMessages(append = false) {
 }
 
 export function displayMessage(msg) {
+    console.log(`📩 Displaying message:`, {
+        id: msg.id,
+        text: (msg.content || msg.messageText || '').substring(0, 30),
+        sentAt: msg.sentAt,
+        hasAttachments: !!(msg.attachments && msg.attachments.length > 0)
+    });
+
     const isSent = msg.senderId === window.currentUserId;
     const container = document.getElementById('messagesContainer');
 
-    const isConsecutive = lastSenderId === msg.senderId && messageGroupCount < 10;
+    const hasAttachments = msg.attachments && msg.attachments.length > 0;
+    const isConsecutive = !hasAttachments &&
+        lastSenderId === msg.senderId &&
+        messageGroupCount < 10;
+
     if (isConsecutive) {
         setMessageGroupCount(messageGroupCount + 1);
     } else {
@@ -185,7 +300,6 @@ export function displayMessage(msg) {
     }
 
     let messageTextHtml = '';
-    const hasAttachments = msg.attachments && msg.attachments.length > 0;
     const messageContent = msg.content || msg.messageText || '';
 
     if (hasAttachments) {
@@ -260,10 +374,6 @@ export function displayMessage(msg) {
     `;
 
     container.appendChild(messageEl);
-
-    if (!isSent && currentChat) {
-        setTimeout(() => markMessagesAsRead(), 500);
-    }
 }
 
 function createMessageMenu(messageId, isSent, sentAt) {
@@ -338,47 +448,39 @@ function canDeleteMessage(sentAt) {
     return elapsed <= messageSettings.deleteTimeLimit;
 }
 
-export function addUnreadSeparator(container, count) {
-    const separator = document.createElement('div');
-    separator.className = 'unread-separator';
-    separator.innerHTML = `
-        <div class="unread-line"></div>
-        <span class="unread-label">${count} پیام خوانده نشده</span>
-        <div class="unread-line"></div>
-    `;
-    container.appendChild(separator);
-}
-
-export function removeUnreadSeparator() {
-    const separator = document.querySelector('.unread-separator');
-    if (separator) {
-        separator.style.animation = 'fadeOut 0.4s ease';
-        setTimeout(() => {
-            separator.remove();
-        }, 400);
-    }
-}
-
-
-// در تابع markMessagesAsRead:
-
 export async function markMessagesAsRead() {
-    if (!currentChat?.id || currentChat.type !== 'private') return;
+    if (!currentChat?.id || currentChat.type !== 'private') {
+        console.log('⚠️ Cannot mark as read: no current chat or not private');
+        return;
+    }
 
-    const unreadReceivedIds = Array.from(
+    const unreadReceivedMessages = Array.from(
         document.querySelectorAll('#messagesContainer .message.received[data-message-id]')
-    )
-        .filter(el => !el.querySelector('.double-blue'))
+    );
+
+    console.log(`📖 Found ${unreadReceivedMessages.length} received messages in DOM`);
+
+    const unreadReceivedIds = unreadReceivedMessages
+        .filter(el => {
+            const messageTime = el.querySelector('.message-time');
+            if (!messageTime) return false;
+
+            const hasTick = messageTime.querySelector('.tick');
+            return !hasTick;
+        })
         .map(el => parseInt(el.dataset.messageId))
-        .filter(id => id);
+        .filter(id => !isNaN(id));
+
+    console.log(`📖 Unread received message IDs: ${unreadReceivedIds.join(', ')}`);
 
     if (unreadReceivedIds.length === 0) {
+        console.log('✅ No unread messages to mark');
         removeUnreadBadge();
         return;
     }
 
     try {
-        await fetch('/Chat/MarkMessagesAsRead', {
+        const response = await fetch('/Chat/MarkMessagesAsRead', {
             method: 'POST',
             headers: {
                 'RequestVerificationToken': getCsrfToken(),
@@ -387,9 +489,17 @@ export async function markMessagesAsRead() {
             body: JSON.stringify({ messageIds: unreadReceivedIds })
         });
 
-        // ✅ استفاده از window.connection
+        if (!response.ok) {
+            console.error('❌ MarkMessagesAsRead failed:', response.status);
+            return;
+        }
+
+        const result = await response.json();
+        console.log(`✅ Server marked ${result.markedCount} messages as read`);
+
         if (window.connection?.state === signalR.HubConnectionState.Connected) {
             await window.connection.invoke("NotifyMessagesRead", unreadReceivedIds);
+            console.log('✅ SignalR notified about read messages');
         }
 
         removeUnreadBadge();
@@ -405,11 +515,10 @@ function removeUnreadBadge() {
     if (!chatItem) return;
 
     const badge = chatItem.querySelector('.unread-badge');
-    if (badge) {
-        badge.style.animation = 'fadeOutBadge 0.3s ease';
-        setTimeout(() => {
-            badge.remove();
-        }, 300);
+    if (badge && badge.parentNode) {
+        console.log('🗑️ Removing unread badge');
+        badge.parentNode.removeChild(badge);
+        console.log('✅ Unread badge removed');
     }
 }
 
@@ -443,5 +552,4 @@ export function scrollToMessage(messageId) {
     }, 2000);
 }
 
-// Export to window for onclick handlers
 window.scrollToMessage = scrollToMessage;

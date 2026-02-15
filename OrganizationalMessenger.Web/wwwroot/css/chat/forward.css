@@ -1,156 +1,477 @@
-﻿body {
-}
-/* ============================================
-   Forward Dialog - Message Forwarding
+﻿/* ============================================
+   Forward Dialog
 ============================================ */
-.forward-preview {
-    padding: 16px 24px;
-    background: #f0f4ff;
-    border-bottom: 1px solid var(--border-color);
+
+.forward-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
 }
 
-    .forward-preview i {
-        color: var(--primary-color);
-        font-size: 20px;
-    }
+.forward-dialog {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
 
-    .forward-preview span {
+.forward-dialog-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .forward-dialog-header h3 {
+        margin: 0;
+        font-size: 18px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: #333;
     }
 
-.forward-preview-text {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 4px 0 0 0;
-    font-style: italic;
+.close-dialog {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+    .close-dialog:hover {
+        background: #f5f5f5;
+        color: #333;
+    }
+
+.forward-dialog-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .forward-search {
-    position: relative;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border-color);
+    margin: 16px 24px;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: calc(100% - 48px);
+    transition: border-color 0.2s;
 }
 
-    .forward-search i {
-        position: absolute;
-        right: 36px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-    }
-
-    .forward-search input {
-        width: 100%;
-        padding: 10px 40px 10px 16px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        font-size: 14px;
+    .forward-search:focus {
+        outline: none;
+        border-color: #0084ff;
     }
 
 .forward-contacts-list {
     flex: 1;
     overflow-y: auto;
+    padding: 0 24px 16px;
 }
 
 .forward-contact-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 24px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
     transition: background 0.2s;
+    margin-bottom: 4px;
 }
 
     .forward-contact-item:hover {
-        background: #f9f9f9;
+        background: #f5f5f5;
     }
 
-.contact-avatar {
-    width: 45px;
-    height: 45px;
+.forward-avatar {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    overflow: hidden;
-    position: relative;
+    object-fit: cover;
     flex-shrink: 0;
 }
 
-    .contact-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .contact-avatar.online::after {
-        content: '';
-        position: absolute;
-        width: 12px;
-        height: 12px;
-        background: var(--success-color);
-        border-radius: 50%;
-        bottom: 0;
-        right: 0;
-        border: 2px solid white;
-    }
-
-.contact-info {
+.forward-contact-info {
     flex: 1;
 }
 
-.contact-name {
+.forward-contact-name {
+    font-size: 15px;
     font-weight: 500;
-    color: var(--text-primary);
+    color: #333;
 }
 
-.btn-forward-send {
-    background: var(--primary-color);
+.forward-dialog-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #666;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .btn-cancel:hover {
+        background: #f5f5f5;
+        border-color: #ccc;
+    }
+
+/* ============================================
+   Multi-Select Toolbar - پایین صفحه
+============================================ */
+.multi-select-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 12px 20px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 9999;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideUpToolbar 0.3s ease;
+}
+
+    .multi-select-toolbar .selected-count {
+        color: white;
+        font-size: 15px;
+        font-weight: 500;
+        flex: 1;
+        text-align: center;
+    }
+
+    .multi-select-toolbar .btn-cancel {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+        .multi-select-toolbar .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+    .multi-select-toolbar .btn-forward {
+        background: white;
+        color: #667eea;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .multi-select-toolbar .btn-forward:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .multi-select-toolbar .btn-forward:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+/* ============================================
+   Message Checkbox - ثابت و بدون تکان
+============================================ */
+.message.selectable {
+    cursor: pointer;
+    position: relative;
+}
+
+    .message.selectable .message-wrapper {
+        position: relative;
+        padding-left: 50px; /* ✅ فضا برای checkbox */
+    }
+
+.message-checkbox {
+    position: absolute;
+    left: 12px;
+    top: 12px; /* ✅ تغییر از 50% به مقدار ثابت */
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .message-checkbox:hover {
+        transform: scale(1.1);
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .message-checkbox i {
+        font-size: 18px;
+        color: #999;
+        transition: color 0.2s;
+    }
+
+.message.selected .message-checkbox {
+    background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%);
+    box-shadow: 0 3px 12px rgba(0, 132, 255, 0.4);
+}
+
+    .message.selected .message-checkbox i {
+        color: white;
+    }
+
+.message.selectable:hover .message-checkbox i {
+    color: #0084ff;
+}
+
+.message.selected:hover .message-checkbox i {
+    color: white;
+}
+
+/* ✅ برای پیام‌های sent */
+.message.sent.selectable .message-wrapper {
+    padding-left: 50px;
+}
+
+.message.sent .message-checkbox {
+    left: 12px;
+    right: auto;
+}
+
+/* ✅ برای پیام‌های received */
+.message.received.selectable .message-wrapper {
+    padding-right: 50px;
+    padding-left: 40px;
+}
+
+.message.received .message-checkbox {
+    right: 12px;
+    left: auto;
+}
+
+/* ============================================
+   Animation برای انتخاب
+============================================ */
+@keyframes checkboxPop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.message-checkbox.selected-animation {
+    animation: checkboxPop 0.3s ease;
+}
+/* ============================================
+   Animations
+============================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUpToolbar {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   Dark Mode
+============================================ */
+@media (prefers-color-scheme: dark) {
+    .forward-dialog {
+        background: #2a2a2a;
+    }
+
+    .forward-dialog-header {
+        border-color: #444;
+    }
+
+        .forward-dialog-header h3 {
+            color: #fff;
+        }
+
+    .forward-dialog-footer {
+        border-color: #444;
+    }
+
+    .forward-contact-item:hover {
+        background: #333;
+    }
+
+    .forward-contact-name {
+        color: #fff;
+    }
+
+    .forward-search {
+        background: #333;
+        border-color: #444;
+        color: #fff;
+    }
+}
+
+
+
+/* اضافه کردن به انتهای فایل */
+
+/* ============================================
+   Forward Contact Item با دکمه ارسال
+============================================ */
+.forward-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    margin-bottom: 4px;
+}
+
+    .forward-contact-item:hover {
+        background: #f5f5f5;
+    }
+
+    .forward-contact-item.sent {
+        background: #e8f5e9;
+    }
+
+.forward-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.forward-contact-info {
+    flex: 1;
+}
+
+.forward-contact-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+}
+
+.forward-send-btn {
+    background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%);
     color: white;
     border: none;
     padding: 8px 16px;
     border-radius: 8px;
-    cursor: pointer;
     font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.2s;
+    white-space: nowrap;
 }
 
-    .btn-forward-send:hover:not(:disabled) {
-        background: var(--primary-hover);
-        transform: scale(1.05);
+    .forward-send-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 132, 255, 0.3);
     }
 
-    .btn-forward-send:disabled {
-        opacity: 0.6;
+    .forward-send-btn:disabled {
+        opacity: 0.7;
         cursor: not-allowed;
     }
 
-.forward-dialog-footer {
-    display: flex;
-    justify-content: center;
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-color);
-}
+    .forward-send-btn.sent {
+        background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    }
 
-.btn-close-forward {
-    background: #f5f5f5;
-    color: #666;
-    border: none;
+/* دکمه اتمام */
+.btn-done {
     padding: 10px 24px;
+    background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%);
+    color: white;
+    border: none;
     border-radius: 8px;
-    cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.2s;
 }
 
-    .btn-close-forward:hover {
-        background: #e0e0e0;
+    .btn-done:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 132, 255, 0.3);
     }

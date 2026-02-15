@@ -3,11 +3,10 @@
 // ============================================
 
 import { currentChat, setCurrentChat, setLastSenderId, setMessageGroupCount, setHasMoreMessages, setIsPageFocused } from './variables.js';
-import { loadMessages, markMessagesAsRead } from './messages.js';
+import { loadMessages, markMessagesAsRead, removeUnreadSeparator } from './messages.js';
 import { escapeHtml, formatPersianTime, getInitials, scrollToBottom } from './utils.js';
 import { toggleMessageInput } from './init.js';
 
-// ✅ اضافه کردن export
 export async function loadChats(tab = 'all') {
     console.log('📋 Loading chats, tab:', tab);
 
@@ -37,7 +36,6 @@ export async function loadChats(tab = 'all') {
     }
 }
 
-// ✅ اضافه کردن export
 export function renderChatItem(chat) {
     const container = document.getElementById('chatList');
     const chatEl = document.createElement('div');
@@ -73,7 +71,6 @@ export function renderChatItem(chat) {
     container.appendChild(chatEl);
 }
 
-// ✅ اضافه کردن export
 export async function selectChat(chatEl) {
     console.log('🔄 Selecting chat:', chatEl.dataset.chatId);
 
@@ -103,14 +100,33 @@ export async function selectChat(chatEl) {
     });
 
     await loadMessages(false);
-    await markMessagesAsRead();
 
-    setTimeout(() => {
-        scrollToBottom();
-    }, 100);
+    // ✅ فقط یک‌بار اینجا صدا زده می‌شود
+    setTimeout(async () => {
+        const unreadSeparator = document.querySelector('.unread-separator');
+
+        if (unreadSeparator) {
+            console.log('📍 Found unread separator, scrolling...');
+            unreadSeparator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            console.log('📍 No separator, scrolling to bottom');
+            scrollToBottom();
+        }
+
+        // ✅ Mark as read یک‌بار
+        console.log('📖 Marking messages as read...');
+        await markMessagesAsRead();
+
+        // ✅ حذف separator
+        setTimeout(() => {
+            const sep = document.querySelector('.unread-separator');
+            if (sep) {
+                console.log('🗑️ Removing separator');
+                sep.remove();
+            }
+        }, 1000);
+    }, 300);
 }
-
-// ✅ اضافه کردن export
 export function handleTabClick(tabBtn) {
     const tab = tabBtn.dataset.tab;
 

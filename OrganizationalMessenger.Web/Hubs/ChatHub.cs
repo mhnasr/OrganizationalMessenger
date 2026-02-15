@@ -92,10 +92,12 @@ namespace OrganizationalMessenger.Web.Hubs
         public async Task SendPrivateMessage(int receiverId, string messageText, int? replyToMessageId = null)
         {
             var senderId = GetUserId();
-            if (senderId == null) return;
+            if (senderId == 0) return;
 
             try
             {
+                var now = DateTime.UtcNow;
+
                 var message = new Message
                 {
                     SenderId = senderId,
@@ -103,7 +105,7 @@ namespace OrganizationalMessenger.Web.Hubs
                     Content = messageText,
                     MessageText = messageText,
                     Type = MessageType.Text,
-                    SentAt = DateTime.UtcNow, // ✅ UTC
+                    SentAt = now,
                     IsDelivered = false,
                     ReplyToMessageId = replyToMessageId
                 };
@@ -124,7 +126,7 @@ namespace OrganizationalMessenger.Web.Hubs
                     content = message.Content,
                     messageText = message.MessageText,
                     type = message.Type,
-                    sentAt = message.SentAt.ToString("o"), // ✅ ISO 8601
+                    sentAt = message.SentAt.ToString("o"),
                     isDelivered = false,
                     isRead = false,
                     isEdited = false,
@@ -136,10 +138,35 @@ namespace OrganizationalMessenger.Web.Hubs
                     attachments = new List<object>()
                 };
 
-                Console.WriteLine($"✅ Message {message.Id} - SentAt: {messageDto.sentAt}");
+                Console.WriteLine($"✅ Text Message {message.Id} - SentAt: {messageDto.sentAt}");
 
+                // ✅ ارسال به گیرنده
                 await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", messageDto);
+
+                // ✅ تأیید به فرستنده
                 await Clients.Caller.SendAsync("MessageSent", messageDto);
+
+                // ✅ چک کردن آنلاین بودن گیرنده
+                if (_userConnections.TryGetValue(receiverId, out var receiverConnections) && receiverConnections.Count > 0)
+                {
+                    // ✅ گیرنده آنلاین است
+                    message.IsDelivered = true;
+                    message.DeliveredAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+
+                    Console.WriteLine($"📦 Message {message.Id} delivered to online user {receiverId}");
+
+                    // ✅ اطلاع به فرستنده
+                    await Clients.All.SendAsync("MessageDelivered", new
+                    {
+                        messageId = message.Id,
+                        deliveredAt = message.DeliveredAt?.ToString("yyyy-MM-ddTHH:mm:ss")
+                    });
+                }
+                else
+                {
+                    Console.WriteLine($"⏳ Message {message.Id} sent to offline user {receiverId}");
+                }
             }
             catch (Exception ex)
             {
@@ -147,7 +174,6 @@ namespace OrganizationalMessenger.Web.Hubs
                 await Clients.Caller.SendAsync("Error", "خطا در ارسال پیام");
             }
         }
-
         // ✅ تأیید Delivered از Frontend
         public async Task ConfirmDelivery(long messageId)
         {
@@ -257,35 +283,35 @@ namespace OrganizationalMessenger.Web.Hubs
         public async Task NotifyMessagesRead(List<int> messageIds)
         {
             var userId = GetUserId();
-            var now = DateTime.Now;
+            if (userId == 0) return;
 
-            // 🚨 درج رکوردهای MessageReads برای همه messageIds ← MAIN PROBLEM!
-            foreach (var msgId in messageIds)
+            try
             {
-                if (!await _context.MessageReads.AnyAsync(mr => mr.MessageId == msgId && mr.UserId == userId))
+                var messages = await _context.Messages
+                    .Where(m => messageIds.Contains(m.Id))
+                    .ToListAsync();
+
+                foreach (var message in messages)
                 {
-                    _context.MessageReads.Add(new MessageRead
+                    var readReceipt = await _context.MessageReads
+                        .FirstOrDefaultAsync(mr => mr.MessageId == message.Id && mr.UserId == userId);
+
+                    if (readReceipt != null)
                     {
-                        MessageId = msgId,
-                        UserId = userId,
-                        ReadAt = now
-                    });
+                        // ✅ اطلاع‌رسانی به فرستنده
+                        await Clients.User(message.SenderId.ToString()).SendAsync("MessageRead", new
+                        {
+                            messageId = message.Id,
+                            readAt = readReceipt.ReadAt
+                        });
+
+                        Console.WriteLine($"✅ Notified sender {message.SenderId} that message {message.Id} was read");
+                    }
                 }
             }
-            await _context.SaveChangesAsync();
-
-            // اطلاع به فرستنده‌ها
-            foreach (var msgId in messageIds)
+            catch (Exception ex)
             {
-                var message = await _context.Messages.FindAsync(msgId);
-                if (message != null)
-                {
-                    await Clients.All.SendAsync("MessageRead", new
-                    {
-                        messageId = msgId,
-                        readAt = now.ToString("yyyy-MM-ddTHH:mm:ss")
-                    });
-                }
+                _logger.LogError(ex, "NotifyMessagesRead error");
             }
         }
 

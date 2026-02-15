@@ -5,10 +5,14 @@
 import { connection } from './variables.js';
 import { getCsrfToken, escapeHtml } from './utils.js';
 import { replaceWithDeletedNotice } from './messages.js';
+import { forwardMessage, enterMultiSelectMode } from './forward.js';
 
 export function toggleMessageMenu(messageId) {
     const menu = document.getElementById(`menu-${messageId}`);
-    if (!menu) return;
+    if (!menu) {
+        console.error(`❌ Menu not found for message ${messageId}`);
+        return;
+    }
 
     const messageEl = menu.closest('.message');
     const isSent = messageEl?.classList.contains('sent');
@@ -21,6 +25,7 @@ export function toggleMessageMenu(messageId) {
     });
 
     if (menu.style.display === 'none' || !menu.style.display) {
+        console.log(`✅ Opening menu for message ${messageId}`);
         menu.style.display = 'block';
         messageEl?.classList.add('menu-open');
 
@@ -58,9 +63,50 @@ export function toggleMessageMenu(messageId) {
             }
         }, 10);
     } else {
+        console.log(`✅ Closing menu for message ${messageId}`);
         menu.style.display = 'none';
         messageEl?.classList.remove('menu-open');
     }
+}
+
+// ✅ تعریف replyToMessage قبل از export
+export function replyToMessage(messageId) {
+    console.log('💬 Reply to message:', messageId);
+
+    const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (!messageEl) return;
+
+    const textEl = messageEl.querySelector('[data-editable="true"]');
+    const messageText = textEl ? textEl.textContent.trim() : 'پیام';
+
+    const senderEl = messageEl.querySelector('.message-sender');
+    const senderName = senderEl ? senderEl.textContent : 'کاربر';
+
+    window.replyingTo = {
+        messageId: messageId,
+        messageText: messageText,
+        senderName: senderName
+    };
+
+    const replyPreview = document.getElementById('replyPreview');
+    if (replyPreview) {
+        replyPreview.innerHTML = `
+            <div class="reply-preview-content">
+                <i class="fas fa-reply"></i>
+                <div class="reply-info">
+                    <strong>در حال پاسخ به ${escapeHtml(senderName)}</strong>
+                    <p>${escapeHtml(messageText.substring(0, 50))}</p>
+                </div>
+                <button class="cancel-reply" onclick="window.cancelReply()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        replyPreview.style.display = 'flex';
+    }
+
+    document.getElementById('messageInput')?.focus();
+    toggleMessageMenu(messageId);
 }
 
 export async function editMessage(messageId) {
@@ -93,7 +139,6 @@ export async function editMessage(messageId) {
             const result = await response.json();
 
             if (result.success) {
-                // ✅ استفاده از window.connection
                 if (window.connection?.state === signalR.HubConnectionState.Connected) {
                     await window.connection.invoke("NotifyMessageEdited", messageId, newText, new Date());
                 }
@@ -101,7 +146,6 @@ export async function editMessage(messageId) {
             } else {
                 alert(result.message || 'خطا در ویرایش پیام');
             }
-        
         } catch (error) {
             console.error('❌ Edit message error:', error);
             alert('خطا در ویرایش پیام');
@@ -200,16 +244,14 @@ export async function deleteMessage(messageId) {
                         }
                     }
 
-                    if (connection?.state === signalR.HubConnectionState.Connected) {
+                    if (window.connection?.state === signalR.HubConnectionState.Connected) {
                         console.log('📡 Sending SignalR notification...');
-                        await connection.invoke("NotifyMessageDeleted",
+                        await window.connection.invoke("NotifyMessageDeleted",
                             result.messageId,
                             result.showNotice,
                             result.receiverId
                         );
                         console.log('✅ SignalR notification sent');
-                    } else {
-                        console.error('❌ SignalR not connected!');
                     }
                 } else {
                     alert(result.message || 'خطا در حذف پیام');
@@ -254,12 +296,26 @@ function showConfirmDialog(title, message, onConfirm) {
     });
 }
 
-// Export to window
+// ✅ Export to window - در انتها
 window.toggleMessageMenu = toggleMessageMenu;
 window.editMessage = editMessage;
 window.deleteMessage = deleteMessage;
+window.replyToMessage = replyToMessage;
+window.forwardMessage = forwardMessage;
+window.enterMultiSelectMode = enterMultiSelectMode;
+window.reportMessage = function (messageId) {
+    console.log('📢 Report message:', messageId);
+    alert('این قابلیت به زودی اضافه می‌شود');
+};
 
-// Close menu on outside click
+window.cancelReply = function () {
+    window.replyingTo = null;
+    const replyPreview = document.getElementById('replyPreview');
+    if (replyPreview) {
+        replyPreview.style.display = 'none';
+    }
+};
+
 document.addEventListener('click', function (e) {
     if (!e.target.closest('.message-menu')) {
         document.querySelectorAll('.message-menu-dropdown').forEach(m => {
@@ -269,12 +325,4 @@ document.addEventListener('click', function (e) {
     }
 });
 
-
-// ✅ Export to window
-window.toggleMessageMenu = toggleMessageMenu;
-window.editMessage = editMessage;
-window.deleteMessage = deleteMessage;
-window.reportMessage = function (messageId) {
-    console.log('Report message:', messageId);
-    alert('این قابلیت به زودی اضافه می‌شود');
-};
+console.log('✅ message-menu.js loaded');

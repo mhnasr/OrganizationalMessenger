@@ -9,7 +9,6 @@ import { formatPersianTime, scrollToBottom } from './utils.js';
 import { hasMoreMessages, isLoadingMessages } from './variables.js';
 import { loadMessages } from './messages.js';
 
-import { currentChat, isPageFocused } from './variables.js';
 
 export function handleReceiveMessage(data) {
     console.log('📨 ReceiveMessage:', data);
@@ -32,13 +31,12 @@ export function handleReceiveMessage(data) {
         if (isPageFocused && !document.hidden) {
             setTimeout(() => {
                 markMessagesAsRead();
-                removeUnreadSeparator();
+                removeUnreadSeparator(); // ✅ حذف separator
             }, 100);
         } else {
             setTimeout(() => {
-                // ✅ استفاده از window.connection
-                if (window.connection?.state === signalR.HubConnectionState.Connected) {
-                    window.connection.invoke("ConfirmDelivery", data.id);
+                if (connection?.state === signalR.HubConnectionState.Connected) {
+                    connection.invoke("ConfirmDelivery", data.id);
                 }
             }, 100);
         }
@@ -47,6 +45,7 @@ export function handleReceiveMessage(data) {
         showNotification(data.senderName, data.content);
     }
 }
+
 export function handleMessageSent(data) {
     console.log('✅ MessageSent received:', data);
 
@@ -54,39 +53,22 @@ export function handleMessageSent(data) {
     tempMessages.forEach(msg => msg.remove());
 
     if (!data.sentAt) {
-        console.warn('⚠️ No sentAt, using current time');
         data.sentAt = new Date().toISOString();
-    } else {
-        try {
-            const date = new Date(data.sentAt);
-
-            if (isNaN(date.getTime())) {
-                console.error('❌ Invalid sentAt:', data.sentAt);
-                data.sentAt = new Date().toISOString();
-            } else {
-                const now = new Date();
-                if (date > now) {
-                    console.warn('⚠️ sentAt is in future, using current time');
-                    data.sentAt = now.toISOString();
-                } else {
-                    data.sentAt = date.toISOString();
-                }
-            }
-        } catch (e) {
-            console.error('❌ sentAt parse error:', e);
-            data.sentAt = new Date().toISOString();
-        }
     }
-
-    console.log('📅 Corrected sentAt:', data.sentAt);
 
     displayMessage(data);
     scrollToBottom();
 }
-
 export function updateMessageStatus(messageId, status, readAt = null) {
+    console.log(`🔄 Updating message ${messageId} to ${status}`);
+
     const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
-    if (!messageEl?.classList.contains('sent')) return;
+
+    // ✅ فقط برای پیام‌های ارسالی (sent)
+    if (!messageEl?.classList.contains('sent')) {
+        console.log('⚠️ Message is not sent, skipping status update');
+        return;
+    }
 
     const sendInfoEl = messageEl.querySelector('.sent-info');
     if (!sendInfoEl) return;
@@ -126,16 +108,32 @@ export function updateMessageStatus(messageId, status, readAt = null) {
     }
 
     sendInfoEl.outerHTML = newStatusHtml;
+    console.log(`✅ Message ${messageId} status updated to ${status}`);
 }
-
 export function setupScrollListener() {
     const container = document.getElementById('messagesContainer');
     if (!container) return;
 
+    let isLoadingMore = false;
+
     container.addEventListener('scroll', async function () {
+        // ✅ جلوگیری از چند بار صدا زدن همزمان
+        if (isLoadingMore) {
+            return;
+        }
+
         if (container.scrollTop < 100 && hasMoreMessages && !isLoadingMessages) {
             console.log('🔄 Loading more messages...');
-            await loadMessages(true);
+            isLoadingMore = true;
+
+            try {
+                await loadMessages(true);
+            } finally {
+                // ✅ بعد از 500ms دوباره اجازه بده
+                setTimeout(() => {
+                    isLoadingMore = false;
+                }, 500);
+            }
         }
     });
 

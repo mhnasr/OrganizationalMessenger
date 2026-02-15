@@ -60,8 +60,9 @@ namespace OrganizationalMessenger.Web.Controllers
 
         // دریافت پیامهای یک چت
         // دریافت پیامهای یک چت - با Pagination
+
         [HttpGet]
-        public async Task<IActionResult> GetMessages(int? userId, int? groupId, int pageSize = 50, int? beforeMessageId = null)
+        public async Task<IActionResult> GetMessages(int? userId, int? groupId, int pageSize = 20, int? beforeMessageId = null)
         {
             var currentUserId = GetCurrentUserId();
             if (currentUserId == null) return Unauthorized();
@@ -69,7 +70,7 @@ namespace OrganizationalMessenger.Web.Controllers
             IQueryable<Message> query = _context.Messages
                 .Include(m => m.Sender)
                 .Include(m => m.ReadReceipts)
-                .Include(m => m.Attachments)  // ✅ مطمئن شوید این خط هست
+                .Include(m => m.Attachments)
                 .Include(m => m.ReplyToMessage)
                     .ThenInclude(r => r.Sender)
                 .Where(m => !m.IsSystemMessage);
@@ -98,10 +99,14 @@ namespace OrganizationalMessenger.Web.Controllers
                 }
             }
 
+            // ✅ مرتب‌سازی DESC برای گرفتن جدیدترین‌ها
             var messages = await query
                 .OrderByDescending(m => m.SentAt)
                 .Take(pageSize)
                 .ToListAsync();
+
+            // ✅ Reverse برای نمایش قدیمی → جدید
+            messages.Reverse();
 
             var showDeletedNoticeStr = await _context.SystemSettings
                 .Where(s => s.Key == "ShowDeletedMessageNotice")
@@ -149,30 +154,27 @@ namespace OrganizationalMessenger.Web.Controllers
                     ReplyToSenderName = m.ReplyToMessage != null
                         ? $"{m.ReplyToMessage.Sender.FirstName} {m.ReplyToMessage.Sender.LastName}"
                         : null,
-                    // ✅ اصلاح: فیلتر Attachments در حافظه
                     Attachments = m.IsDeleted
                         ? new List<object>()
                         : m.Attachments
-                            .Where(a => !a.IsDeleted)  // ✅ این خط مهم است
+                            .Where(a => !a.IsDeleted)
                             .Select(a => (object)new
                             {
                                 a.Id,
                                 a.OriginalFileName,
                                 a.FileUrl,
                                 a.ThumbnailUrl,
-                                FileType = a.FileType.ToString(),  // ✅ تبدیل به string
+                                FileType = a.FileType.ToString(),
                                 a.FileSize,
                                 a.Extension,
                                 ReadableSize = a.ReadableFileSize,
                                 a.Width,
                                 a.Height,
-                                a.Duration, // ✅
-                                ReadableDuration = a.ReadableDuration // ✅
-
+                                a.Duration,
+                                ReadableDuration = a.ReadableDuration
                             })
                             .ToList()
                 })
-                .OrderBy(m => m.SentAt)
                 .ToList();
 
             return Json(new
@@ -181,7 +183,6 @@ namespace OrganizationalMessenger.Web.Controllers
                 hasMore = messages.Count == pageSize
             });
         }
-
         // ✅ اصلاح SendMessage - با کپشن
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -209,7 +210,7 @@ namespace OrganizationalMessenger.Web.Controllers
 
             // ✅ Log برای debug
             Console.WriteLine($"📝 MessageText received: {request.MessageText}");
-
+            var now = DateTime.UtcNow;
             var message = new Message
             {
                 SenderId = senderId.Value,
@@ -219,7 +220,7 @@ namespace OrganizationalMessenger.Web.Controllers
                 MessageText = request.MessageText,      // ✅ کپشن
                 Content = request.MessageText,          // ✅ کپشن (هر دو فیلد)
                 Type = request.Type,
-                SentAt = DateTime.Now,
+                SentAt = now,
                 IsDelivered = false
             };
 
@@ -275,22 +276,19 @@ namespace OrganizationalMessenger.Web.Controllers
         {
             var chats = new List<dynamic>();
 
-            // ✅ همه کاربران فعال (خصوصی) - بدون FullName در OrderBy
             if (tab == "all" || tab == "private")
             {
                 var users = await _context.Users
                     .Where(u => u.Id != userId && u.IsActive)
-                    .OrderBy(u => u.FirstName)  // ✅ FirstName بجای FullName
+                    .OrderBy(u => u.FirstName)
                     .ThenBy(u => u.LastName)
                     .Take(50)
                     .ToListAsync();
 
                 foreach (var user in users)
                 {
-                    // ✅ FullName رو client-side بساز
                     var fullName = $"{user.FirstName} {user.LastName}".Trim();
 
-                    // آخرین پیام
                     var lastMessage = await _context.Messages
                         .Where(m =>
                             ((m.SenderId == userId && m.ReceiverId == user.Id) ||
@@ -298,7 +296,7 @@ namespace OrganizationalMessenger.Web.Controllers
                         .OrderByDescending(m => m.SentAt)
                         .FirstOrDefaultAsync();
 
-                    // unread count
+                    // ✅ شمارش پیام‌های خوانده نشده
                     var unreadCount = await _context.Messages
                         .Where(m => m.SenderId == user.Id &&
                                    m.ReceiverId == userId &&
@@ -309,19 +307,18 @@ namespace OrganizationalMessenger.Web.Controllers
                     {
                         type = "private",
                         id = user.Id,
-                        name = fullName,  // ✅ client-side
+                        name = fullName,
                         avatar = user.AvatarUrl ?? "/images/default-avatar.png",
                         isOnline = user.IsOnline,
                         lastMessage = lastMessage != null ?
-                            (lastMessage.MessageText ?? lastMessage.Content ?? ""):  "",
+                            (lastMessage.MessageText ?? lastMessage.Content ?? "") : "",
                         lastMessageTime = lastMessage?.SentAt ?? user.LastSeen ?? user.CreatedAt,
-                        unreadCount,
+                        unreadCount,  // ✅ تعداد پیام‌های خوانده نشده
                         messageDirection = lastMessage?.SenderId == userId ? "sent" : "received"
                     });
                 }
             }
 
-            // ✅ Groups - بدون تغییر
             if (tab == "all" || tab == "group")
             {
                 var groups = await _context.UserGroups

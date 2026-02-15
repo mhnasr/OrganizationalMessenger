@@ -181,7 +181,9 @@
         font-size: 10px;
     }
 
-/* Deleted Messages */
+/* ============================================
+   Deleted Messages
+============================================ */
 .message.deleted .message-bubble {
     background: #f8f8f8;
     border: 1px dashed #ddd;
@@ -211,6 +213,234 @@
     color: var(--danger-color);
 }
 
+/* ============================================
+   Date Separator
+============================================ */
+.date-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    gap: 12px;
+    position: relative;
+}
+
+.date-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e0e0e0 20%, #e0e0e0 80%, transparent);
+    max-width: 150px;
+}
+
+.date-label {
+    background: #f5f5f5;
+    color: #666;
+    padding: 6px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Vazirmatn', sans-serif;
+}
+
+/* ============================================
+   Unread Separator - حذف سریع (1 ثانیه)
+============================================ */
+.unread-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    gap: 12px;
+    position: relative;
+    animation: fadeInSeparator 0.3s ease forwards;
+    scroll-margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+    /* حالت حذف */
+    .unread-separator.removing {
+        animation: fadeOutSeparator 0.3s ease forwards;
+    }
+
+.unread-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #ff6b6b 20%, #ff6b6b 80%, transparent);
+    max-width: 200px;
+}
+
+.unread-label {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    font-family: 'Vazirmatn', sans-serif;
+    position: relative;
+}
+
+    .unread-label::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+        border-radius: 16px;
+        pointer-events: none;
+    }
+
+/* ============================================
+   Badge Styles
+============================================ */
+.unread-badge {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
+    transition: all 0.3s ease;
+}
+
+/* ============================================
+   Animations
+============================================ */
+
+/* Separator fade in - سریع */
+@keyframes fadeInSeparator {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Separator fade out - سریع */
+@keyframes fadeOutSeparator {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        max-height: 100px;
+        margin: 20px 0;
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+        max-height: 0;
+        margin: 0;
+    }
+}
+
+/* Pulse animation */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.03);
+        opacity: 0.85;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Badge fade out */
+@keyframes fadeOutBadge {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+}
+
+/* Message highlight */
 .message.highlight {
     animation: highlightPulse 2s ease;
+}
+
+@keyframes highlightPulse {
+    0%, 100% {
+        background-color: transparent;
+    }
+
+    50% {
+        background-color: rgba(255, 235, 59, 0.3);
+    }
+}
+
+/* Slide in animation for messages */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Avatar slide in */
+@keyframes avatarSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ============================================
+   Dark Mode Support
+============================================ */
+@media (prefers-color-scheme: dark) {
+    .date-separator .date-line {
+        background: linear-gradient(to right, transparent, #444 20%, #444 80%, transparent);
+    }
+
+    .date-label {
+        background: #2a2a2a;
+        color: #ccc;
+    }
+
+    .unread-line {
+        background: linear-gradient(to right, transparent, #ff4444 20%, #ff4444 80%, transparent);
+    }
+
+    .unread-label {
+        background: linear-gradient(135deg, #ff4444 0%, #dd3333 100%);
+    }
+
+    .message.deleted .message-bubble {
+        background: #2a2a2a;
+        border-color: #444;
+    }
 }

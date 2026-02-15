@@ -3,9 +3,10 @@
 // ============================================
 
 import { multiSelectMode, setMultiSelectMode, selectedMessages } from './variables.js';
-import { forwardSelectedMessages } from './forward.js';
 
 export function enterMultiSelectMode() {
+    console.log('🔘 Entering multi-select mode');
+
     setMultiSelectMode(true);
     selectedMessages.clear();
 
@@ -29,6 +30,8 @@ export function enterMultiSelectMode() {
     document.querySelectorAll('.message-menu-dropdown').forEach(m => {
         m.style.display = 'none';
     });
+
+    console.log('✅ Multi-select mode activated');
 }
 
 function toggleMessageSelection(messageId) {
@@ -48,6 +51,8 @@ function toggleMessageSelection(messageId) {
     }
 
     updateMultiSelectToolbar();
+
+    console.log(`✅ Selected messages: ${selectedMessages.size}`);
 }
 
 function showMultiSelectToolbar() {
@@ -84,15 +89,19 @@ function updateMultiSelectToolbar() {
 }
 
 export function exitMultiSelectMode() {
+    console.log('🔘 Exiting multi-select mode');
+
     setMultiSelectMode(false);
     selectedMessages.clear();
 
     document.querySelectorAll('.message-checkbox').forEach(cb => cb.remove());
 
     document.getElementById('multiSelectToolbar')?.remove();
+
+    console.log('✅ Multi-select mode deactivated');
 }
 
-// Export to window
+// ✅ Export to window
 window.enterMultiSelectMode = enterMultiSelectMode;
 window.exitMultiSelectMode = exitMultiSelectMode;
 window.selectedMessages = selectedMessages;

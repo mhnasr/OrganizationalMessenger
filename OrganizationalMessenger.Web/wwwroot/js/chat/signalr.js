@@ -32,18 +32,26 @@ export async function setupSignalR() {
         connection.on("MessageDelivered", (data) => updateMessageStatus(data.messageId, 'delivered'));
 
         connection.on("MessageRead", (data) => {
+            console.log('👁️ MessageRead received:', {
+                messageId: data.messageId,
+                readAt: data.readAt
+            });
+
             const msgEl = document.querySelector(`[data-message-id="${data.messageId}"]`);
-            if (!msgEl) return;
-
-            updateMessageStatus(data.messageId, 'read', data.readAt);
-
-            const sendInfoEl = msgEl.querySelector('.sent-info');
-            if (sendInfoEl) {
-                const readTime = formatPersianTime(data.readAt);
-                if (!sendInfoEl.textContent.includes('مشاهده')) {
-                    sendInfoEl.innerHTML += `&nbsp;&nbsp; مشاهده: ${readTime}`;
-                }
+            if (!msgEl) {
+                console.log('⚠️ Message not found');
+                return;
             }
+
+            // ✅ فقط برای پیام‌های sent
+            if (!msgEl.classList.contains('sent')) {
+                console.log('⚠️ Not a sent message');
+                return;
+            }
+
+            // ✅ به‌روزرسانی status
+            updateMessageStatus(data.messageId, 'read', data.readAt);
+            console.log('✅ Blue tick added');
         });
 
         connection.on("UserOnline", (userId) => {
