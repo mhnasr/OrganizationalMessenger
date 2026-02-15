@@ -61,6 +61,8 @@ namespace OrganizationalMessenger.Web.Controllers
         // دریافت پیامهای یک چت
         // دریافت پیامهای یک چت - با Pagination
 
+
+
         [HttpGet]
         public async Task<IActionResult> GetMessages(int? userId, int? groupId, int pageSize = 20, int? beforeMessageId = null)
         {
@@ -73,6 +75,8 @@ namespace OrganizationalMessenger.Web.Controllers
                 .Include(m => m.Attachments)
                 .Include(m => m.ReplyToMessage)
                     .ThenInclude(r => r.Sender)
+                .Include(m => m.Reactions)          // ✅ اضافه کنید
+                    .ThenInclude(r => r.User)       // ✅ اضافه کنید
                 .Where(m => !m.IsSystemMessage);
 
             if (userId.HasValue)
@@ -99,13 +103,11 @@ namespace OrganizationalMessenger.Web.Controllers
                 }
             }
 
-            // ✅ مرتب‌سازی DESC برای گرفتن جدیدترین‌ها
             var messages = await query
                 .OrderByDescending(m => m.SentAt)
                 .Take(pageSize)
                 .ToListAsync();
 
-            // ✅ Reverse برای نمایش قدیمی → جدید
             messages.Reverse();
 
             var showDeletedNoticeStr = await _context.SystemSettings
@@ -173,7 +175,22 @@ namespace OrganizationalMessenger.Web.Controllers
                                 a.Duration,
                                 ReadableDuration = a.ReadableDuration
                             })
-                            .ToList()
+                            .ToList(),
+                    // ✅ اضافه کردن Reactions با hasReacted
+                    Reactions = m.Reactions
+                        .GroupBy(r => r.Emoji)
+                        .Select(g => new
+                        {
+                            emoji = g.Key,
+                            count = g.Count(),
+                            users = g.Select(r => new
+                            {
+                                id = r.UserId,
+                                name = $"{r.User.FirstName} {r.User.LastName}"
+                            }).ToList(),
+                            hasReacted = g.Any(r => r.UserId == currentUserId.Value)
+                        })
+                        .ToList()
                 })
                 .ToList();
 
@@ -183,6 +200,9 @@ namespace OrganizationalMessenger.Web.Controllers
                 hasMore = messages.Count == pageSize
             });
         }
+
+
+
         // ✅ اصلاح SendMessage - با کپشن
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -777,8 +797,123 @@ namespace OrganizationalMessenger.Web.Controllers
 
 
 
-        
 
+        // ============================================
+        // React to Message
+        // ============================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReactToMessage([FromBody] ReactToMessageRequest request)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            try
+            {
+                var message = await _context.Messages
+                    .FirstOrDefaultAsync(m => m.Id == request.MessageId);
+
+                if (message == null)
+                    return NotFound(new { success = false, message = "پیام یافت نشد" });
+
+                // ✅ چک کردن وجود react قبلی با همین ایموجی
+                var existingReaction = await _context.MessageReactions
+                    .FirstOrDefaultAsync(mr =>
+                        mr.MessageId == request.MessageId &&
+                        mr.UserId == userId.Value &&
+                        mr.Emoji == request.Emoji);
+
+                if (existingReaction != null)
+                {
+                    // ✅ حذف react (toggle)
+                    _context.MessageReactions.Remove(existingReaction);
+                    await _context.SaveChangesAsync();
+
+                    var updatedReactions = await GetMessageReactions(request.MessageId, userId.Value);
+
+                    return Ok(new
+                    {
+                        success = true,
+                        action = "removed",
+                        messageId = request.MessageId,
+                        emoji = request.Emoji,
+                        reactions = updatedReactions
+                    });
+                }
+                else
+                {
+                    // ✅ حذف تمام reaction های قبلی این کاربر از این پیام
+                    var oldReactions = await _context.MessageReactions
+                        .Where(mr => mr.MessageId == request.MessageId && mr.UserId == userId.Value)
+                        .ToListAsync();
+
+                    if (oldReactions.Any())
+                    {
+                        _context.MessageReactions.RemoveRange(oldReactions);
+                        Console.WriteLine($"🗑️ Removed {oldReactions.Count} old reactions from user {userId.Value}");
+                    }
+
+                    // ✅ اضافه کردن react جدید
+                    var reaction = new MessageReaction
+                    {
+                        MessageId = request.MessageId,
+                        UserId = userId.Value,
+                        Emoji = request.Emoji,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    _context.MessageReactions.Add(reaction);
+                    await _context.SaveChangesAsync();
+
+                    var updatedReactions = await GetMessageReactions(request.MessageId, userId.Value);
+
+                    return Ok(new
+                    {
+                        success = true,
+                        action = "added",
+                        messageId = request.MessageId,
+                        emoji = request.Emoji,
+                        reactions = updatedReactions
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ ReactToMessage error: {ex.Message}");
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        // ✅ دریافت لیست reactions یک پیام
+        private async Task<List<object>> GetMessageReactions(int messageId, int currentUserId)
+        {
+            var reactions = await _context.MessageReactions
+                .Where(mr => mr.MessageId == messageId)
+                .Include(mr => mr.User)
+                .GroupBy(mr => mr.Emoji)
+                .Select(g => new
+                {
+                    emoji = g.Key,
+                    count = g.Count(),
+                    users = g.Select(mr => new
+                    {
+                        id = mr.UserId,
+                        name = $"{mr.User.FirstName} {mr.User.LastName}"
+                    }).ToList(),
+                    hasReacted = g.Any(mr => mr.UserId == currentUserId) // ✅ آیا من react زده‌ام؟
+                })
+                .ToListAsync();
+
+            return reactions.Cast<object>().ToList();
+        }
+
+        // ✅ DTO
+        public class ReactToMessageRequest
+        {
+            public int MessageId { get; set; }
+            public string Emoji { get; set; } = string.Empty;
+        }
 
 
 

@@ -17,6 +17,36 @@ import { connection } from './variables.js';
 // ✅ Export کردن messageSettings برای دسترسی global
 window.messageSettings = messageSettings;
 
+function createReactionsHtml(reactions, messageId) {
+    if (!reactions || reactions.length === 0) {
+        return `
+            <div class="message-reactions">
+                <button class="reaction-add-btn" onclick="window.showReactionPicker(${messageId})">
+                    <i class="far fa-smile"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    const reactionsItems = reactions.map(r => `
+        <div class="reaction-item ${r.hasReacted ? 'my-reaction' : ''}" 
+             data-emoji="${escapeHtml(r.emoji)}"
+             onclick="window.toggleReaction(${messageId}, '${escapeHtml(r.emoji)}')"
+             title="${r.users.map(u => u.name).join(', ')}">
+            <span class="reaction-emoji">${r.emoji}</span>
+            <span class="reaction-count">${r.count}</span>
+        </div>
+    `).join('');
+
+    return `
+        <div class="message-reactions">
+            ${reactionsItems}
+            <button class="reaction-add-btn" onclick="window.showReactionPicker(${messageId})">
+                <i class="far fa-smile"></i>
+            </button>
+        </div>
+    `;
+}
 
 
 export async function loadMessageSettings() {
@@ -236,7 +266,8 @@ export function displayMessage(msg) {
         id: msg.id,
         text: (msg.content || msg.messageText || '').substring(0, 30),
         sentAt: msg.sentAt,
-        hasAttachments: !!(msg.attachments && msg.attachments.length > 0)
+        hasAttachments: !!(msg.attachments && msg.attachments.length > 0),
+        reactions: msg.reactions || []
     });
 
     const isSent = msg.senderId === window.currentUserId;
@@ -357,6 +388,7 @@ export function displayMessage(msg) {
     }
 
     const messageMenuHtml = createMessageMenu(msg.id, isSent, sentAt);
+    const reactionsHtml = createReactionsHtml(msg.reactions || [], msg.id);
 
     messageEl.innerHTML = `
         <div class="message-wrapper">
@@ -370,11 +402,15 @@ export function displayMessage(msg) {
                 </div>
                 ${messageMenuHtml}
             </div>
+            ${reactionsHtml}
         </div>
     `;
 
     container.appendChild(messageEl);
 }
+
+
+
 
 function createMessageMenu(messageId, isSent, sentAt) {
     if (isSent) {

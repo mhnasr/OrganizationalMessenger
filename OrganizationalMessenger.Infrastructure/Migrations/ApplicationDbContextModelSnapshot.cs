@@ -74,12 +74,12 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 697, DateTimeKind.Local).AddTicks(5634),
+                            CreatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 640, DateTimeKind.Local).AddTicks(1401),
                             Email = "admin@company.com",
                             FirstName = "مدیر",
                             IsActive = true,
                             LastName = "سیستم",
-                            PasswordHash = "$2a$11$OsGP0yI.judOh0aBnGLYMOLgcEvOm6R5jhm.ir4oCV4L8Stts7RF6",
+                            PasswordHash = "$2a$11$Y1S9gwwfHqCEwRFCGylc3.Tf762CAi3Lh4wdyaN5PwK4n9r12Z0ru",
                             Username = "admin"
                         });
                 });
@@ -807,6 +807,8 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
 
                     b.HasIndex("UserId1");
 
+                    b.HasIndex("MessageId", "UserId");
+
                     b.HasIndex("MessageId", "UserId", "Emoji")
                         .IsUnique();
 
@@ -1270,7 +1272,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "نوع احراز هویت: Database, ActiveDirectory, ERP",
                             Key = "AuthenticationType",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8131),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8141),
                             Value = "Database"
                         },
                         new
@@ -1279,7 +1281,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آیا کاربران می‌توانند گروه ایجاد کنند",
                             Key = "AllowUserGroupCreation",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8148),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8157),
                             Value = "true"
                         },
                         new
@@ -1288,7 +1290,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آیا کاربران می‌توانند کانال ایجاد کنند",
                             Key = "AllowUserChannelCreation",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8150),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8158),
                             Value = "true"
                         },
                         new
@@ -1297,7 +1299,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان مجاز ویرایش پیام (ثانیه)",
                             Key = "MessageEditTimeLimit",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8151),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8159),
                             Value = "3600"
                         },
                         new
@@ -1306,7 +1308,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان مجاز حذف پیام (ثانیه)",
                             Key = "MessageDeleteTimeLimit",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8152),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8160),
                             Value = "7200"
                         },
                         new
@@ -1315,7 +1317,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "فعال بودن تماس VoIP",
                             Key = "VoipEnabled",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8153),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8161),
                             Value = "true"
                         },
                         new
@@ -1324,7 +1326,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "فعال بودن یکپارچگی تلگرام",
                             Key = "TelegramIntegrationEnabled",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8155),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8162),
                             Value = "false"
                         },
                         new
@@ -1333,7 +1335,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "حداکثر تعداد اعضای گروه",
                             Key = "MaxGroupMembers",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8156),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8163),
                             Value = "200"
                         },
                         new
@@ -1342,7 +1344,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان انقضای کد OTP (دقیقه)",
                             Key = "OtpExpiryMinutes",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8157),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8163),
                             Value = "5"
                         },
                         new
@@ -1351,7 +1353,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "نام سازمان",
                             Key = "CompanyName",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8158),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8164),
                             Value = "سازمان"
                         },
                         new
@@ -1360,7 +1362,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آدرس لوگوی سازمان",
                             Key = "CompanyLogoUrl",
-                            UpdatedAt = new DateTime(2026, 2, 13, 19, 21, 52, 748, DateTimeKind.Local).AddTicks(8159),
+                            UpdatedAt = new DateTime(2026, 2, 15, 15, 9, 59, 672, DateTimeKind.Local).AddTicks(8165),
                             Value = "/images/logo.png"
                         });
                 });

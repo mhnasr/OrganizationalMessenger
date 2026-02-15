@@ -7,6 +7,7 @@ import './forward.js';
 
 import './reply.js';
 
+import './reactions.js';
 export async function initChat() {
     window.currentUserId = parseInt(document.getElementById('currentUserId')?.value || '0');
     console.log('🔍 Current User ID:', window.currentUserId);

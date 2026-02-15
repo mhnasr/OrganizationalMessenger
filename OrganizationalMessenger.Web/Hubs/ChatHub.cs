@@ -500,5 +500,36 @@ namespace OrganizationalMessenger.Web.Hubs
 
 
 
+
+        // ✅ اضافه کردن به ChatHub
+        public async Task NotifyMessageReaction(int messageId, string emoji, string action, List<object> reactions)
+        {
+            var userId = GetUserId();
+            if (userId == 0) return;
+
+            try
+            {
+                var message = await _context.Messages.FindAsync(messageId);
+                if (message == null) return;
+
+                // ✅ ارسال به همه (فرستنده + گیرنده)
+                await Clients.All.SendAsync("MessageReaction", new
+                {
+                    messageId,
+                    emoji,
+                    action, // "added" یا "removed"
+                    userId,
+                    reactions // لیست کامل reactions
+                });
+
+                _logger.LogInformation($"✅ Reaction {action}: Message {messageId}, Emoji {emoji}, User {userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "NotifyMessageReaction error");
+            }
+        }
+
+
     }
 }

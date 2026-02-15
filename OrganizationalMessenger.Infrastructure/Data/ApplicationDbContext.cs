@@ -71,6 +71,33 @@ namespace OrganizationalMessenger.Infrastructure.Data
                 entity.Property(e => e.VoipExtension).HasMaxLength(50);
             });
 
+
+
+
+            // ✅ MessageReaction Configuration
+            modelBuilder.Entity<MessageReaction>(entity =>
+            {
+                entity.HasKey(mr => mr.Id);
+
+                entity.HasOne(mr => mr.Message)
+                    .WithMany(m => m.Reactions)
+                    .HasForeignKey(mr => mr.MessageId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(mr => mr.User)
+                    .WithMany()
+                    .HasForeignKey(mr => mr.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // ✅ فقط index معمولی برای performance
+                entity.HasIndex(mr => new { mr.MessageId, mr.UserId });
+
+                entity.Property(mr => mr.Emoji).HasMaxLength(10);
+            });
+
+
+
+
             // ==================== AdminUser Configuration ====================
             modelBuilder.Entity<AdminUser>(entity =>
             {
