@@ -1,430 +1,562 @@
 ﻿// ============================================
-// Group Manager - مدیریت اعضای گروه
+// Group Manager - مدیریت گروه‌ها
 // ============================================
 
-// ✅ باز کردن پنل مدیریت اعضا
-async function openGroupMembersPanel(groupId) {
-    console.log('👥 Opening group members panel for group:', groupId);
+import { getCsrfToken } from '../../utils.js';
 
-    try {
-        // دریافت اعضای گروه
-        const response = await fetch(`/api/Group/${groupId}/Members`, {
-            headers: {
-                'RequestVerificationToken': getCsrfToken()
-            }
+export class GroupManager {
+    constructor() {
+        this.searchTimer = null; // برای debounce
+        this.init();
+    }
+
+    init() {
+        console.log('📦 GroupManager initialized');
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        const createGroupBtn = document.getElementById('createGroupBtn');
+        if (createGroupBtn) {
+            createGroupBtn.addEventListener('click', () => this.showCreateDialog());
+        }
+    }
+
+    // ============================================
+    // ایجاد گروه
+    // ============================================
+    showCreateDialog() {
+        console.log('📝 Opening create group dialog');
+
+        // حذف دیالوگ قبلی
+        document.querySelector('.group-dialog-overlay')?.remove();
+
+        const dialog = document.createElement('div');
+        dialog.className = 'group-dialog-overlay';
+        dialog.innerHTML = `
+            <div class="group-dialog">
+                <div class="group-dialog-header">
+                    <h3><i class="fas fa-users"></i> ایجاد گروه جدید</h3>
+                    <button class="close-dialog" onclick="this.closest('.group-dialog-overlay').remove()">✕</button>
+                </div>
+                <div class="group-dialog-body">
+                    <form id="createGroupForm">
+                        <div class="form-group">
+                            <label>نام گروه <span class="required">*</span></label>
+                            <input type="text" id="groupName" class="form-input" required maxlength="100" placeholder="نام گروه را وارد کنید...">
+                        </div>
+                        <div class="form-group">
+                            <label>توضیحات (اختیاری)</label>
+                            <textarea id="groupDescription" class="form-input" rows="3" maxlength="500" placeholder="توضیحات گروه..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>تصویر گروه</label>
+                            <input type="file" id="groupAvatarInput" class="form-input" accept="image/*">
+                            <small class="form-text text-muted">حداکثر 2 مگابایت</small>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="groupIsPublic">
+                                <span>گروه عمومی (همه می‌توانند پیدا کنند)</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>حداکثر تعداد اعضا</label>
+                            <input type="number" id="groupMaxMembers" class="form-input" value="200" min="2" max="1000">
+                        </div>
+                    </form>
+                </div>
+                <div class="group-dialog-footer">
+                    <button class="btn-cancel" onclick="this.closest('.group-dialog-overlay').remove()">انصراف</button>
+                    <button class="btn-primary" id="submitCreateGroup">
+                        <i class="fas fa-plus"></i> ایجاد گروه
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        // بستن با کلیک روی overlay
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) dialog.remove();
         });
 
-        if (!response.ok) {
-            alert('خطا در دریافت اعضای گروه');
-            return;
-        }
-
-        const result = await response.json();
-
-        if (!result.success) {
-            alert(result.message || 'خطا در دریافت اعضا');
-            return;
-        }
-
-        showGroupMembersDialog(groupId, result.members);
-
-    } catch (error) {
-        console.error('❌ Error loading group members:', error);
-        alert('خطا در بارگذاری اعضای گروه');
-    }
-}
-
-// ✅ نمایش دیالوگ اعضای گروه
-function showGroupMembersDialog(groupId, members) {
-    // حذف دیالوگ قبلی
-    const existingDialog = document.getElementById('groupMembersDialog');
-    if (existingDialog) existingDialog.remove();
-
-    const dialog = document.createElement('div');
-    dialog.id = 'groupMembersDialog';
-    dialog.className = 'group-members-overlay';
-
-    const currentUserIsAdmin = members.some(m =>
-        m.userId === window.currentUserId && m.isAdmin
-    );
-
-    dialog.innerHTML = `
-        <div class="group-members-dialog">
-            <!-- هدر -->
-            <div class="group-members-header">
-                <h3>
-                    <i class="fas fa-users"></i>
-                    اعضای گروه
-                    <span class="member-count-badge">${members.length} نفر</span>
-                </h3>
-                <button class="close-dialog" onclick="closeGroupMembersDialog()">✕</button>
-            </div>
-
-            <!-- تب‌ها -->
-            <div class="group-members-tabs">
-                <button class="gm-tab active" data-tab="members" onclick="switchGroupTab('members')">
-                    <i class="fas fa-users"></i>
-                    اعضا (${members.length})
-                </button>
-                ${currentUserIsAdmin ? `
-                <button class="gm-tab" data-tab="add" onclick="switchGroupTab('add')">
-                    <i class="fas fa-user-plus"></i>
-                    افزودن عضو
-                </button>
-                ` : ''}
-            </div>
-
-            <!-- محتوای تب اعضا -->
-            <div class="gm-tab-content" id="gm-tab-members">
-                <div class="group-members-search">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="memberSearchInput" 
-                           placeholder="جستجوی اعضا..." 
-                           oninput="filterGroupMembers(this.value)">
-                </div>
-                <div class="group-members-list" id="membersList">
-                    ${renderMembersList(members, currentUserIsAdmin, groupId)}
-                </div>
-            </div>
-
-            <!-- محتوای تب افزودن عضو -->
-            ${currentUserIsAdmin ? `
-            <div class="gm-tab-content" id="gm-tab-add" style="display: none;">
-                <div class="group-members-search">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="addMemberSearchInput" 
-                           placeholder="جستجوی کاربر برای اضافه کردن..."
-                           oninput="searchUsersForGroup(${groupId}, this.value)">
-                </div>
-                <div class="search-hint">
-                    <i class="fas fa-info-circle"></i>
-                    نام یا نام کاربری فرد مورد نظر را جستجو کنید
-                </div>
-                <div class="group-members-list" id="addMembersList">
-                    <!-- نتایج جستجو اینجا نمایش داده می‌شود -->
-                </div>
-            </div>
-            ` : ''}
-        </div>
-    `;
-
-    document.body.appendChild(dialog);
-    document.body.style.overflow = 'hidden';
-
-    // انیمیشن ورود
-    requestAnimationFrame(() => {
-        dialog.classList.add('active');
-    });
-}
-
-// ✅ رندر لیست اعضا
-function renderMembersList(members, isAdmin, groupId) {
-    if (members.length === 0) {
-        return '<div class="no-members">هیچ عضوی یافت نشد</div>';
-    }
-
-    return members.map(member => {
-        const roleLabel = getRoleLabel(member.role);
-        const roleBadge = member.isAdmin
-            ? `<span class="role-badge admin">${roleLabel}</span>`
-            : `<span class="role-badge member">${roleLabel}</span>`;
-
-        const isCurrentUser = member.userId === window.currentUserId;
-        const isOwner = member.role === 'Owner';
-
-        // دکمه حذف فقط برای ادمین‌ها و نه برای سازنده
-        let actionButtons = '';
-        if (isAdmin && !isCurrentUser && !isOwner) {
-            actionButtons = `
-                <button class="member-action-btn remove" 
-                        onclick="removeMemberFromGroup(${groupId}, ${member.userId}, '${escapeHtml(member.name)}')"
-                        title="حذف عضو">
-                    <i class="fas fa-user-minus"></i>
-                </button>
-            `;
-        }
-
-        return `
-            <div class="group-member-item" data-member-name="${escapeHtml(member.name).toLowerCase()}">
-                <div class="member-avatar ${member.isOnline ? 'online' : ''}">
-                    <img src="${member.avatar}" alt="${escapeHtml(member.name)}">
-                </div>
-                <div class="member-info">
-                    <div class="member-name-row">
-                        <span class="member-name">
-                            ${escapeHtml(member.name)}
-                            ${isCurrentUser ? '<span class="you-badge">(شما)</span>' : ''}
-                        </span>
-                        ${roleBadge}
-                    </div>
-                    <span class="member-username">@${escapeHtml(member.username)}</span>
-                </div>
-                <div class="member-actions">
-                    ${actionButtons}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-// ✅ تبدیل نقش به فارسی
-function getRoleLabel(role) {
-    const roles = {
-        'Owner': 'سازنده',
-        'Admin': 'مدیر',
-        'Member': 'عضو'
-    };
-    return roles[role] || 'عضو';
-}
-
-// ✅ فیلتر اعضا
-function filterGroupMembers(query) {
-    const items = document.querySelectorAll('#membersList .group-member-item');
-    const lowerQuery = query.toLowerCase();
-
-    items.forEach(item => {
-        const name = item.dataset.memberName || '';
-        item.style.display = name.includes(lowerQuery) ? 'flex' : 'none';
-    });
-}
-
-// ✅ تغییر تب
-function switchGroupTab(tab) {
-    // تغییر تب فعال
-    document.querySelectorAll('.gm-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`.gm-tab[data-tab="${tab}"]`).classList.add('active');
-
-    // نمایش محتوا
-    document.querySelectorAll('.gm-tab-content').forEach(c => c.style.display = 'none');
-    document.getElementById(`gm-tab-${tab}`).style.display = 'block';
-
-    // اگر تب افزودن عضو باز شد، فوکوس روی input
-    if (tab === 'add') {
+        // فوکوس روی نام گروه
         setTimeout(() => {
-            document.getElementById('addMemberSearchInput')?.focus();
+            document.getElementById('groupName')?.focus();
         }, 100);
-    }
-}
 
-// ✅ جستجوی کاربران برای اضافه کردن
-let searchTimeout = null;
-async function searchUsersForGroup(groupId, query) {
-    if (searchTimeout) clearTimeout(searchTimeout);
+        document.getElementById('submitCreateGroup').addEventListener('click', () => {
+            this.createGroup();
+        });
 
-    const container = document.getElementById('addMembersList');
-
-    if (query.length < 1) {
-        container.innerHTML = `
-            <div class="search-empty">
-                <i class="fas fa-search fa-2x"></i>
-                <p>نام کاربر را جستجو کنید</p>
-            </div>
-        `;
-        return;
+        // Enter key در فرم
+        document.getElementById('groupName')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.createGroup();
+            }
+        });
     }
 
-    // دبانس
-    searchTimeout = setTimeout(async () => {
-        container.innerHTML = `
-            <div class="search-loading">
-                <div class="spinner"></div>
-                <span>در حال جستجو...</span>
-            </div>
-        `;
+    async createGroup() {
+        const submitBtn = document.getElementById('submitCreateGroup');
+        const name = document.getElementById('groupName')?.value.trim();
+        const description = document.getElementById('groupDescription')?.value.trim();
+        const isPublic = document.getElementById('groupIsPublic')?.checked || false;
+        const maxMembers = parseInt(document.getElementById('groupMaxMembers')?.value) || 200;
+        const avatarFile = document.getElementById('groupAvatarInput')?.files[0];
+
+        if (!name) {
+            alert('نام گروه الزامی است');
+            document.getElementById('groupName')?.focus();
+            return;
+        }
+
+        // غیرفعال کردن دکمه
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ایجاد...';
+        }
+
+        const formData = new FormData();
+        formData.append('Name', name);
+        formData.append('Description', description || '');
+        formData.append('IsPublic', isPublic.toString());
+        formData.append('MaxMembers', maxMembers.toString());
+        if (avatarFile) {
+            formData.append('AvatarFile', avatarFile);
+        }
 
         try {
-            const response = await fetch(
-                `/api/Group/${groupId}/SearchUsers?query=${encodeURIComponent(query)}`,
-                {
-                    headers: {
-                        'RequestVerificationToken': getCsrfToken()
-                    }
-                }
-            );
+            const response = await fetch('/api/Group/Create', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': getCsrfToken()
+                },
+                body: formData
+            });
 
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log('📥 Create group response:', result);
+
+            if (result.success) {
+                // بستن دیالوگ ایجاد
+                document.querySelector('.group-dialog-overlay')?.remove();
+
+                // ✅ بلافاصله مودال "افزودن اعضا" را باز کن
+                this.showPostCreateDialog(result.groupId, result.group?.name || name);
+
+                // بروزرسانی لیست چت‌ها
+                try {
+                    const { loadChats } = await import('../../chats.js');
+                    await loadChats('groups');
+                } catch (e) {
+                    console.warn('⚠️ Could not refresh chat list:', e);
+                }
+            } else {
+                alert(result.message || 'خطا در ایجاد گروه');
+            }
+        } catch (error) {
+            console.error('❌ Create group error:', error);
+            alert(`خطا در ایجاد گروه: ${error.message}`);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-plus"></i> ایجاد گروه';
+            }
+        }
+    }
+
+    // ============================================
+    // ✅ دیالوگ بعد از ایجاد گروه - پیشنهاد افزودن اعضا
+    // ============================================
+    showPostCreateDialog(groupId, groupName) {
+        const dialog = document.createElement('div');
+        dialog.className = 'group-dialog-overlay';
+        dialog.innerHTML = `
+            <div class="group-dialog post-create-dialog">
+                <div class="group-dialog-header success-header">
+                    <h3><i class="fas fa-check-circle"></i> گروه ایجاد شد!</h3>
+                    <button class="close-dialog" onclick="this.closest('.group-dialog-overlay').remove()">✕</button>
+                </div>
+                <div class="group-dialog-body text-center">
+                    <div class="success-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <p class="success-message">گروه <strong>${this.escapeHtml(groupName)}</strong> با موفقیت ایجاد شد.</p>
+                    <p class="success-sub">آیا می‌خواهید اعضا اضافه کنید؟</p>
+                </div>
+                <div class="group-dialog-footer">
+                    <button class="btn-cancel" onclick="this.closest('.group-dialog-overlay').remove()">بعداً</button>
+                    <button class="btn-primary" id="goToAddMembers">
+                        <i class="fas fa-user-plus"></i> افزودن اعضا
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) dialog.remove();
+        });
+
+        document.getElementById('goToAddMembers').addEventListener('click', () => {
+            dialog.remove();
+            this.showMembersDialog(groupId);
+        });
+    }
+
+    // ============================================
+    // نمایش لیست اعضا
+    // ============================================
+    async showMembersDialog(groupId) {
+        console.log('👥 Opening members dialog for group:', groupId);
+
+        try {
+            const response = await fetch(`/api/Group/${groupId}/Members`);
             const result = await response.json();
 
             if (!result.success) {
-                container.innerHTML = `<div class="search-empty"><p>${result.message}</p></div>`;
+                alert(result.message);
+                return;
+            }
+
+            // حذف دیالوگ قبلی
+            document.querySelector('.members-dialog-overlay')?.remove();
+
+            const dialog = document.createElement('div');
+            dialog.className = 'members-dialog-overlay';
+            dialog.innerHTML = `
+                <div class="members-dialog">
+                    <div class="members-dialog-header">
+                        <h3><i class="fas fa-users"></i> اعضای گروه <span class="member-count-badge">${result.members.length} نفر</span></h3>
+                        <button class="close-dialog" onclick="this.closest('.members-dialog-overlay').remove()">✕</button>
+                    </div>
+                    <div class="members-dialog-body">
+                        <div class="members-actions">
+                            <button class="btn-add-member" id="addMemberBtn">
+                                <i class="fas fa-user-plus"></i> افزودن عضو جدید
+                            </button>
+                        </div>
+                        <div class="members-list" id="membersList">
+                            ${result.members.map(m => this.renderMemberItem(m, groupId)).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(dialog);
+
+            // بستن با کلیک روی overlay
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) dialog.remove();
+            });
+
+            document.getElementById('addMemberBtn').addEventListener('click', () => {
+                this.showAddMemberDialog(groupId);
+            });
+
+        } catch (error) {
+            console.error('❌ Error loading members:', error);
+            alert('خطا در بارگذاری اعضا');
+        }
+    }
+
+    // ✅ رندر هر آیتم عضو
+    renderMemberItem(member, groupId) {
+        const roleClass = member.role === 'Owner' ? 'role-owner' : (member.isAdmin ? 'role-admin' : 'role-member');
+        const onlineClass = member.isOnline ? 'online' : '';
+
+        return `
+            <div class="member-item" data-user-id="${member.userId}">
+                <div class="member-avatar-wrapper ${onlineClass}">
+                    <img src="${member.avatar}" class="member-avatar" alt="${member.name}">
+                </div>
+                <div class="member-info">
+                    <div class="member-name">${member.name}</div>
+                    <div class="member-role ${roleClass}">
+                        ${member.role === 'Owner' ? '<i class="fas fa-crown"></i> ' : ''}
+                        ${member.isAdmin && member.role !== 'Owner' ? '<i class="fas fa-shield-alt"></i> ' : ''}
+                        ${this.getRoleName(member.role)}
+                    </div>
+                </div>
+                ${member.role !== 'Owner' && !member.isAdmin ? `
+                    <button class="btn-remove-member" onclick="window.groupManager.removeMember(${groupId}, ${member.userId})" title="حذف عضو">
+                        <i class="fas fa-times"></i>
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // ============================================
+    // دیالوگ افزودن عضو
+    // ============================================
+    async showAddMemberDialog(groupId) {
+        // حذف دیالوگ قبلی
+        document.querySelector('.add-member-dialog-overlay')?.remove();
+
+        const dialog = document.createElement('div');
+        dialog.className = 'add-member-dialog-overlay';
+        dialog.innerHTML = `
+            <div class="add-member-dialog">
+                <div class="add-member-dialog-header">
+                    <h3><i class="fas fa-user-plus"></i> افزودن عضو</h3>
+                    <button class="close-dialog" onclick="this.closest('.add-member-dialog-overlay').remove()">✕</button>
+                </div>
+                <div class="add-member-dialog-body">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchUsersInput" class="search-input" placeholder="نام یا نام کاربری را جستجو کنید..." autofocus>
+                    </div>
+                    <div class="users-list" id="searchResultsList">
+                        <div class="loading-users">
+                            <i class="fas fa-spinner fa-spin"></i> در حال بارگذاری...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        // بستن با کلیک روی overlay
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) dialog.remove();
+        });
+
+        const searchInput = document.getElementById('searchUsersInput');
+
+        // ✅ debounce جستجو - 300 میلی‌ثانیه
+        searchInput.addEventListener('input', () => {
+            if (this.searchTimer) clearTimeout(this.searchTimer);
+            this.searchTimer = setTimeout(() => {
+                this.searchUsers(groupId, searchInput.value);
+            }, 300);
+        });
+
+        // فوکوس
+        setTimeout(() => searchInput?.focus(), 100);
+
+        // جستجوی اولیه (نمایش همه کاربران)
+        this.searchUsers(groupId, '');
+    }
+
+    // ============================================
+    // جستجوی کاربران
+    // ============================================
+    async searchUsers(groupId, query) {
+        const listEl = document.getElementById('searchResultsList');
+        if (!listEl) return;
+
+        // نمایش loading
+        listEl.innerHTML = '<div class="loading-users"><i class="fas fa-spinner fa-spin"></i> در حال جستجو...</div>';
+
+        try {
+            const response = await fetch(`/api/Group/${groupId}/SearchUsers?query=${encodeURIComponent(query)}`);
+            const result = await response.json();
+
+            if (!result.success) {
+                listEl.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-circle"></i> ${result.message}</div>`;
                 return;
             }
 
             if (result.users.length === 0) {
-                container.innerHTML = `
-                    <div class="search-empty">
-                        <i class="fas fa-user-slash fa-2x"></i>
+                listEl.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-user-slash"></i>
                         <p>کاربری یافت نشد</p>
+                        ${query ? '<small>عبارت دیگری را امتحان کنید</small>' : '<small>همه کاربران عضو هستند</small>'}
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = result.users.map(user => `
-                <div class="group-member-item add-mode" id="add-user-${user.id}">
-                    <div class="member-avatar ${user.isOnline ? 'online' : ''}">
-                        <img src="${user.avatar}" alt="${escapeHtml(user.name)}">
+            listEl.innerHTML = result.users.map(u => `
+                <div class="user-item" data-user-id="${u.id}">
+                    <div class="user-avatar-wrapper ${u.isOnline ? 'online' : ''}">
+                        <img src="${u.avatar}" class="user-avatar" alt="${u.name}">
                     </div>
-                    <div class="member-info">
-                        <span class="member-name">${escapeHtml(user.name)}</span>
-                        <span class="member-username">@${escapeHtml(user.username)}</span>
+                    <div class="user-info">
+                        <div class="user-name">${u.name}</div>
+                        <div class="user-username">@${u.username}</div>
                     </div>
-                    <button class="member-action-btn add" 
-                            onclick="addMemberToGroup(${groupId}, ${user.id}, '${escapeHtml(user.name)}')"
-                            title="افزودن به گروه">
-                        <i class="fas fa-user-plus"></i>
-                        افزودن
+                    <button class="btn-add-user" onclick="window.groupManager.addMember(${groupId}, ${u.id}, this)" title="افزودن">
+                        <i class="fas fa-plus"></i> افزودن
                     </button>
                 </div>
             `).join('');
-
         } catch (error) {
             console.error('❌ Search error:', error);
-            container.innerHTML = `<div class="search-empty"><p>خطا در جستجو</p></div>`;
+            listEl.innerHTML = '<div class="no-results"><i class="fas fa-exclamation-triangle"></i> خطا در جستجو</div>';
         }
-    }, 300);
-}
+    }
 
-// ✅ افزودن عضو به گروه
-async function addMemberToGroup(groupId, userId, userName) {
-    try {
-        const btn = document.querySelector(`#add-user-${userId} .member-action-btn`);
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner-small"></div>';
+    // ============================================
+    // افزودن عضو
+    // ============================================
+    async addMember(groupId, userId, buttonEl = null) {
+        // ✅ غیرفعال کردن دکمه فوری
+        if (buttonEl) {
+            buttonEl.disabled = true;
+            buttonEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         }
 
-        const response = await fetch(`/api/Group/${groupId}/AddMember`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': getCsrfToken()
-            },
-            body: JSON.stringify({ userId: userId })
+        try {
+            const response = await fetch(`/api/Group/${groupId}/AddMember`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getCsrfToken()
+                },
+                body: JSON.stringify({ userId })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // ✅ حذف کاربر از لیست جستجو (بدون بستن دیالوگ)
+                const userItem = buttonEl?.closest('.user-item');
+                if (userItem) {
+                    userItem.style.transition = 'all 0.3s ease';
+                    userItem.style.opacity = '0';
+                    userItem.style.transform = 'translateX(-20px)';
+                    setTimeout(() => {
+                        userItem.remove();
+
+                        // اگر لیست خالی شد
+                        const listEl = document.getElementById('searchResultsList');
+                        if (listEl && listEl.children.length === 0) {
+                            listEl.innerHTML = `
+                                <div class="no-results">
+                                    <i class="fas fa-check-circle" style="color: #4caf50;"></i>
+                                    <p>همه کاربران اضافه شدند!</p>
+                                </div>
+                            `;
+                        }
+                    }, 300);
+                }
+
+                // ✅ نمایش toast بجای alert
+                this.showToast(`${result.member?.name || 'عضو'} اضافه شد`, 'success');
+
+            } else {
+                this.showToast(result.message || 'خطا', 'error');
+                if (buttonEl) {
+                    buttonEl.disabled = false;
+                    buttonEl.innerHTML = '<i class="fas fa-plus"></i> افزودن';
+                }
+            }
+        } catch (error) {
+            console.error('❌ Add member error:', error);
+            this.showToast('خطا در افزودن عضو', 'error');
+            if (buttonEl) {
+                buttonEl.disabled = false;
+                buttonEl.innerHTML = '<i class="fas fa-plus"></i> افزودن';
+            }
+        }
+    }
+
+    // ============================================
+    // حذف عضو
+    // ============================================
+    async removeMember(groupId, userId) {
+        if (!confirm('آیا از حذف این عضو اطمینان دارید؟')) return;
+
+        try {
+            const response = await fetch(`/api/Group/${groupId}/RemoveMember`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getCsrfToken()
+                },
+                body: JSON.stringify({ userId })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // ✅ حذف آیتم از لیست با انیمیشن
+                const memberItem = document.querySelector(`.member-item[data-user-id="${userId}"]`);
+                if (memberItem) {
+                    memberItem.style.transition = 'all 0.3s ease';
+                    memberItem.style.opacity = '0';
+                    memberItem.style.transform = 'translateX(-20px)';
+                    setTimeout(() => {
+                        memberItem.remove();
+                        // بروزرسانی تعداد اعضا
+                        const badge = document.querySelector('.member-count-badge');
+                        if (badge) {
+                            const count = document.querySelectorAll('.member-item').length;
+                            badge.textContent = `${count} نفر`;
+                        }
+                    }, 300);
+                }
+                this.showToast('عضو حذف شد', 'success');
+            } else {
+                this.showToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('❌ Remove member error:', error);
+            this.showToast('خطا در حذف عضو', 'error');
+        }
+    }
+
+    // ============================================
+    // Toast Notification
+    // ============================================
+    showToast(message, type = 'info') {
+        // حذف toast قبلی
+        document.querySelector('.gm-toast')?.remove();
+
+        const toast = document.createElement('div');
+        toast.className = `gm-toast gm-toast-${type}`;
+
+        const icon = type === 'success' ? 'fa-check-circle' :
+            type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+
+        toast.innerHTML = `<i class="fas ${icon}"></i> ${this.escapeHtml(message)}`;
+        document.body.appendChild(toast);
+
+        // نمایش
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
         });
 
-        const result = await response.json();
-
-        if (result.success) {
-            // تغییر دکمه به تیک سبز
-            if (btn) {
-                btn.innerHTML = '<i class="fas fa-check"></i> اضافه شد';
-                btn.classList.remove('add');
-                btn.classList.add('added');
-                btn.disabled = true;
-            }
-
-            // نمایش پیام موفقیت
-            showToast(`${userName} به گروه اضافه شد`, 'success');
-
-            // به‌روزرسانی تعداد اعضا
-            const countBadge = document.querySelector('.member-count-badge');
-            if (countBadge) {
-                const currentCount = parseInt(countBadge.textContent) || 0;
-                countBadge.textContent = `${currentCount + 1} نفر`;
-            }
-
-            console.log('✅ Member added:', userName);
-        } else {
-            alert(result.message || 'خطا در افزودن عضو');
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-user-plus"></i> افزودن';
-            }
-        }
-    } catch (error) {
-        console.error('❌ Add member error:', error);
-        alert('خطا در افزودن عضو');
-    }
-}
-
-// ✅ حذف عضو از گروه
-async function removeMemberFromGroup(groupId, userId, userName) {
-    // تأیید حذف
-    showConfirmDialog(
-        'حذف عضو',
-        `آیا از حذف "${userName}" از گروه اطمینان دارید؟`,
-        async () => {
-            try {
-                const response = await fetch(`/api/Group/${groupId}/RemoveMember`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': getCsrfToken()
-                    },
-                    body: JSON.stringify({ userId: userId })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // حذف عنصر از لیست با انیمیشن
-                    const memberItems = document.querySelectorAll('.group-member-item');
-                    memberItems.forEach(item => {
-                        const removeBtn = item.querySelector(`.member-action-btn.remove[onclick*="${userId}"]`);
-                        if (removeBtn) {
-                            item.style.animation = 'fadeOut 0.3s ease';
-                            setTimeout(() => item.remove(), 300);
-                        }
-                    });
-
-                    // به‌روزرسانی تعداد
-                    const countBadge = document.querySelector('.member-count-badge');
-                    if (countBadge) {
-                        const currentCount = parseInt(countBadge.textContent) || 0;
-                        countBadge.textContent = `${currentCount - 1} نفر`;
-                    }
-
-                    showToast(`${userName} از گروه حذف شد`, 'info');
-                    console.log('✅ Member removed:', userName);
-                } else {
-                    alert(result.message || 'خطا در حذف عضو');
-                }
-            } catch (error) {
-                console.error('❌ Remove member error:', error);
-                alert('خطا در حذف عضو');
-            }
-        }
-    );
-}
-
-// ✅ بستن دیالوگ
-function closeGroupMembersDialog() {
-    const dialog = document.getElementById('groupMembersDialog');
-    if (dialog) {
-        dialog.classList.remove('active');
+        // حذف بعد از 3 ثانیه
         setTimeout(() => {
-            dialog.remove();
-            document.body.style.overflow = 'auto';
-        }, 300);
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // ============================================
+    // Helpers
+    // ============================================
+    getRoleName(role) {
+        const roles = {
+            'Owner': 'مالک',
+            'Admin': 'مدیر',
+            'Member': 'عضو'
+        };
+        return roles[role] || role;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 }
 
-// ✅ Toast notification ساده
-function showToast(message, type = 'info') {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
+const groupManager = new GroupManager();
+window.groupManager = groupManager;
 
-    const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-exclamation-circle',
-        info: 'fas fa-info-circle',
-        warning: 'fas fa-exclamation-triangle'
-    };
-
-    toast.innerHTML = `
-        <i class="${icons[type] || icons.info}"></i>
-        <span>${message}</span>
-    `;
-
-    document.body.appendChild(toast);
-
-    requestAnimationFrame(() => toast.classList.add('show'));
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+console.log('✅ group-manager.js loaded');
