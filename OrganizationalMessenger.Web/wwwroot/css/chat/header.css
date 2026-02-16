@@ -35,6 +35,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    position: relative; /* ✅ اضافه کنید */
 }
 
 .logo {
@@ -79,3 +80,85 @@
         background: #ff5252;
         transform: scale(1.05);
     }
+
+
+/* ============================================
+   Create Button & Menu
+============================================ */
+
+.create-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+    .create-btn:hover {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+    }
+
+.create-menu {
+    position: absolute;
+    top: 50px;
+    right: 48px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    z-index: 9999; /* ✅ افزایش z-index */
+    min-width: 180px;
+    animation: slideDown 0.2s ease;
+    border: 1px solid #e0e0e0; /* ✅ border برای دیدن راحت‌تر */
+}
+
+.create-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: right;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #333;
+    font-size: 14px;
+}
+
+    .create-menu-item:not(:last-child) {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .create-menu-item:hover {
+        background: #f8f8f8;
+    }
+
+    .create-menu-item i {
+        font-size: 16px;
+        color: #667eea;
+        width: 20px;
+        text-align: center;
+    }
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,476 @@
+﻿/* ============================================
+   Group & Channel Dialogs
+============================================ */
+
+.group-dialog-overlay,
+.channel-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.group-dialog,
+.channel-dialog {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: slideUp 0.3s ease;
+}
+
+.group-dialog-header,
+.channel-dialog-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .group-dialog-header h3,
+    .channel-dialog-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+
+.close-dialog {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+    .close-dialog:hover {
+        background: #f5f5f5;
+        color: #333;
+    }
+
+.group-dialog-body,
+.channel-dialog-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+        .form-group label input[type="checkbox"] {
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+textarea.form-input {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.group-dialog-footer,
+.channel-dialog-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    background: #f5f5f5;
+    color: #666;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .btn-cancel:hover {
+        background: #e0e0e0;
+    }
+
+.btn-primary {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+/* ============================================
+   Create Menu - دکمه + در سایدبار
+============================================ */
+
+.create-menu-container {
+    position: relative;
+}
+
+.create-menu-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin: 12px 16px;
+}
+
+    .create-menu-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+.create-menu {
+    position: absolute;
+    top: 100%;
+    left: 16px;
+    right: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    z-index: 1000;
+    margin-top: 8px;
+    display: none;
+    animation: slideDown 0.2s ease;
+}
+
+    .create-menu.show {
+        display: block;
+    }
+
+.create-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: right;
+    color: #333;
+    font-size: 14px;
+}
+
+    .create-menu-item:not(:last-child) {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .create-menu-item:hover {
+        background: #f8f8f8;
+    }
+
+    .create-menu-item i {
+        font-size: 18px;
+        color: #667eea;
+        width: 24px;
+        text-align: center;
+    }
+
+/* ============================================
+   Animations
+============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   Dark Mode
+============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .group-dialog,
+    .channel-dialog {
+        background: #2a2a2a;
+    }
+
+    .group-dialog-header,
+    .channel-dialog-header,
+    .group-dialog-footer,
+    .channel-dialog-footer {
+        border-color: #444;
+    }
+
+        .group-dialog-header h3,
+        .channel-dialog-header h3 {
+            color: #fff;
+        }
+
+    .form-group label {
+        color: #ccc;
+    }
+
+    .form-input {
+        background: #333;
+        border-color: #444;
+        color: #fff;
+    }
+
+        .form-input:focus {
+            border-color: #667eea;
+            background: #3a3a3a;
+        }
+
+    .create-menu {
+        background: #2a2a2a;
+        border: 1px solid #444;
+    }
+
+    .create-menu-item {
+        color: #ccc;
+    }
+
+        .create-menu-item:hover {
+            background: #333;
+        }
+
+        .create-menu-item:not(:last-child) {
+            border-color: #444;
+        }
+}
+
+/* ============================================
+   Responsive
+============================================ */
+
+@media (max-width: 768px) {
+    .group-dialog,
+    .channel-dialog {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .group-dialog-body,
+    .channel-dialog-body {
+        padding: 16px;
+    }
+
+    .create-menu-btn {
+        margin: 8px 12px;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}
+
+
+
+
+
+/* ==================== Members Dialog ==================== */
+.members-dialog-overlay,
+.add-member-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.members-dialog,
+.add-member-dialog {
+    background: white;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.members-dialog-header,
+.dialog-header {
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.members-dialog-body,
+.dialog-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.members-actions {
+    margin-bottom: 15px;
+}
+
+.members-list,
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.member-item,
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+    .member-item:hover,
+    .user-item:hover {
+        background: #edf2f7;
+    }
+
+.member-avatar,
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.member-info,
+.user-info {
+    flex: 1;
+}
+
+.member-name,
+.user-name {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.member-role,
+.user-username {
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.close-dialog {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #718096;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+    .close-dialog:hover {
+        background: #edf2f7;
+        color: #2d3748;
+    }

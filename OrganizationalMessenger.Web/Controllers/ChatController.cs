@@ -64,7 +64,12 @@ namespace OrganizationalMessenger.Web.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetMessages(int? userId, int? groupId, int pageSize = 20, int? beforeMessageId = null)
+        public async Task<IActionResult> GetMessages(
+                int? userId,
+                int? groupId,
+                int? channelId,  // ✅ اضافه کنید
+                int pageSize = 20,
+                int? beforeMessageId = null)
         {
             var currentUserId = GetCurrentUserId();
             if (currentUserId == null) return Unauthorized();
@@ -75,10 +80,11 @@ namespace OrganizationalMessenger.Web.Controllers
                 .Include(m => m.Attachments)
                 .Include(m => m.ReplyToMessage)
                     .ThenInclude(r => r.Sender)
-                .Include(m => m.Reactions)          // ✅ اضافه کنید
-                    .ThenInclude(r => r.User)       // ✅ اضافه کنید
+                .Include(m => m.Reactions)
+                    .ThenInclude(r => r.User)
                 .Where(m => !m.IsSystemMessage);
 
+            // ✅ شرط جدید برای کانال
             if (userId.HasValue)
             {
                 query = query.Where(m =>
@@ -89,9 +95,13 @@ namespace OrganizationalMessenger.Web.Controllers
             {
                 query = query.Where(m => m.GroupId == groupId);
             }
+            else if (channelId.HasValue)  // ✅ اضافه کنید
+            {
+                query = query.Where(m => m.ChannelId == channelId);
+            }
             else
             {
-                return BadRequest("userId or groupId is required");
+                return BadRequest("userId, groupId or channelId is required");
             }
 
             if (beforeMessageId.HasValue)
@@ -292,10 +302,13 @@ namespace OrganizationalMessenger.Web.Controllers
 
         // متد کمکی
 
+        // ✅ جایگزین این متد کمکی موجود کنید:
+
         private async Task<dynamic> GetUserChats(int userId, string tab = "all")
         {
             var chats = new List<dynamic>();
 
+            // ✅ چت‌های خصوصی
             if (tab == "all" || tab == "private")
             {
                 var users = await _context.Users
@@ -316,7 +329,6 @@ namespace OrganizationalMessenger.Web.Controllers
                         .OrderByDescending(m => m.SentAt)
                         .FirstOrDefaultAsync();
 
-                    // ✅ شمارش پیام‌های خوانده نشده
                     var unreadCount = await _context.Messages
                         .Where(m => m.SenderId == user.Id &&
                                    m.ReceiverId == userId &&
@@ -333,32 +345,82 @@ namespace OrganizationalMessenger.Web.Controllers
                         lastMessage = lastMessage != null ?
                             (lastMessage.MessageText ?? lastMessage.Content ?? "") : "",
                         lastMessageTime = lastMessage?.SentAt ?? user.LastSeen ?? user.CreatedAt,
-                        unreadCount,  // ✅ تعداد پیام‌های خوانده نشده
+                        unreadCount,
                         messageDirection = lastMessage?.SenderId == userId ? "sent" : "received"
                     });
                 }
             }
 
-            if (tab == "all" || tab == "group")
+            // ✅ گروه‌ها
+            if (tab == "all" || tab == "groups")
             {
                 var groups = await _context.UserGroups
                     .Where(ug => ug.UserId == userId && ug.IsActive)
                     .Include(ug => ug.Group)
-                    .Select(ug => ug.Group)
                     .ToListAsync();
 
-                foreach (var group in groups)
+                foreach (var ug in groups)
                 {
+                    var lastMessage = await _context.Messages
+                        .Where(m => m.GroupId == ug.GroupId && !m.IsDeleted)
+                        .OrderByDescending(m => m.SentAt)
+                        .FirstOrDefaultAsync();
+
+                    var memberCount = await _context.UserGroups
+                        .CountAsync(x => x.GroupId == ug.GroupId && x.IsActive);
+
                     chats.Add(new
                     {
                         type = "group",
-                        id = group.Id,
-                        name = group.Name,
-                        avatar = group.AvatarUrl ?? "/images/group-default.png",
-                        lastMessage = "بدون پیام",
-                        lastMessageTime = group.CreatedAt,
-                        memberCount = 0,
-                        unreadCount = 0
+                        id = ug.Group.Id,
+                        name = ug.Group.Name,
+                        avatar = ug.Group.AvatarUrl ?? "/images/default-group.png",
+                        isOnline = false,
+                        lastMessage = lastMessage != null ?
+                            (lastMessage.MessageText ?? lastMessage.Content ?? "") : "بدون پیام",
+                        lastMessageTime = lastMessage?.SentAt ?? ug.Group.CreatedAt,
+                        memberCount,
+                        unreadCount = 0, // TODO: محاسبه دقیق
+                        role = ug.Role.ToString(),
+                        isAdmin = ug.IsAdmin,
+                        isMuted = ug.IsMuted
+                    });
+                }
+            }
+
+            // ✅ کانال‌ها
+            if (tab == "all" || tab == "channels")
+            {
+                var channels = await _context.UserChannels
+                    .Where(uc => uc.UserId == userId && uc.IsActive)
+                    .Include(uc => uc.Channel)
+                    .Where(uc => !uc.Channel.IsDeleted)
+                    .ToListAsync();
+
+                foreach (var uc in channels)
+                {
+                    var lastMessage = await _context.Messages
+                        .Where(m => m.ChannelId == uc.ChannelId && !m.IsDeleted)
+                        .OrderByDescending(m => m.SentAt)
+                        .FirstOrDefaultAsync();
+
+                    chats.Add(new
+                    {
+                        type = "channel",
+                        id = uc.Channel.Id,
+                        name = uc.Channel.Name,
+                        avatar = uc.Channel.AvatarUrl ?? "/images/default-channel.png",
+                        isOnline = false,
+                        lastMessage = lastMessage != null ?
+                            (lastMessage.MessageText ?? lastMessage.Content ?? "") : "بدون پیام",
+                        lastMessageTime = lastMessage?.SentAt ?? uc.Channel.CreatedAt,
+                        memberCount = uc.Channel.MemberCount,
+                        unreadCount = uc.UnreadCount,
+                        role = uc.Role.ToString(),
+                        isAdmin = uc.IsAdmin,
+                        canPost = uc.CanPost,
+                        isMuted = uc.IsMuted,
+                        isPinned = uc.IsPinned
                     });
                 }
             }
@@ -421,7 +483,7 @@ namespace OrganizationalMessenger.Web.Controllers
 
 
 
-      
+
 
         [AllowAnonymous]
         [HttpPost]

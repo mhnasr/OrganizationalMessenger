@@ -1,5 +1,5 @@
 ============================================= 
-Merged Source Files - Tue 02/10/2026 10:09:15.95 
+Merged Source Files - Mon 02/16/2026  9:58:38.13 
 Excluded: bin, obj, Migrations folders 
 ============================================= 
  
@@ -217,7 +217,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OrganizationalMessenger.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a6cf97d17a7529676d54880d5db7070f8dddde6")]
 [assembly: System.Reflection.AssemblyProductAttribute("OrganizationalMessenger.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OrganizationalMessenger.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -270,10 +270,40 @@ using System.Reflection;
 
  
  
+==================== CreateChannelDto.cs ==================== 
+Path: F:\OrgMessenger\OrganizationalMessenger.Application\DTOs\Channel\ 
+ 
+﻿namespace OrganizationalMessenger.Application.DTOs.Channel
+{
+    public class CreateChannelDto
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public bool IsPublic { get; set; } = true;
+        public bool OnlyAdminsCanPost { get; set; } = true;
+        public bool AllowComments { get; set; } = false;
+    }
+} 
+ 
+==================== CreateGroupDto.cs ==================== 
+Path: F:\OrgMessenger\OrganizationalMessenger.Application\DTOs\Group\ 
+ 
+﻿namespace OrganizationalMessenger.Application.DTOs.Group
+{
+    public class CreateGroupDto
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public bool IsPublic { get; set; }
+        public int MaxMembers { get; set; } = 200;
+    }
+} 
+ 
 ==================== IAuthenticationManager.cs ==================== 
 Path: F:\OrgMessenger\OrganizationalMessenger.Application\Interfaces\ 
  
-﻿namespace OrganizationalMessenger.Application.Interfaces
+﻿using OrganizationalMessenger.Domain.Enums;  // ✅ اضافه کنید
+namespace OrganizationalMessenger.Application.Interfaces
 {
     public interface IAuthenticationManager
     {
@@ -282,12 +312,7 @@ Path: F:\OrgMessenger\OrganizationalMessenger.Application\Interfaces\
         IAuthenticationProvider GetProvider(AuthenticationType type);
     }
 
-    public enum AuthenticationType
-    {
-        ActiveDirectory,
-        ERP,
-        OTP
-    }
+
 }
  
  
@@ -313,6 +338,66 @@ Path: F:\OrgMessenger\OrganizationalMessenger.Application\Interfaces\
     }
 }
  
+ 
+==================== IChannelService.cs ==================== 
+Path: F:\OrgMessenger\OrganizationalMessenger.Application\Interfaces\ 
+ 
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// ✅ استفاده از alias
+using DomainChannel = OrganizationalMessenger.Domain.Entities.Channel;
+using DomainUser = OrganizationalMessenger.Domain.Entities.User;
+
+namespace OrganizationalMessenger.Application.Interfaces
+{
+    public interface IChannelService
+    {
+        Task<DomainChannel> CreateChannelAsync(DomainChannel channel, int creatorId);
+        Task<DomainChannel> GetChannelByIdAsync(int channelId);
+        Task<List<DomainChannel>> GetUserChannelsAsync(int userId);
+        Task<List<DomainChannel>> GetPublicChannelsAsync();
+        Task SubscribeAsync(int channelId, int userId);
+        Task UnsubscribeAsync(int channelId, int userId);
+        Task<bool> IsSubscriberAsync(int channelId, int userId);
+        Task<bool> IsAdminAsync(int channelId, int userId);
+        Task UpdateChannelAsync(DomainChannel channel);
+        Task DeleteChannelAsync(int channelId);
+        Task<List<DomainUser>> GetSubscribersAsync(int channelId);
+        Task AddAdminAsync(int channelId, int userId, int promoterId);
+        Task RemoveAdminAsync(int channelId, int userId, int demoterId);
+    }
+} 
+ 
+==================== IGroupService.cs ==================== 
+Path: F:\OrgMessenger\OrganizationalMessenger.Application\Interfaces\ 
+ 
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// ✅ استفاده از alias
+using DomainGroup = OrganizationalMessenger.Domain.Entities.Group;
+using DomainUser = OrganizationalMessenger.Domain.Entities.User;
+
+namespace OrganizationalMessenger.Application.Interfaces
+{
+    public interface IGroupService
+    {
+        Task<DomainGroup> CreateGroupAsync(DomainGroup group, int creatorId);
+        Task<DomainGroup> GetGroupByIdAsync(int groupId);
+        Task<List<DomainGroup>> GetUserGroupsAsync(int userId);
+        Task<List<DomainGroup>> GetPublicGroupsAsync();
+        Task AddMemberAsync(int groupId, int userId);
+        Task RemoveMemberAsync(int groupId, int userId);
+        Task<bool> IsMemberAsync(int groupId, int userId);
+        Task<bool> IsAdminAsync(int groupId, int userId);
+        Task UpdateGroupAsync(DomainGroup group);
+        Task DeleteGroupAsync(int groupId);
+        Task<List<DomainUser>> GetGroupMembersAsync(int groupId);
+        Task PromoteToAdminAsync(int groupId, int userId, int promoterId);
+        Task DemoteFromAdminAsync(int groupId, int userId, int demoterId);
+    }
+} 
  
 ==================== ISmsService.cs ==================== 
 Path: F:\OrgMessenger\OrganizationalMessenger.Application\Interfaces\ 
@@ -362,7 +447,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OrganizationalMessenger.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a6cf97d17a7529676d54880d5db7070f8dddde6")]
 [assembly: System.Reflection.AssemblyProductAttribute("OrganizationalMessenger.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OrganizationalMessenger.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -837,7 +922,8 @@ namespace OrganizationalMessenger.Domain.Entities
 ==================== LoginLog.cs ==================== 
 Path: F:\OrgMessenger\OrganizationalMessenger.Domain\Entities\ 
  
-﻿using OrganizationalMessenger.Domain.Enums;
+﻿
+using OrganizationalMessenger.Domain.Enums;
 
 namespace OrganizationalMessenger.Domain.Entities
 {
@@ -870,7 +956,7 @@ namespace OrganizationalMessenger.Domain.Entities
         // فرستنده و گیرنده
         public int SenderId { get; set; }
         public int? ReceiverId { get; set; } // برای پیام خصوصی
-
+         
         // گروه یا کانال
         public int? GroupId { get; set; }
         public int? ChannelId { get; set; }
@@ -889,6 +975,7 @@ namespace OrganizationalMessenger.Domain.Entities
         public string? AttachmentType { get; set; }
         public long? AttachmentSize { get; set; }
 
+
         // زمان‌ها
         public DateTime SentAt { get; set; } = DateTime.Now; // ⭐ اضافه شد
         public DateTime? DeliveredAt { get; set; }
@@ -898,9 +985,26 @@ namespace OrganizationalMessenger.Domain.Entities
         public bool IsEdited { get; set; } = false;
         public DateTime? EditedAt { get; set; }
 
+
+        public bool IsDeleted { get; set; } = false;  // ✅ اضافه کنید
+        public DateTime? DeletedAt { get; set; }      // ✅ اضافه کنید
+        public int? DeletedByUserId { get; set; }     // ✅ اختیاری: چه کسی حذف کرده
+
+
         // Reply و Forward
         public int? ReplyToMessageId { get; set; }
         public int? ForwardedFromMessageId { get; set; }
+
+
+
+        
+
+        // ✅ Forward
+        public int? ForwardedFromUserId { get; set; }  // فرستنده اصلی
+        public Message? ForwardedFromMessage { get; set; }  // Navigation
+        public User? ForwardedFromUser { get; set; }  // Navigation
+
+
 
         // تماس مرتبط
         public int? CallId { get; set; }
@@ -914,7 +1018,6 @@ namespace OrganizationalMessenger.Domain.Entities
         public Group? Group { get; set; }
         public Channel? Channel { get; set; }
         public Message? ReplyToMessage { get; set; }
-        public Message? ForwardedFromMessage { get; set; }
         public Call? Call { get; set; }
 
         public ICollection<Message> Replies { get; set; } = new List<Message>();
@@ -1348,6 +1451,7 @@ Path: F:\OrgMessenger\OrganizationalMessenger.Domain\Entities\
         public const string MessageDeleteAfterRead = "Message.DeleteAfterRead";
         public const string AdminCanDeleteMessages = "Message.AdminCanDelete";
         public const string EncryptionEnabled = "Message.EncryptionEnabled";
+        public const string ShowDeletedMessageNotice = "Message.ShowDeletedMessageNotice ";
 
         // گروه و کانال
         public const string AllUsersCanCreateGroup = "Group.AllCanCreate";
@@ -1925,7 +2029,13 @@ Path: F:\OrgMessenger\OrganizationalMessenger.Domain\Enums\
     }
 
 
-
+    public enum AuthenticationType
+    {
+        Database = 0,      // شماره موبایل از دیتابیس
+        ActiveDirectory = 1,
+        ERP = 2,
+        SMS = 3           // اضافه شد - OTP پیامکی
+    }
     public enum MessageType
     {
         Text = 0,
@@ -1974,13 +2084,7 @@ Path: F:\OrgMessenger\OrganizationalMessenger.Domain\Enums\
         Dismissed = 3,
         ActionTaken = 4
     }
-    public enum AuthenticationType
-    {
-        Database = 0,      // شماره موبایل از دیتابیس
-        ActiveDirectory = 1,
-        ERP = 2,
-        SMS = 3           // اضافه شد - OTP پیامکی
-    }
+    
 
     public enum MessageDestinationType
     {
@@ -2069,7 +2173,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OrganizationalMessenger.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a6cf97d17a7529676d54880d5db7070f8dddde6")]
 [assembly: System.Reflection.AssemblyProductAttribute("OrganizationalMessenger.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OrganizationalMessenger.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -2171,6 +2275,7 @@ Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Authentication\
  
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OrganizationalMessenger.Application.Interfaces;
+using OrganizationalMessenger.Domain.Enums;
 
 namespace OrganizationalMessenger.Infrastructure.Authentication
 {
@@ -2208,7 +2313,7 @@ namespace OrganizationalMessenger.Infrastructure.Authentication
                 AuthenticationType.ERP =>
                     _serviceProvider.GetRequiredService<ErpAuthenticationProvider>(),
 
-                AuthenticationType.OTP =>
+                AuthenticationType.SMS =>
                     _serviceProvider.GetRequiredService<OtpAuthenticationProvider>(),
 
                 _ => throw new NotSupportedException($"Authentication type {type} is not supported.")
@@ -2509,6 +2614,33 @@ namespace OrganizationalMessenger.Infrastructure.Data
                 entity.Property(e => e.OtpCode).HasMaxLength(10);
                 entity.Property(e => e.VoipExtension).HasMaxLength(50);
             });
+
+
+
+
+            // ✅ MessageReaction Configuration
+            modelBuilder.Entity<MessageReaction>(entity =>
+            {
+                entity.HasKey(mr => mr.Id);
+
+                entity.HasOne(mr => mr.Message)
+                    .WithMany(m => m.Reactions)
+                    .HasForeignKey(mr => mr.MessageId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(mr => mr.User)
+                    .WithMany()
+                    .HasForeignKey(mr => mr.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // ✅ فقط index معمولی برای performance
+                entity.HasIndex(mr => new { mr.MessageId, mr.UserId });
+
+                entity.Property(mr => mr.Emoji).HasMaxLength(10);
+            });
+
+
+
 
             // ==================== AdminUser Configuration ====================
             modelBuilder.Entity<AdminUser>(entity =>
@@ -6842,7 +6974,220 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
 }
  
  
-==================== ApplicationDbContextModelSnapshot.cs ==================== 
+==================== 20260210103130_RemoveIsRead.cs ==================== 
+Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Migrations\ 
+ 
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace OrganizationalMessenger.Infrastructure.Migrations
+{
+    /// <inheritdoc />
+    public partial class RemoveIsRead : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "IsRead",
+                table: "Messages");
+
+            migrationBuilder.DropColumn(
+                name: "ReadAt",
+                table: "Messages");
+
+            migrationBuilder.UpdateData(
+                table: "AdminUsers",
+                keyColumn: "Id",
+                keyValue: 1,
+                columns: new[] { "CreatedAt", "PasswordHash" },
+                values: new object[] { new DateTime(2026, 2, 10, 14, 1, 27, 111, DateTimeKind.Local).AddTicks(3959), "$2a$11$YEsn4oADy3r3FV42dIufneNTPQ2hBYH3Ke9sfQl784pc8RD6j6pBe" });
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7222));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7241));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 3,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7242));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 4,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7243));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 5,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7244));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 6,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7245));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 7,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7247));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 8,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7248));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 9,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7249));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 10,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7250));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 11,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7252));
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<bool>(
+                name: "IsRead",
+                table: "Messages",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<DateTime>(
+                name: "ReadAt",
+                table: "Messages",
+                type: "datetime2",
+                nullable: true);
+
+            migrationBuilder.UpdateData(
+                table: "AdminUsers",
+                keyColumn: "Id",
+                keyValue: 1,
+                columns: new[] { "CreatedAt", "PasswordHash" },
+                values: new object[] { new DateTime(2026, 2, 9, 9, 48, 8, 65, DateTimeKind.Local).AddTicks(9793), "$2a$11$9t1CsubdkLWzCxr5Nf2TvOGRMtSnqC.7Y2/jbkJXRIXFOrAw8nQby" });
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6596));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6614));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 3,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6615));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 4,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6616));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 5,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6617));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 6,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6618));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 7,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6619));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 8,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6620));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 9,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6621));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 10,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6622));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 11,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6623));
+        }
+    }
+}
+ 
+ 
+==================== 20260210103130_RemoveIsRead.Designer.cs ==================== 
 Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Migrations\ 
  
 ﻿// <auto-generated />
@@ -6850,6 +7195,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrganizationalMessenger.Infrastructure.Data;
 
@@ -6858,9 +7204,11 @@ using OrganizationalMessenger.Infrastructure.Data;
 namespace OrganizationalMessenger.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210103130_RemoveIsRead")]
+    partial class RemoveIsRead
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6921,12 +7269,12 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 65, DateTimeKind.Local).AddTicks(9793),
+                            CreatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 111, DateTimeKind.Local).AddTicks(3959),
                             Email = "admin@company.com",
                             FirstName = "مدیر",
                             IsActive = true,
                             LastName = "سیستم",
-                            PasswordHash = "$2a$11$9t1CsubdkLWzCxr5Nf2TvOGRMtSnqC.7Y2/jbkJXRIXFOrAw8nQby",
+                            PasswordHash = "$2a$11$YEsn4oADy3r3FV42dIufneNTPQ2hBYH3Ke9sfQl784pc8RD6j6pBe",
                             Username = "admin"
                         });
                 });
@@ -7570,17 +7918,11 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                     b.Property<bool>("IsEdited")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsSystemMessage")
                         .HasColumnType("bit");
 
                     b.Property<string>("MessageText")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReadAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int?>("ReceiverId")
                         .HasColumnType("int");
@@ -8115,7 +8457,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "نوع احراز هویت: Database, ActiveDirectory, ERP",
                             Key = "AuthenticationType",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6596),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7222),
                             Value = "Database"
                         },
                         new
@@ -8124,7 +8466,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آیا کاربران می‌توانند گروه ایجاد کنند",
                             Key = "AllowUserGroupCreation",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6614),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7241),
                             Value = "true"
                         },
                         new
@@ -8133,7 +8475,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آیا کاربران می‌توانند کانال ایجاد کنند",
                             Key = "AllowUserChannelCreation",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6615),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7242),
                             Value = "true"
                         },
                         new
@@ -8142,7 +8484,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان مجاز ویرایش پیام (ثانیه)",
                             Key = "MessageEditTimeLimit",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6616),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7243),
                             Value = "3600"
                         },
                         new
@@ -8151,7 +8493,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان مجاز حذف پیام (ثانیه)",
                             Key = "MessageDeleteTimeLimit",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6617),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7244),
                             Value = "7200"
                         },
                         new
@@ -8160,7 +8502,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "فعال بودن تماس VoIP",
                             Key = "VoipEnabled",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6618),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7245),
                             Value = "true"
                         },
                         new
@@ -8169,7 +8511,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "فعال بودن یکپارچگی تلگرام",
                             Key = "TelegramIntegrationEnabled",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6619),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7247),
                             Value = "false"
                         },
                         new
@@ -8178,7 +8520,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "حداکثر تعداد اعضای گروه",
                             Key = "MaxGroupMembers",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6620),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7248),
                             Value = "200"
                         },
                         new
@@ -8187,7 +8529,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "زمان انقضای کد OTP (دقیقه)",
                             Key = "OtpExpiryMinutes",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6621),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7249),
                             Value = "5"
                         },
                         new
@@ -8196,7 +8538,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "نام سازمان",
                             Key = "CompanyName",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6622),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7250),
                             Value = "سازمان"
                         },
                         new
@@ -8205,7 +8547,7 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
                             Category = "General",
                             Description = "آدرس لوگوی سازمان",
                             Key = "CompanyLogoUrl",
-                            UpdatedAt = new DateTime(2026, 2, 9, 9, 48, 8, 103, DateTimeKind.Local).AddTicks(6623),
+                            UpdatedAt = new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7252),
                             Value = "/images/logo.png"
                         });
                 });
@@ -9132,2000 +9474,2495 @@ namespace OrganizationalMessenger.Infrastructure.Migrations
 }
  
  
-==================== .NETCoreApp,Version=v8.0.AssemblyAttributes.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\obj\Debug\net8.0\ 
- 
-// <autogenerated />
-using System;
-using System.Reflection;
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
- 
- 
-==================== OrganizationalMessenger.Infrastructure.AssemblyInfo.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\obj\Debug\net8.0\ 
- 
-//------------------------------------------------------------------------------
-// <auto-generated>
-//     This code was generated by a tool.
-//     Runtime Version:4.0.30319.42000
-//
-//     Changes to this file may cause incorrect behavior and will be lost if
-//     the code is regenerated.
-// </auto-generated>
-//------------------------------------------------------------------------------
-
-using System;
-using System.Reflection;
-
-[assembly: System.Reflection.AssemblyCompanyAttribute("OrganizationalMessenger.Infrastructure")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
-[assembly: System.Reflection.AssemblyProductAttribute("OrganizationalMessenger.Infrastructure")]
-[assembly: System.Reflection.AssemblyTitleAttribute("OrganizationalMessenger.Infrastructure")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
-
-// Generated by the MSBuild WriteCodeFragment class.
-
- 
- 
-==================== OrganizationalMessenger.Infrastructure.GlobalUsings.g.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\obj\Debug\net8.0\ 
- 
-// <auto-generated/>
-global using global::System;
-global using global::System.Collections.Generic;
-global using global::System.IO;
-global using global::System.Linq;
-global using global::System.Net.Http;
-global using global::System.Threading;
-global using global::System.Threading.Tasks;
- 
- 
-==================== ISmsSender.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Services\ 
+==================== 20260213121527_AddDeletedFieldsToMessage.cs ==================== 
+Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Migrations\ 
  
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OrganizationalMessenger.Infrastructure.Services
+#nullable disable
+
+namespace OrganizationalMessenger.Infrastructure.Migrations
 {
-    public interface ISmsSender
+    /// <inheritdoc />
+    public partial class AddDeletedFieldsToMessage : Migration
     {
-        Task<string> SendSmsAsync(string messageBody, string phoneNumber, int? memberId = null, string smsType = "");
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<int>(
+                name: "DeletedByUserId",
+                table: "Messages",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.UpdateData(
+                table: "AdminUsers",
+                keyColumn: "Id",
+                keyValue: 1,
+                columns: new[] { "CreatedAt", "PasswordHash" },
+                values: new object[] { new DateTime(2026, 2, 13, 15, 45, 24, 664, DateTimeKind.Local).AddTicks(1041), "$2a$11$R7gC3VDjPOrYFBE8IgjXXu/ssUNR3u/7uNYuqRPn8OVZ1VeSgjLDq" });
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7031));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7045));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 3,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7047));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 4,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7048));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 5,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7049));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 6,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7050));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 7,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7051));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 8,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7052));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 9,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7053));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 10,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7054));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 11,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7055));
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "DeletedByUserId",
+                table: "Messages");
+
+            migrationBuilder.UpdateData(
+                table: "AdminUsers",
+                keyColumn: "Id",
+                keyValue: 1,
+                columns: new[] { "CreatedAt", "PasswordHash" },
+                values: new object[] { new DateTime(2026, 2, 10, 14, 1, 27, 111, DateTimeKind.Local).AddTicks(3959), "$2a$11$YEsn4oADy3r3FV42dIufneNTPQ2hBYH3Ke9sfQl784pc8RD6j6pBe" });
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7222));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7241));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 3,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7242));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 4,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7243));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 5,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7244));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 6,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7245));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 7,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7247));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 8,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7248));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 9,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7249));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 10,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7250));
+
+            migrationBuilder.UpdateData(
+                table: "SystemSettings",
+                keyColumn: "Id",
+                keyValue: 11,
+                column: "UpdatedAt",
+                value: new DateTime(2026, 2, 10, 14, 1, 27, 151, DateTimeKind.Local).AddTicks(7252));
+        }
     }
 }
  
  
-==================== SmsService.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Services\ 
+==================== 20260213121527_AddDeletedFieldsToMessage.Designer.cs ==================== 
+Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Migrations\ 
  
-﻿using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
-using OrganizationalMessenger.Application.Interfaces;
-
-namespace OrganizationalMessenger.Infrastructure.Services
-{
-    public class SmsService : ISmsService
-    {
-        private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration;
-        private readonly string _apiKey;
-        private readonly string _sender;
-        private readonly string _apiUrl;
-
-        public SmsService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
-        {
-            _httpClient = httpClientFactory.CreateClient();
-            _configuration = configuration;
-
-            // تنظیمات پنل SMS (مثلاً کاوه‌نگار، ملی‌پیامک و...)
-            _apiKey = _configuration["Sms:ApiKey"] ?? "";
-            _sender = _configuration["Sms:Sender"] ?? "";
-            _apiUrl = _configuration["Sms:ApiUrl"] ?? "";
-        }
-
-        public async Task<SmsResult> SendOtpAsync(string phoneNumber, string otpCode)
-        {
-            var message = $"کد تایید شما: {otpCode}\nاین کد تا 5 دقیقه معتبر است.";
-            return await SendMessageAsync(phoneNumber, message);
-        }
-
-        public async Task<SmsResult> SendMessageAsync(string phoneNumber, string message)
-        {
-            try
-            {
-                // مثال برای Kavenegar API
-                var request = new
-                {
-                    sender = _sender,
-                    receptor = phoneNumber,
-                    message = message
-                };
-
-                _httpClient.DefaultRequestHeaders.Add("apikey", _apiKey);
-
-                var response = await _httpClient.PostAsJsonAsync(
-                    $"{_apiUrl}/v1/{_apiKey}/sms/send.json",
-                    request);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<SmsApiResponse>();
-
-                    return new SmsResult
-                    {
-                        Success = result?.Return?.Status == 200,
-                        Message = "پیامک با موفقیت ارسال شد",
-                        MessageId = result?.Entries?.FirstOrDefault()?.Messageid.ToString()
-                    };
-                }
-
-                return new SmsResult
-                {
-                    Success = false,
-                    Message = "خطا در ارسال پیامک"
-                };
-            }
-            catch (Exception ex)
-            {
-                return new SmsResult
-                {
-                    Success = false,
-                    Message = $"خطا: {ex.Message}"
-                };
-            }
-        }
-
-        private class SmsApiResponse
-        {
-            public ReturnData? Return { get; set; }
-            public List<EntryData>? Entries { get; set; }
-        }
-
-        private class ReturnData
-        {
-            public int Status { get; set; }
-            public string? Message { get; set; }
-        }
-
-        private class EntryData
-        {
-            public long Messageid { get; set; }
-            public string? Message { get; set; }
-            public int Status { get; set; }
-            public string? Statustext { get; set; }
-            public string? Sender { get; set; }
-            public string? Receptor { get; set; }
-            public int Date { get; set; }
-            public int Cost { get; set; }
-        }
-    }
-}
- 
- 
-==================== TopTipSmsSender.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Infrastructure\Services\ 
- 
-﻿using Microsoft.EntityFrameworkCore;
-using OrganizationalMessenger.Infrastructure.Data;
-using OrganizationalMessenger.Infrastructure.Services;
-
-public class TopTipSmsSender : ISmsSender
-{
-    private readonly ApplicationDbContext _context;
-
-    public TopTipSmsSender(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<string> SendSmsAsync(string messageBody, string phoneNumber, int? memberId = null, string smsType = "")
-    {
-        // ✅ تمیز کردن شماره
-        phoneNumber = CleanPhoneNumber(phoneNumber);
-
-        try
-        {
-            // ✅ خواندن تنظیمات از SystemSettings شما
-            var apiKey = await GetSettingValueAsync("SmsApiKey");
-            var senderNumber = await GetSettingValueAsync("SmsSenderNumber");
-
-            if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(senderNumber))
-            {
-                return "تنظیمات TopTip کامل نیست";
-            }
-
-            // ✅ اضافه کردن "لغو 11"
-            messageBody = EnsureUnsubscribeText(messageBody);
-
-            // ✅ درخواست TopTip
-            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-            string apiUrl = $"http://toptip.ir/webservice/rest/sms_send" +
-                $"?note_arr[]={Uri.EscapeDataString(messageBody)}" +
-                $"&api_key={apiKey}" +
-                $"&receiver_number={phoneNumber}" +
-                $"&sender_number={senderNumber}";
-
-            var response = await httpClient.GetAsync(apiUrl);
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            return response.IsSuccessStatusCode &&
-                   (responseContent.Contains("\"result\":true") || responseContent.Contains("\"result\": true"))
-                ? "ارسال شد"
-                : $"خطا: {responseContent}";
-        }
-        catch (Exception ex)
-        {
-            return $"خطا: {ex.Message}";
-        }
-    }
-
-    private string CleanPhoneNumber(string phoneNumber)
-    {
-        return phoneNumber?.Trim()
-            .Replace(" ", "").Replace("-", "")
-            .Replace("۰", "0").Replace("۱", "1").Replace("۲", "2")
-            .Replace("۳", "3").Replace("۴", "4").Replace("۵", "5")
-            .Replace("۶", "6").Replace("۷", "7").Replace("۸", "8").Replace("۹", "9") ?? "";
-    }
-
-    private string EnsureUnsubscribeText(string message)
-    {
-        return message + " | لغو 11";
-    }
-
-    private async Task<string?> GetSettingValueAsync(string key)
-    {
-        var setting = await _context.SystemSettings.FirstOrDefaultAsync(s => s.Key == key);
-        return setting?.Value;
-    }
-}
- 
- 
-==================== Program.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Web\ 
- 
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
+﻿// <auto-generated />
+using System;
 using Microsoft.EntityFrameworkCore;
-using OrganizationalMessenger.Application.Interfaces;
-using OrganizationalMessenger.Infrastructure.Authentication;
-using OrganizationalMessenger.Infrastructure.Authentication.OrganizationalMessenger.Infrastructure.Authentication;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrganizationalMessenger.Infrastructure.Data;
-using OrganizationalMessenger.Infrastructure.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+#nullable disable
 
-// =====================================================
-// SERVICES (فقط موارد موجود)
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
-builder.Services.AddSignalR();
-
-// ✅ Database
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// ✅ Session
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
+namespace OrganizationalMessenger.Infrastructure.Migrations
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-
-// ✅ HttpClient
-builder.Services.AddHttpClient();
-
-// ✅ Services موجود
-builder.Services.AddScoped<ISmsService, SmsService>();
-builder.Services.AddScoped<IAuthenticationManager, AuthenticationManager>();
-builder.Services.AddScoped<ISmsSender, TopTipSmsSender>();
-
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddControllersWithViews();
-
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20260213121527_AddDeletedFieldsToMessage")]
+    partial class AddDeletedFieldsToMessage
     {
-        options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromDays(14);
-        options.SlidingExpiration = true;
-    });
-// Providers موجود
-builder.Services.AddScoped<IAuthenticationProvider, ActiveDirectoryProvider>();
-builder.Services.AddScoped<IAuthenticationProvider, ErpAuthenticationProvider>();
-builder.Services.AddScoped<IAuthenticationProvider, OtpAuthenticationProvider>();
-
-
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddSignalR(options =>
-{
-    options.EnableDetailedErrors = true;
-});
-
-builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-
-
-
-
-
-
-var app = builder.Build();
-
-// =====================================================
-// MIDDLEWARE (ترتیب صحیح)
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-// ✅ ترتیب CRITICAL
-app.UseSession();
-app.UseAuthentication();  // اول
-app.UseAuthorization();   // بعد
-
-// =====================================================
-// ROUTES
-app.MapRazorPages();
-
-// Admin Area
-app.MapControllerRoute(
-    name: "admin",
-    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
-
-// ✅ CHAT ROUTE
-app.MapControllerRoute(
-    name: "chat",
-    pattern: "chat/{action=Index}/{id?}",
-    defaults: new { controller = "Chat", action = "Index" });
-
-// ✅ DEFAULT ROUTE → مستقیم لاگین!
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
-
-
-
-
-
-app.MapHub<ChatHub>("/hubs/chat");
-
-
-
-
-app.Run();
- 
- 
-==================== AccountController.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Web\Areas\Admin\Controllers\ 
- 
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OrganizationalMessenger.Infrastructure.Data;
-using OrganizationalMessenger.Web.Areas.Admin.Models;
-
-namespace OrganizationalMessenger.Web.Areas.Admin.Controllers
-{
-    [Area("Admin")]
-    public class AccountController : Controller
-    {
-        private readonly ApplicationDbContext _context;
-
-        public AccountController(ApplicationDbContext context)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
-            _context = context;
-        }
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.23")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-        [HttpGet]
-        public IActionResult Login(string? returnUrl = null)
-        {
-            // If already logged in, redirect to dashboard
-            if (HttpContext.Session.GetInt32("AdminId") != null)
-            {
-                return RedirectToAction("Index", "Dashboard");
-            }
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            ViewBag.ReturnUrl = returnUrl;
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var admin = await _context.AdminUsers
-                .FirstOrDefaultAsync(a => a.Username == model.Username && a.IsActive);
-
-            if (admin == null || !BCrypt.Net.BCrypt.Verify(model.Password, admin.PasswordHash))
-            {
-                ModelState.AddModelError("", "نام کاربری یا رمز عبور اشتباه است");
-                return View(model);
-            }
-
-            // به‌روزرسانی آخرین ورود
-            admin.LastLoginAt = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            // ✅ ذخیره در Session - همه به صورت یکپارچه
-            HttpContext.Session.SetInt32("AdminId", (int)admin.Id);  // ✅ تغییر به SetInt32
-            HttpContext.Session.SetString("AdminUsername", admin.Username);
-            HttpContext.Session.SetString("AdminFullName", $"{admin.FirstName} {admin.LastName}");
-
-            // اگر IsSuperAdmin دارید
-           // HttpContext.Session.SetInt32("IsSuperAdmin", admin.IsSuperAdmin ? 1 : 0);
-
-            return RedirectToAction("Index", "Dashboard");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
-        }
-    }
-}
- 
- 
-==================== BaseAdminController.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Web\Areas\Admin\Controllers\ 
- 
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-
-namespace OrganizationalMessenger.Web.Areas.Admin.Controllers
-{
-    [Area("Admin")]
-    public class BaseAdminController : Controller
-    {
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            // Check if admin is logged in
-            var adminId = HttpContext.Session.GetInt32("AdminId");
-            if (adminId == null)
-            {
-                context.Result = new RedirectToActionResult("Login", "Account", new { area = "Admin" });
-                return;
-            }
-
-            // Pass admin info to ViewBag
-            ViewBag.AdminUsername = HttpContext.Session.GetString("AdminUsername");
-            ViewBag.AdminFullName = HttpContext.Session.GetString("AdminFullName");
-            ViewBag.IsSuperAdmin = HttpContext.Session.GetInt32("IsSuperAdmin") == 1;
-
-            base.OnActionExecuting(context);
-        }
-    }
-}
- 
- 
-==================== ChannelsController.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Web\Areas\Admin\Controllers\ 
- 
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OrganizationalMessenger.Domain.Entities;
-using OrganizationalMessenger.Domain.Enums;
-using OrganizationalMessenger.Infrastructure.Data;
-using OrganizationalMessenger.Web.Models.ViewModels;
-
-namespace OrganizationalMessenger.Web.Areas.Admin.Controllers
-{
-    [Area("Admin")]
-    public class ChannelsController : BaseAdminController
-    {
-        private readonly ApplicationDbContext _context;
-
-        public ChannelsController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        // GET: Admin/Channels
-        public async Task<IActionResult> Index(string searchTerm = "", bool? isActive = null)
-        {
-            var query = _context.Channels
-                .Include(c => c.Creator)
-                .Include(c => c.UserChannels)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                query = query.Where(c => c.Name.Contains(searchTerm) ||
-                                        (c.Description != null && c.Description.Contains(searchTerm)));
-            }
-
-            if (isActive.HasValue)
-            {
-                query = query.Where(c => c.IsActive == isActive.Value);
-            }
-
-            var channels = await query
-                .OrderByDescending(c => c.CreatedAt)
-                .Select(c => new ChannelListViewModel
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.AdminUser", b =>
                 {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Description = c.Description,
-                    CreatorName = c.Creator.FirstName + " " + c.Creator.LastName,
-                    SubscriberCount = c.UserChannels.Count(uc => uc.IsActive),
-                    IsActive = c.IsActive,
-                    IsPublic = c.IsPublic,
-                    CreatedAt = c.CreatedAt
-                })
-                .ToListAsync();
-
-            ViewBag.SearchTerm = searchTerm;
-            ViewBag.IsActive = isActive;
-
-            return View(channels);
-        }
-
-        // GET: Admin/Channels/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            var channel = await _context.Channels
-                .Include(c => c.Creator)
-                .Include(c => c.UserChannels.Where(uc => uc.IsActive))
-                    .ThenInclude(uc => uc.User)
-                .Include(c => c.Messages.Where(m => !m.IsDeleted))
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (channel == null)
-            {
-                TempData["ErrorMessage"] = "کانال یافت نشد.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            ViewBag.MessageCount = channel.Messages.Count;
-            ViewBag.SubscriberCount = channel.UserChannels.Count(uc => uc.IsActive);
-            ViewBag.AdminCount = channel.UserChannels.Count(uc => uc.IsActive && uc.IsAdmin);
-            ViewBag.PublisherCount = channel.UserChannels.Count(uc => uc.IsActive && uc.CanPost);
-
-            return View(channel);
-        }
-
-        // GET: Admin/Channels/Create
-        public async Task<IActionResult> Create()
-        {
-            ViewBag.Users = await _context.Users
-                .Where(u => u.IsActive && !u.IsDeleted)
-                .OrderBy(u => u.FirstName)
-                .ThenBy(u => u.LastName)
-                .ToListAsync();
-
-            return View(new ChannelCreateViewModel
-            {
-                IsActive = true,
-                IsPublic = false
-            });
-        }
-
-        // POST: Admin/Channels/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ChannelCreateViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                // بررسی یکتا بودن نام
-                var existingChannel = await _context.Channels
-                    .AnyAsync(c => c.Name == model.Name);
-
-                if (existingChannel)
-                {
-                    ModelState.AddModelError("Name", "کانالی با این نام قبلاً وجود دارد.");
-                    ViewBag.Users = await _context.Users
-                        .Where(u => u.IsActive && !u.IsDeleted)
-                        .ToListAsync();
-                    return View(model);
-                }
-
-                var channel = new Channel
-                {
-                    Name = model.Name,
-                    Description = model.Description,
-                    CreatorId = model.CreatorId,
-                    IsPublic = model.IsPublic,
-                    IsActive = model.IsActive,
-                    CreatedAt = DateTime.Now
-                };
-
-                _context.Channels.Add(channel);
-                await _context.SaveChangesAsync();
-
-                // افزودن سازنده به عنوان Owner
-                var userChannel = new UserChannel
-                {
-                    UserId = model.CreatorId,
-                    ChannelId = channel.Id,
-                    IsAdmin = true,
-                    CanPost = true,
-                    Role = ChannelRole.Owner,
-                    JoinedAt = DateTime.Now,
-                    IsActive = true
-                };
-
-                _context.UserChannels.Add(userChannel);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "کانال با موفقیت ایجاد شد.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            ViewBag.Users = await _context.Users
-                .Where(u => u.IsActive && !u.IsDeleted)
-                .ToListAsync();
-
-            return View(model);
-        }
-
-        // GET: Admin/Channels/Edit/5
-        public async Task<IActionResult> Edit(int id)
-        {
-            var channel = await _context.Channels.FindAsync(id);
-
-            if (channel == null)
-            {
-                TempData["ErrorMessage"] = "کانال یافت نشد.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var model = new ChannelEditViewModel
-            {
-                Id = channel.Id,
-                Name = channel.Name,
-                Description = channel.Description,
-                IsPublic = channel.IsPublic,
-                IsActive = channel.IsActive,
-                CreatorId = channel.CreatorId,
-                CreatedAt = channel.CreatedAt
-            };
-
-            return View(model);
-        }
-
-        // POST: Admin/Channels/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ChannelEditViewModel model)
-        {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                var channel = await _context.Channels.FindAsync(id);
-
-                if (channel == null)
-                {
-                    TempData["ErrorMessage"] = "کانال یافت نشد.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // بررسی یکتا بودن نام
-                if (channel.Name != model.Name)
-                {
-                    var nameExists = await _context.Channels
-                        .AnyAsync(c => c.Name == model.Name && c.Id != id);
-
-                    if (nameExists)
-                    {
-                        ModelState.AddModelError("Name", "کانالی با این نام قبلاً وجود دارد.");
-                        return View(model);
-                    }
-                }
-
-                channel.Name = model.Name;
-                channel.Description = model.Description;
-                channel.IsPublic = model.IsPublic;
-                channel.IsActive = model.IsActive;
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "کانال با موفقیت ویرایش شد.";
-
-                return RedirectToAction(nameof(Index));
-            }
-
-            return View(model);
-        }
-
-        // POST: Admin/Channels/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var channel = await _context.Channels.FindAsync(id);
-
-            if (channel != null)
-            {
-                channel.IsActive = false;
-                channel.IsDeleted = true;
-                channel.DeletedAt = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "کانال با موفقیت حذف شد.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "کانال یافت نشد.";
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // GET: Admin/Channels/Subscribers/5
-        public async Task<IActionResult> Subscribers(int id)
-        {
-            var channel = await _context.Channels
-                .Include(c => c.UserChannels.Where(uc => uc.IsActive))
-                    .ThenInclude(uc => uc.User)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (channel == null)
-            {
-                TempData["ErrorMessage"] = "کانال یافت نشد.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var subscriberIds = channel.UserChannels
-                .Where(uc => uc.IsActive)
-                .Select(uc => uc.UserId)
-                .ToList();
-
-            ViewBag.AvailableUsers = await _context.Users
-                .Where(u => u.IsActive && !u.IsDeleted && !subscriberIds.Contains(u.Id))
-                .OrderBy(u => u.FirstName)
-                .ToListAsync();
-
-            ViewBag.ChannelId = id;
-            ViewBag.ChannelName = channel.Name;
-
-            return View(channel);
-        }
-
-        // POST: Admin/Channels/AddSubscriber
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddSubscriber(int channelId, int userId, bool canPost = false, bool isAdmin = false)
-        {
-            var channel = await _context.Channels.FindAsync(channelId);
-
-            if (channel == null)
-            {
-                TempData["ErrorMessage"] = "کانال یافت نشد.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var existingSubscription = await _context.UserChannels
-                .FirstOrDefaultAsync(uc => uc.ChannelId == channelId && uc.UserId == userId);
-
-            if (existingSubscription != null)
-            {
-                if (existingSubscription.IsActive)
-                {
-                    TempData["ErrorMessage"] = "این کاربر قبلاً عضو کانال است.";
-                    return RedirectToAction(nameof(Subscribers), new { id = channelId });
-                }
-                else
-                {
-                    existingSubscription.IsActive = true;
-                    existingSubscription.CanPost = canPost;
-                    existingSubscription.IsAdmin = isAdmin;
-                    existingSubscription.JoinedAt = DateTime.Now;
-
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "کاربر با موفقیت به کانال اضافه شد.";
-                    return RedirectToAction(nameof(Subscribers), new { id = channelId });
-                }
-            }
-
-            var role = isAdmin ? ChannelRole.Admin : (canPost ? ChannelRole.Publisher : ChannelRole.Subscriber);
-
-            var userChannel = new UserChannel
-            {
-                UserId = userId,
-                ChannelId = channelId,
-                IsAdmin = isAdmin,
-                CanPost = canPost,
-                Role = role,
-                JoinedAt = DateTime.Now,
-                IsActive = true
-            };
-
-            _context.UserChannels.Add(userChannel);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "کاربر با موفقیت به کانال اضافه شد.";
-            return RedirectToAction(nameof(Subscribers), new { id = channelId });
-        }
-
-        // POST: Admin/Channels/RemoveSubscriber
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveSubscriber(int channelId, int userId)
-        {
-            var userChannel = await _context.UserChannels
-                .FirstOrDefaultAsync(uc => uc.ChannelId == channelId && uc.UserId == userId);
-
-            if (userChannel != null)
-            {
-                if (userChannel.Role == ChannelRole.Owner)
-                {
-                    TempData["ErrorMessage"] = "مالک کانال قابل حذف نیست.";
-                    return RedirectToAction(nameof(Subscribers), new { id = channelId });
-                }
-
-                userChannel.IsActive = false;
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "کاربر از کانال حذف شد.";
-            }
-
-            return RedirectToAction(nameof(Subscribers), new { id = channelId });
-        }
-
-        // POST: Admin/Channels/TogglePublisher
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TogglePublisher(int channelId, int userId)
-        {
-            var userChannel = await _context.UserChannels
-                .FirstOrDefaultAsync(uc => uc.ChannelId == channelId && uc.UserId == userId && uc.IsActive);
-
-            if (userChannel != null)
-            {
-                userChannel.CanPost = !userChannel.CanPost;
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = userChannel.CanPost
-                    ? "دسترسی ارسال پست به کاربر داده شد."
-                    : "دسترسی ارسال پست کاربر لغو شد.";
-            }
-
-            return RedirectToAction(nameof(Subscribers), new { id = channelId });
-        }
-
-        // POST: Admin/Channels/ToggleAdmin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleAdmin(int channelId, int userId)
-        {
-            var userChannel = await _context.UserChannels
-                .FirstOrDefaultAsync(uc => uc.ChannelId == channelId && uc.UserId == userId && uc.IsActive);
-
-            if (userChannel != null)
-            {
-                if (userChannel.Role == ChannelRole.Owner)
-                {
-                    TempData["ErrorMessage"] = "نقش مالک کانال قابل تغییر نیست.";
-                    return RedirectToAction(nameof(Subscribers), new { id = channelId });
-                }
-
-                userChannel.IsAdmin = !userChannel.IsAdmin;
-                userChannel.Role = userChannel.IsAdmin ? ChannelRole.Admin :
-                                   (userChannel.CanPost ? ChannelRole.Publisher : ChannelRole.Subscriber);
-
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = userChannel.IsAdmin
-                    ? "کاربر به ادمین ارتقا یافت."
-                    : "دسترسی ادمین کاربر لغو شد.";
-            }
-
-            return RedirectToAction(nameof(Subscribers), new { id = channelId });
-        }
-
-        // متد کمکی
-        private async Task<bool> ChannelExistsAsync(int id)
-        {
-            return await _context.Channels.AnyAsync(e => e.Id == id);
-        }
-    }
-}
- 
- 
-==================== DashboardController.cs ==================== 
-Path: F:\OrgMessenger\OrganizationalMessenger.Web\Areas\Admin\Controllers\ 
- 
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OrganizationalMessenger.Infrastructure.Data;
-using OrganizationalMessenger.Domain.Entities;
-using OrganizationalMessenger.Domain.Enums;
-using System.Globalization;
-
-namespace OrganizationalMessenger.Web.Areas.Admin.Controllers
-{
-    [Area("Admin")]
-    [Route("Admin/[controller]")]
-    public class DashboardController : Controller
-    {
-        private readonly ApplicationDbContext _context;
-
-        public DashboardController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        #region Main Dashboard View
-
-        [HttpGet]
-        [HttpGet("Index")]
-        public async Task<IActionResult> Index()
-        {
-            var today = DateTime.Today;
-            var todayStart = today;
-            var todayEnd = today.AddDays(1);
-            var weekStart = today.AddDays(-7);
-            var onlineThreshold = DateTime.Now.AddMinutes(-5);
-
-            // ==================== کارت‌های آمار اصلی ====================
-
-            // کل کاربران
-            ViewBag.TotalUsers = await _context.Users.CountAsync();
-
-            // کاربران آنلاین
-            ViewBag.OnlineUsers = await _context.Users
-                .CountAsync(u => u.IsOnline || (u.LastSeen.HasValue && u.LastSeen > onlineThreshold));
-
-            // کاربران جدید امروز
-            ViewBag.NewUsersToday = await _context.Users
-                .CountAsync(u => u.CreatedAt >= todayStart && u.CreatedAt < todayEnd);
-
-            // کل پیام‌ها
-            ViewBag.TotalMessages = await _context.Messages.CountAsync(m => !m.IsDeleted);
-
-            // پیام‌های امروز
-            ViewBag.MessagesToday = await _context.Messages
-                .CountAsync(m => m.CreatedAt >= todayStart && m.CreatedAt < todayEnd && !m.IsDeleted);
-
-            // کل گروه‌ها
-            ViewBag.TotalGroups = await _context.Groups.CountAsync(g => g.IsActive);
-
-            // گروه‌های جدید این هفته
-            ViewBag.NewGroupsThisWeek = await _context.Groups
-                .CountAsync(g => g.CreatedAt >= weekStart && g.IsActive);
-
-            // کل کانال‌ها
-            ViewBag.TotalChannels = await _context.Channels.CountAsync(c => c.IsActive);
-
-            // کانال‌های جدید این هفته
-            ViewBag.NewChannelsThisWeek = await _context.Channels
-                .CountAsync(c => c.CreatedAt >= weekStart && c.IsActive);
-
-            // کل تماس‌ها
-            ViewBag.TotalCalls = await _context.Calls.CountAsync();
-
-            // تماس‌های امروز
-            ViewBag.CallsToday = await _context.Calls
-                .CountAsync(c => c.StartedAt >= todayStart && c.StartedAt < todayEnd);
-
-            // کل فایل‌ها (استفاده از AttachmentUrl به جای FileUrl)
-            ViewBag.TotalFiles = await _context.Messages
-                .CountAsync(m => !m.IsDeleted && !string.IsNullOrEmpty(m.AttachmentUrl));
-
-            // حجم کل فایل‌ها (استفاده از AttachmentSize به جای FileSize)
-            var totalStorageBytes = await _context.Messages
-                .Where(m => !m.IsDeleted && m.AttachmentSize.HasValue)
-                .SumAsync(m => m.AttachmentSize ?? 0);
-            ViewBag.TotalStorageUsed = FormatFileSize(totalStorageBytes);
-
-            // گزارشات در انتظار
-            ViewBag.PendingReports = await GetPendingReportsCountAsync();
-
-            // ==================== داده‌های نمودار پیام‌ها (هفتگی) ====================
-            var messageChartData = await GetMessageChartDataAsync(7);
-            ViewBag.MessageChartLabels = System.Text.Json.JsonSerializer.Serialize(messageChartData.Labels);
-            ViewBag.MessageChartData = System.Text.Json.JsonSerializer.Serialize(messageChartData.Values);
-
-            // ==================== داده‌های نمودار نوع پیام‌ها ====================
-            var messageTypesData = await GetMessageTypesDataAsync(30);
-            ViewBag.MessageTypesData = System.Text.Json.JsonSerializer.Serialize(messageTypesData);
-
-            // ==================== داده‌های نمودار فعالیت کاربران (ساعتی) ====================
-            var userActivityData = await GetUserActivityDataAsync();
-            ViewBag.UserActivityData = System.Text.Json.JsonSerializer.Serialize(userActivityData);
-
-            // ==================== داده‌های نمودار تماس‌ها ====================
-            var callsChartData = await GetCallsChartDataAsync(7);
-            ViewBag.CallsChartLabels = System.Text.Json.JsonSerializer.Serialize(callsChartData.Labels);
-            ViewBag.VoiceCallsData = System.Text.Json.JsonSerializer.Serialize(callsChartData.VoiceCalls);
-            ViewBag.VideoCallsData = System.Text.Json.JsonSerializer.Serialize(callsChartData.VideoCalls);
-
-            // ==================== جدول کاربران جدید ====================
-            ViewBag.NewUsers = await _context.Users
-                .OrderByDescending(u => u.CreatedAt)
-                .Take(5)
-                .Select(u => new NewUserViewModel
-                {
-                    Id = u.Id,
-                    FullName = !string.IsNullOrEmpty(u.FullName)
-                        ? u.FullName
-                        : $"{u.FirstName} {u.LastName}".Trim(),
-                    Username = u.Username,
-                    Email = u.Email ?? "",
-                    CreatedAt = u.CreatedAt,
-                    CreatedAtPersian = ToPersianDate(u.CreatedAt),
-                    IsActive = u.IsActive,
-                    IsOnline = u.IsOnline
-                })
-                .ToListAsync();
-
-            // ==================== جدول گزارشات اخیر ====================
-            ViewBag.RecentReports = await GetRecentReportsAsync(5);
-
-            // ==================== جدول گروه‌های فعال ====================
-            ViewBag.ActiveGroups = await _context.Groups
-                .Where(g => g.IsActive)
-                .OrderByDescending(g => g.Messages.Count)
-                .Take(5)
-                .Select(g => new
-                {
-                    g.Id,
-                    g.Name,
-                    MemberCount = g.UserGroups.Count,
-                    MessageCount = g.Messages.Count(m => !m.IsDeleted)
-                })
-                .ToListAsync();
-
-            // ==================== جدول کانال‌های فعال ====================
-            ViewBag.ActiveChannels = await _context.Channels
-                .Where(c => c.IsActive)
-                .OrderByDescending(c => c.UserChannels.Count)
-                .Take(5)
-                .Select(c => new
-                {
-                    c.Id,
-                    c.Name,
-                    SubscriberCount = c.UserChannels.Count,
-                    PostCount = c.Messages.Count(m => !m.IsDeleted)
-                })
-                .ToListAsync();
-
-            // ==================== جدول آخرین تماس‌ها ====================
-            ViewBag.RecentCalls = await _context.Calls
-                .Include(c => c.Initiator)
-                .OrderByDescending(c => c.StartedAt)
-                .Take(5)
-                .Select(c => new
-                {
-                    c.Id,
-                    InitiatorName = !string.IsNullOrEmpty(c.Initiator.FullName)
-                        ? c.Initiator.FullName
-                        : $"{c.Initiator.FirstName} {c.Initiator.LastName}".Trim(),
-                    Type = c.Type == CallType.Voice ? "صوتی" : "تصویری",
-                    Duration = FormatDuration(c.Duration),
-                    Status = GetCallStatusPersian(c.Status)
-                })
-                .ToListAsync();
-
-            // ==================== تاریخ شمسی ====================
-            ViewBag.TodayPersianDate = GetPersianDateFull();
-            ViewBag.TodayPersianDateTime = GetPersianDateTime();
-
-            return View();
-        }
-
-        #endregion
-
-        #region Chart Data API Endpoints
-
-        /// <summary>
-        /// دریافت داده‌های نمودار بر اساس نوع و بازه زمانی
-        /// </summary>
-        [HttpGet("GetChartData")]
-        public async Task<IActionResult> GetChartData([FromQuery] string type, [FromQuery] string period)
-        {
-            int days = period switch
-            {
-                "week" => 7,
-                "month" => 30,
-                "year" => 365,
-                _ => 7
-            };
-
-            if (type == "messages")
-            {
-                var data = await GetMessageChartDataAsync(days);
-                return Json(new
-                {
-                    labels = data.Labels,
-                    values = data.Values
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("AdminUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 664, DateTimeKind.Local).AddTicks(1041),
+                            Email = "admin@company.com",
+                            FirstName = "مدیر",
+                            IsActive = true,
+                            LastName = "سیستم",
+                            PasswordHash = "$2a$11$R7gC3VDjPOrYFBE8IgjXXu/ssUNR3u/7uNYuqRPn8OVZ1VeSgjLDq",
+                            Username = "admin"
+                        });
                 });
-            }
-            else if (type == "calls")
-            {
-                var data = await GetCallsChartDataAsync(days);
-                return Json(new
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Call", b =>
                 {
-                    labels = data.Labels,
-                    voiceCalls = data.VoiceCalls,
-                    videoCalls = data.VideoCalls
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DestinationType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InitiatorId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MeetingLink")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MeetingPassword")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("ReceiverId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("InitiatorId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("StartedAt");
+
+                    b.ToTable("Calls");
                 });
-            }
 
-            return Json(new { error = "Invalid type" });
-        }
-
-        /// <summary>
-        /// دریافت آمار پیام‌ها برای نمودار
-        /// </summary>
-        [HttpGet("api/messages-stats")]
-        public async Task<IActionResult> GetMessagesStats([FromQuery] int days = 7)
-        {
-            var data = await GetMessageChartDataAsync(days);
-            return Json(new
-            {
-                success = true,
-                labels = data.Labels,
-                values = data.Values,
-                total = data.Values.Sum()
-            });
-        }
-
-        /// <summary>
-        /// دریافت آمار نوع پیام‌ها برای نمودار دایره‌ای
-        /// </summary>
-        [HttpGet("api/message-types")]
-        public async Task<IActionResult> GetMessageTypes([FromQuery] int days = 30)
-        {
-            var startDate = DateTime.Today.AddDays(-days);
-
-            var messageTypes = await _context.Messages
-                .Where(m => m.CreatedAt >= startDate && !m.IsDeleted)
-                .GroupBy(m => m.Type)
-                .Select(g => new
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Channel", b =>
                 {
-                    Type = g.Key,
-                    Count = g.Count()
-                })
-                .ToListAsync();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-            var result = messageTypes.Select(mt => new
-            {
-                Type = mt.Type.ToString(),
-                TypePersian = GetMessageTypePersianName(mt.Type),
-                Count = mt.Count,
-                Color = GetMessageTypeColor(mt.Type)
-            }).OrderByDescending(x => x.Count).ToList();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-            return Json(new
-            {
-                success = true,
-                data = result,
-                labels = result.Select(r => r.TypePersian).ToArray(),
-                values = result.Select(r => r.Count).ToArray(),
-                colors = result.Select(r => r.Color).ToArray()
-            });
-        }
+                    b.Property<bool>("AllowComments")
+                        .HasColumnType("bit");
 
-        /// <summary>
-        /// دریافت آمار کاربران جدید
-        /// </summary>
-        [HttpGet("api/users-stats")]
-        public async Task<IActionResult> GetUsersStats([FromQuery] int days = 7)
-        {
-            var endDate = DateTime.Today.AddDays(1);
-            var startDate = DateTime.Today.AddDays(-days + 1);
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-            var usersPerDay = await _context.Users
-                .Where(u => u.CreatedAt >= startDate && u.CreatedAt < endDate)
-                .GroupBy(u => u.CreatedAt.Date)
-                .Select(g => new
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("InviteLink")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MemberCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("OnlyAdminsCanPost")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.ToTable("Channels");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.FileAttachment", b =>
                 {
-                    Date = g.Key,
-                    Count = g.Count()
-                })
-                .OrderBy(x => x.Date)
-                .ToListAsync();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-            var labels = new List<string>();
-            var values = new List<int>();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-            for (var date = startDate; date < endDate; date = date.AddDays(1))
-            {
-                labels.Add(GetPersianDayName(date));
-                var dayData = usersPerDay.FirstOrDefault(x => x.Date == date);
-                values.Add(dayData?.Count ?? 0);
-            }
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-            return Json(new
-            {
-                success = true,
-                labels = labels,
-                values = values,
-                total = values.Sum()
-            });
-        }
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-        /// <summary>
-        /// دریافت آمار تماس‌ها
-        /// </summary>
-        [HttpGet("api/calls-stats")]
-        public async Task<IActionResult> GetCallsStats([FromQuery] int days = 7)
-        {
-            var data = await GetCallsChartDataAsync(days);
-            return Json(new
-            {
-                success = true,
-                labels = data.Labels,
-                voiceCalls = data.VoiceCalls,
-                videoCalls = data.VideoCalls,
-                totalVoice = data.VoiceCalls.Sum(),
-                totalVideo = data.VideoCalls.Sum()
-            });
-        }
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
-        /// <summary>
-        /// دریافت فعالیت ساعتی کاربران (24 ساعت گذشته)
-        /// </summary>
-        [HttpGet("api/hourly-activity")]
-        public async Task<IActionResult> GetHourlyActivity()
-        {
-            var data = await GetUserActivityDataAsync();
-            return Json(new
-            {
-                success = true,
-                labels = data.Labels,
-                values = data.Values,
-                peakHour = data.Labels[Array.IndexOf(data.Values.ToArray(), data.Values.Max())]
-            });
-        }
+                    b.Property<int>("DownloadCount")
+                        .HasColumnType("int");
 
-        #endregion
+                    b.Property<int?>("Duration")
+                        .HasColumnType("int");
 
-        #region Table Data API Endpoints
+                    b.Property<string>("Extension")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
-        /// <summary>
-        /// دریافت لیست کاربران جدید
-        /// </summary>
-        [HttpGet("api/new-users")]
-        public async Task<IActionResult> GetNewUsers([FromQuery] int count = 10)
-        {
-            var users = await _context.Users
-                .OrderByDescending(u => u.CreatedAt)
-                .Take(count)
-                .Select(u => new
+                    b.Property<string>("FileHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FileUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSafe")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsScanned")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastDownloadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ScanResult")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ScannedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ThumbnailPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UploaderId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("FileHash");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("UploaderId");
+
+                    b.ToTable("FileAttachments");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.FileUploadSetting", b =>
                 {
-                    u.Id,
-                    FullName = !string.IsNullOrEmpty(u.FullName)
-                        ? u.FullName
-                        : $"{u.FirstName} {u.LastName}".Trim(),
-                    u.Username,
-                    Email = u.Email ?? "",
-                    u.CreatedAt,
-                    CreatedAtPersian = ToPersianDate(u.CreatedAt),
-                    u.IsActive,
-                    u.IsOnline
-                })
-                .ToListAsync();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-            return Json(new { success = true, data = users });
-        }
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-        /// <summary>
-        /// دریافت لیست گزارشات اخیر
-        /// </summary>
-        [HttpGet("api/recent-reports")]
-        public async Task<IActionResult> GetRecentReportsApi([FromQuery] int count = 10)
-        {
-            var reports = await GetRecentReportsAsync(count);
-            return Json(new { success = true, data = reports });
-        }
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-        /// <summary>
-        /// دریافت لیست گروه‌های فعال
-        /// </summary>
-        [HttpGet("api/active-groups")]
-        public async Task<IActionResult> GetActiveGroups([FromQuery] int count = 10)
-        {
-            var groups = await _context.Groups
-                .Where(g => g.IsActive)
-                .OrderByDescending(g => g.Messages.Count)
-                .Take(count)
-                .Select(g => new
-                {
-                    g.Id,
-                    g.Name,
-                    g.Description,
-                    MemberCount = g.UserGroups.Count,
-                    MessageCount = g.Messages.Count(m => !m.IsDeleted),
-                    CreatedAt = g.CreatedAt,
-                    CreatedAtPersian = ToPersianDate(g.CreatedAt)
-                })
-                .ToListAsync();
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-            return Json(new { success = true, data = groups });
-        }
+                    b.Property<bool>("IsAllowed")
+                        .HasColumnType("bit");
 
-        /// <summary>
-        /// دریافت لیست کانال‌های فعال
-        /// </summary>
-        [HttpGet("api/active-channels")]
-        public async Task<IActionResult> GetActiveChannels([FromQuery] int count = 10)
-        {
-            var channels = await _context.Channels
-                .Where(c => c.IsActive)
-                .OrderByDescending(c => c.UserChannels.Count)
-                .Take(count)
-                .Select(c => new
-                {
-                    c.Id,
-                    c.Name,
-                    c.Description,
-                    SubscriberCount = c.UserChannels.Count,
-                    PostCount = c.Messages.Count(m => !m.IsDeleted),
-                    CreatedAt = c.CreatedAt,
-                    CreatedAtPersian = ToPersianDate(c.CreatedAt)
-                })
-                .ToListAsync();
+                    b.Property<long>("MaxSize")
+                        .HasColumnType("bigint");
 
-            return Json(new { success = true, data = channels });
-        }
+                    b.HasKey("Id");
 
-        /// <summary>
-        /// دریافت آخرین تماس‌ها
-        /// </summary>
-        [HttpGet("api/recent-calls")]
-        public async Task<IActionResult> GetRecentCalls([FromQuery] int count = 10)
-        {
-            var calls = await _context.Calls
-                .Include(c => c.Initiator)
-                .OrderByDescending(c => c.StartedAt)
-                .Take(count)
-                .Select(c => new
-                {
-                    c.Id,
-                    InitiatorId = c.InitiatorId,
-                    InitiatorName = !string.IsNullOrEmpty(c.Initiator.FullName)
-                        ? c.Initiator.FullName
-                        : $"{c.Initiator.FirstName} {c.Initiator.LastName}".Trim(),
-                    Type = c.Type.ToString(),
-                    TypePersian = c.Type == CallType.Voice ? "صوتی" : "تصویری",
-                    c.Duration,
-                    DurationFormatted = FormatDuration(c.Duration),
-                    Status = c.Status.ToString(),
-                    StatusPersian = GetCallStatusPersian(c.Status),
-                    c.StartedAt,
-                    StartedAtPersian = ToPersianDateTime(c.StartedAt)
-                })
-                .ToListAsync();
+                    b.HasIndex("FileType")
+                        .IsUnique();
 
-            return Json(new { success = true, data = calls });
-        }
+                    b.ToTable("FileUploadSettings");
 
-        #endregion
-
-        #region Real-time Stats API
-
-        /// <summary>
-        /// دریافت آمار لحظه‌ای برای به‌روزرسانی داشبورد
-        /// </summary>
-        [HttpGet("api/realtime-stats")]
-        public async Task<IActionResult> GetRealtimeStats()
-        {
-            var today = DateTime.Today;
-            var todayEnd = today.AddDays(1);
-            var onlineThreshold = DateTime.Now.AddMinutes(-5);
-
-            var stats = new
-            {
-                TotalUsers = await _context.Users.CountAsync(),
-                OnlineUsers = await _context.Users
-                    .CountAsync(u => u.IsOnline || (u.LastSeen.HasValue && u.LastSeen > onlineThreshold)),
-                TotalMessages = await _context.Messages.CountAsync(m => !m.IsDeleted),
-                MessagesToday = await _context.Messages
-                    .CountAsync(m => m.CreatedAt >= today && m.CreatedAt < todayEnd && !m.IsDeleted),
-                TotalGroups = await _context.Groups.CountAsync(g => g.IsActive),
-                TotalChannels = await _context.Channels.CountAsync(c => c.IsActive),
-                TotalCalls = await _context.Calls.CountAsync(),
-                CallsToday = await _context.Calls
-                    .CountAsync(c => c.StartedAt >= today && c.StartedAt < todayEnd),
-                PendingReports = await GetPendingReportsCountAsync(),
-                LastUpdate = DateTime.Now,
-                LastUpdatePersian = GetPersianDateTime()
-            };
-
-            return Json(new { success = true, data = stats });
-        }
-
-        /// <summary>
-        /// دریافت آمار کامل داشبورد
-        /// </summary>
-        [HttpGet("api/full-stats")]
-        public async Task<IActionResult> GetFullStats()
-        {
-            var today = DateTime.Today;
-            var todayEnd = today.AddDays(1);
-            var weekStart = today.AddDays(-7);
-            var onlineThreshold = DateTime.Now.AddMinutes(-5);
-
-            // آمار اصلی
-            var totalUsers = await _context.Users.CountAsync();
-            var onlineUsers = await _context.Users
-                .CountAsync(u => u.IsOnline || (u.LastSeen.HasValue && u.LastSeen > onlineThreshold));
-            var newUsersToday = await _context.Users
-                .CountAsync(u => u.CreatedAt >= today && u.CreatedAt < todayEnd);
-
-            var totalMessages = await _context.Messages.CountAsync(m => !m.IsDeleted);
-            var messagesToday = await _context.Messages
-                .CountAsync(m => m.CreatedAt >= today && m.CreatedAt < todayEnd && !m.IsDeleted);
-
-            var totalGroups = await _context.Groups.CountAsync(g => g.IsActive);
-            var newGroupsThisWeek = await _context.Groups
-                .CountAsync(g => g.CreatedAt >= weekStart && g.IsActive);
-
-            var totalChannels = await _context.Channels.CountAsync(c => c.IsActive);
-            var newChannelsThisWeek = await _context.Channels
-                .CountAsync(c => c.CreatedAt >= weekStart && c.IsActive);
-
-            var totalCalls = await _context.Calls.CountAsync();
-            var callsToday = await _context.Calls
-                .CountAsync(c => c.StartedAt >= today && c.StartedAt < todayEnd);
-
-            var totalFiles = await _context.Messages
-                .CountAsync(m => !m.IsDeleted && !string.IsNullOrEmpty(m.AttachmentUrl));
-
-            var totalStorageBytes = await _context.Messages
-                .Where(m => !m.IsDeleted && m.AttachmentSize.HasValue)
-                .SumAsync(m => m.AttachmentSize ?? 0);
-
-            var pendingReports = await GetPendingReportsCountAsync();
-
-            // نمودارها
-            var messageChartData = await GetMessageChartDataAsync(7);
-            var messageTypesData = await GetMessageTypesDataAsync(30);
-            var userActivityData = await GetUserActivityDataAsync();
-            var callsChartData = await GetCallsChartDataAsync(7);
-
-            return Json(new
-            {
-                success = true,
-                data = new
-                {
-                    // آمار کارت‌ها
-                    Cards = new
-                    {
-                        TotalUsers = totalUsers,
-                        OnlineUsers = onlineUsers,
-                        NewUsersToday = newUsersToday,
-                        TotalMessages = totalMessages,
-                        MessagesToday = messagesToday,
-                        TotalGroups = totalGroups,
-                        NewGroupsThisWeek = newGroupsThisWeek,
-                        TotalChannels = totalChannels,
-                        NewChannelsThisWeek = newChannelsThisWeek,
-                        TotalCalls = totalCalls,
-                        CallsToday = callsToday,
-                        TotalFiles = totalFiles,
-                        TotalStorageUsed = FormatFileSize(totalStorageBytes),
-                        PendingReports = pendingReports
-                    },
-                    // نمودارها
-                    Charts = new
-                    {
-                        Messages = new
+                    b.HasData(
+                        new
                         {
-                            Labels = messageChartData.Labels,
-                            Values = messageChartData.Values
+                            Id = 1,
+                            Category = "Image",
+                            FileType = "jpg",
+                            IsAllowed = true,
+                            MaxSize = 10485760L
                         },
-                        MessageTypes = messageTypesData,
-                        UserActivity = new
+                        new
                         {
-                            Labels = userActivityData.Labels,
-                            Values = userActivityData.Values
+                            Id = 2,
+                            Category = "Image",
+                            FileType = "jpeg",
+                            IsAllowed = true,
+                            MaxSize = 10485760L
                         },
-                        Calls = new
+                        new
                         {
-                            Labels = callsChartData.Labels,
-                            VoiceCalls = callsChartData.VoiceCalls,
-                            VideoCalls = callsChartData.VideoCalls
-                        }
-                    },
-                    // متادیتا
-                    Meta = new
-                    {
-                        LastUpdate = DateTime.Now,
-                        LastUpdatePersian = GetPersianDateTime(),
-                        TodayPersian = GetPersianDateFull()
-                    }
-                }
-            });
-        }
+                            Id = 3,
+                            Category = "Image",
+                            FileType = "png",
+                            IsAllowed = true,
+                            MaxSize = 10485760L
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "Image",
+                            FileType = "gif",
+                            IsAllowed = true,
+                            MaxSize = 5242880L
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "Video",
+                            FileType = "mp4",
+                            IsAllowed = true,
+                            MaxSize = 104857600L
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = "Video",
+                            FileType = "webm",
+                            IsAllowed = true,
+                            MaxSize = 104857600L
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Category = "Audio",
+                            FileType = "mp3",
+                            IsAllowed = true,
+                            MaxSize = 20971520L
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Category = "Audio",
+                            FileType = "wav",
+                            IsAllowed = true,
+                            MaxSize = 20971520L
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = "Audio",
+                            FileType = "ogg",
+                            IsAllowed = true,
+                            MaxSize = 20971520L
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = "Document",
+                            FileType = "pdf",
+                            IsAllowed = true,
+                            MaxSize = 52428800L
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Category = "Document",
+                            FileType = "doc",
+                            IsAllowed = true,
+                            MaxSize = 52428800L
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Category = "Document",
+                            FileType = "docx",
+                            IsAllowed = true,
+                            MaxSize = 52428800L
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Category = "Document",
+                            FileType = "xls",
+                            IsAllowed = true,
+                            MaxSize = 52428800L
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Category = "Document",
+                            FileType = "xlsx",
+                            IsAllowed = true,
+                            MaxSize = 52428800L
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Category = "Archive",
+                            FileType = "zip",
+                            IsAllowed = true,
+                            MaxSize = 104857600L
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Category = "Archive",
+                            FileType = "rar",
+                            IsAllowed = true,
+                            MaxSize = 104857600L
+                        });
+                });
 
-        #endregion
-
-        #region Private Helper Methods
-
-        /// <summary>
-        /// دریافت داده‌های نمودار پیام‌ها
-        /// </summary>
-        private async Task<ChartData> GetMessageChartDataAsync(int days)
-        {
-            var endDate = DateTime.Today.AddDays(1);
-            var startDate = DateTime.Today.AddDays(-days + 1);
-
-            var messagesPerDay = await _context.Messages
-                .Where(m => m.CreatedAt >= startDate && m.CreatedAt < endDate && !m.IsDeleted)
-                .GroupBy(m => m.CreatedAt.Date)
-                .Select(g => new
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.ForbiddenWord", b =>
                 {
-                    Date = g.Key,
-                    Count = g.Count()
-                })
-                .OrderBy(x => x.Date)
-                .ToListAsync();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-            var labels = new List<string>();
-            var values = new List<int>();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-            for (var date = startDate; date < endDate; date = date.AddDays(1))
-            {
-                labels.Add(GetPersianDayName(date));
-                var dayData = messagesPerDay.FirstOrDefault(x => x.Date == date);
-                values.Add(dayData?.Count ?? 0);
-            }
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-            return new ChartData { Labels = labels, Values = values };
-        }
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-        /// <summary>
-        /// دریافت داده‌های نوع پیام‌ها
-        /// </summary>
-        private async Task<List<MessageTypeData>> GetMessageTypesDataAsync(int days)
-        {
-            var startDate = DateTime.Today.AddDays(-days);
+                    b.Property<string>("Word")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-            var messageTypes = await _context.Messages
-                .Where(m => m.CreatedAt >= startDate && !m.IsDeleted)
-                .GroupBy(m => m.Type)
-                .Select(g => new
+                    b.HasKey("Id");
+
+                    b.HasIndex("Word")
+                        .IsUnique();
+
+                    b.ToTable("ForbiddenWords");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Group", b =>
                 {
-                    Type = g.Key,
-                    Count = g.Count()
-                })
-                .ToListAsync();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-            return messageTypes.Select(mt => new MessageTypeData
-            {
-                Type = mt.Type.ToString(),
-                TypePersian = GetMessageTypePersianName(mt.Type),
-                Count = mt.Count,
-                Color = GetMessageTypeColor(mt.Type)
-            }).OrderByDescending(x => x.Count).ToList();
-        }
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-        /// <summary>
-        /// دریافت داده‌های فعالیت ساعتی کاربران
-        /// </summary>
-        private async Task<HourlyActivityData> GetUserActivityDataAsync()
-        {
-            var last24Hours = DateTime.Now.AddHours(-24);
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-            var hourlyActivity = await _context.Messages
-                .Where(m => m.CreatedAt >= last24Hours && !m.IsDeleted)
-                .GroupBy(m => m.CreatedAt.Hour)
-                .Select(g => new
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxMembers")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.GroupMember", b =>
                 {
-                    Hour = g.Key,
-                    Count = g.Count()
-                })
-                .ToListAsync();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-            var labels = new List<string>();
-            var values = new List<int>();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-            for (int hour = 0; hour < 24; hour++)
-            {
-                labels.Add($"{hour:00}:00");
-                var hourData = hourlyActivity.FirstOrDefault(x => x.Hour == hour);
-                values.Add(hourData?.Count ?? 0);
-            }
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
 
-            return new HourlyActivityData { Labels = labels, Values = values };
-        }
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-        /// <summary>
-        /// دریافت داده‌های نمودار تماس‌ها
-        /// </summary>
-        private async Task<CallsChartData> GetCallsChartDataAsync(int days)
-        {
-            var endDate = DateTime.Today.AddDays(1);
-            var startDate = DateTime.Today.AddDays(-days + 1);
+                    b.Property<bool>("IsMuted")
+                        .HasColumnType("bit");
 
-            var callsPerDay = await _context.Calls
-                .Where(c => c.StartedAt >= startDate && c.StartedAt < endDate)
-                .GroupBy(c => new { Date = c.StartedAt.Date, c.Type })
-                .Select(g => new
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("MutedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId", "GroupId")
+                        .IsUnique();
+
+                    b.ToTable("GroupMembers");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.LoginLog", b =>
                 {
-                    g.Key.Date,
-                    g.Key.Type,
-                    Count = g.Count()
-                })
-                .ToListAsync();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-            var labels = new List<string>();
-            var voiceCalls = new List<int>();
-            var videoCalls = new List<int>();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-            for (var date = startDate; date < endDate; date = date.AddDays(1))
-            {
-                labels.Add(GetPersianDayName(date));
+                    b.Property<int>("AuthType")
+                        .HasColumnType("int");
 
-                var voiceCount = callsPerDay
-                    .FirstOrDefault(x => x.Date == date && x.Type == CallType.Voice)?.Count ?? 0;
-                var videoCount = callsPerDay
-                    .FirstOrDefault(x => x.Date == date && x.Type == CallType.Video)?.Count ?? 0;
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                voiceCalls.Add(voiceCount);
-                videoCalls.Add(videoCount);
-            }
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-            return new CallsChartData
-            {
-                Labels = labels,
-                VoiceCalls = voiceCalls,
-                VideoCalls = videoCalls
-            };
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsSuccessful")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("LoginLogs");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AttachmentName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long?>("AttachmentSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("AttachmentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("CallId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EncryptedContent")
+                        .HasMaxLength(8000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ForwardedFromMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDelivered")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystemMessage")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MessageText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReceiverId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReplyToMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CallId");
+
+                    b.HasIndex("ChannelId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ForwardedFromMessageId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("ReplyToMessageId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.MessageReaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Emoji")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.HasIndex("MessageId", "UserId", "Emoji")
+                        .IsUnique();
+
+                    b.ToTable("MessageReactions");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.MessageRead", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("MessageId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MessageReads");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.MessageReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsReviewed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReporterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReviewedByAdminId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("ReporterId");
+
+                    b.HasIndex("ReviewedByAdminId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MessageReports");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Poll", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowMultipleAnswers")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAnonymous")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("Polls");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.PollOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PollId");
+
+                    b.ToTable("PollOptions");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.PollVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PollOptionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PollOptionId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("PollVotes");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ItemType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReportedChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReportedGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReportedMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReportedUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReporterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("ReviewedByAdminId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("ReviewedByAdminId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportedChannelId");
+
+                    b.HasIndex("ReportedGroupId");
+
+                    b.HasIndex("ReportedMessageId");
+
+                    b.HasIndex("ReportedUserId");
+
+                    b.HasIndex("ReporterId");
+
+                    b.HasIndex("ReviewedByAdminId1");
+
+                    b.ToTable("Reports");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.ServiceLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByAdminId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IconClass")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IconUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("OpenInNewTab")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByAdminId");
+
+                    b.ToTable("ServiceLinks");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.SmsCreditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("RelatedMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("RelatedMessageId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("SmsCreditLogs");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.StarredMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StarredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("UserId1");
+
+                    b.HasIndex("UserId", "MessageId")
+                        .IsUnique();
+
+                    b.ToTable("StarredMessages");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.SystemNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SendImmediately")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ShowOnLogin")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("SystemNotifications");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.SystemSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByAdminId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedByAdminId");
+
+                    b.ToTable("SystemSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "General",
+                            Description = "نوع احراز هویت: Database, ActiveDirectory, ERP",
+                            Key = "AuthenticationType",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7031),
+                            Value = "Database"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "General",
+                            Description = "آیا کاربران می‌توانند گروه ایجاد کنند",
+                            Key = "AllowUserGroupCreation",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7045),
+                            Value = "true"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "General",
+                            Description = "آیا کاربران می‌توانند کانال ایجاد کنند",
+                            Key = "AllowUserChannelCreation",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7047),
+                            Value = "true"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "General",
+                            Description = "زمان مجاز ویرایش پیام (ثانیه)",
+                            Key = "MessageEditTimeLimit",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7048),
+                            Value = "3600"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "General",
+                            Description = "زمان مجاز حذف پیام (ثانیه)",
+                            Key = "MessageDeleteTimeLimit",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7049),
+                            Value = "7200"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = "General",
+                            Description = "فعال بودن تماس VoIP",
+                            Key = "VoipEnabled",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7050),
+                            Value = "true"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Category = "General",
+                            Description = "فعال بودن یکپارچگی تلگرام",
+                            Key = "TelegramIntegrationEnabled",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7051),
+                            Value = "false"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Category = "General",
+                            Description = "حداکثر تعداد اعضای گروه",
+                            Key = "MaxGroupMembers",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7052),
+                            Value = "200"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = "General",
+                            Description = "زمان انقضای کد OTP (دقیقه)",
+                            Key = "OtpExpiryMinutes",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7053),
+                            Value = "5"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = "General",
+                            Description = "نام سازمان",
+                            Key = "CompanyName",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7054),
+                            Value = "سازمان"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Category = "General",
+                            Description = "آدرس لوگوی سازمان",
+                            Key = "CompanyLogoUrl",
+                            UpdatedAt = new DateTime(2026, 2, 13, 15, 45, 24, 695, DateTimeKind.Local).AddTicks(7055),
+                            Value = "/images/logo.png"
+                        });
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.TelegramMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Content")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsIncoming")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TelegramChatId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TelegramUsername")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TelegramChatId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TelegramMessages");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActiveDirectoryId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("BlockReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("BlockedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("CanCreateChannel")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanCreateGroup")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanMakeVideoCall")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanMakeVoiceCall")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ErpUserId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsADAuthenticated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsErpAuthenticated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsOnline")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsOtpVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("LastSeen")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastSeenAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("NotificationsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OtpCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("OtpExpireTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ProfilePicture")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PublicKey")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("ShowPreview")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SmsCredit")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SoundEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("VoipEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("VoipExtension")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("VoipPassword")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.UserChannel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanDeleteMessages")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanManageMembers")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanPost")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMuted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsOwner")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastReadMessageId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LeftAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("MutedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("NotificationsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnreadCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
+
+                    b.HasIndex("UserId", "ChannelId")
+                        .IsUnique();
+
+                    b.ToTable("UserChannels");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.UserGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMuted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("MutedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId", "GroupId")
+                        .IsUnique();
+
+                    b.ToTable("UserGroups");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.UserPermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanCreateChannel")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanCreateGroup")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanCreatePoll")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanSendBroadcast")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanUseTelegram")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanUseVoIP")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SmsCredit")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SmsCreditUsedThisYear")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SmsCreditYear")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VoIPExtension")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPermissions");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Call", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Channel", "Channel")
+                        .WithMany("Calls")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Group", "Group")
+                        .WithMany("Calls")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Initiator")
+                        .WithMany("InitiatedCalls")
+                        .HasForeignKey("InitiatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Receiver")
+                        .WithMany("ReceivedCalls")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Channel");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Initiator");
+
+                    b.Navigation("Receiver");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Channel", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Creator")
+                        .WithMany("CreatedChannels")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.FileAttachment", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "Message")
+                        .WithMany("Attachments")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Uploader")
+                        .WithMany("UploadedFiles")
+                        .HasForeignKey("UploaderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+
+                    b.Navigation("Uploader");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Group", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Creator")
+                        .WithMany("CreatedGroups")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.GroupMember", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Group", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.LoginLog", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", null)
+                        .WithMany("LoginLogs")
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Message", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Call", "Call")
+                        .WithMany("Messages")
+                        .HasForeignKey("CallId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Channel", "Channel")
+                        .WithMany("Messages")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "ForwardedFromMessage")
+                        .WithMany()
+                        .HasForeignKey("ForwardedFromMessageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Group", "Group")
+                        .WithMany("Messages")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Receiver")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "ReplyToMessage")
+                        .WithMany("Replies")
+                        .HasForeignKey("ReplyToMessageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Sender")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Call");
+
+                    b.Navigation("Channel");
+
+                    b.Navigation("ForwardedFromMessage");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("ReplyToMessage");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.MessageReaction", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "Message")
+                        .WithMany("Reactions")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", null)
+                        .WithMany("Reactions")
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("Message");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.MessageRead", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "Message")
+                        .WithMany("ReadReceipts")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.MessageReport", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "ReviewedByAdmin")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByAdminId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", null)
+                        .WithMany("MessageReports")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Message");
+
+                    b.Navigation("Reporter");
+
+                    b.Navigation("ReviewedByAdmin");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Poll", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Channel");
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.PollOption", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Poll", "Poll")
+                        .WithMany("Options")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Poll");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.PollVote", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.PollOption", "PollOption")
+                        .WithMany("Votes")
+                        .HasForeignKey("PollOptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PollOption");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Report", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Channel", "ReportedChannel")
+                        .WithMany()
+                        .HasForeignKey("ReportedChannelId");
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Group", "ReportedGroup")
+                        .WithMany()
+                        .HasForeignKey("ReportedGroupId");
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "ReportedMessage")
+                        .WithMany()
+                        .HasForeignKey("ReportedMessageId");
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "ReportedUser")
+                        .WithMany()
+                        .HasForeignKey("ReportedUserId");
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "ReviewedByAdmin")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByAdminId1");
+
+                    b.Navigation("ReportedChannel");
+
+                    b.Navigation("ReportedGroup");
+
+                    b.Navigation("ReportedMessage");
+
+                    b.Navigation("ReportedUser");
+
+                    b.Navigation("Reporter");
+
+                    b.Navigation("ReviewedByAdmin");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.ServiceLink", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.AdminUser", "CreatedByAdmin")
+                        .WithMany()
+                        .HasForeignKey("CreatedByAdminId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByAdmin");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.SmsCreditLog", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "RelatedMessage")
+                        .WithMany()
+                        .HasForeignKey("RelatedMessageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", null)
+                        .WithMany("SmsCreditLogs")
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("RelatedMessage");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.StarredMessage", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", null)
+                        .WithMany("StarredMessages")
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("Message");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.SystemNotification", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.SystemSetting", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.AdminUser", "UpdatedByAdmin")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByAdminId");
+
+                    b.Navigation("UpdatedByAdmin");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.TelegramMessage", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.UserChannel", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Channel", "Channel")
+                        .WithMany("UserChannels")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany("UserChannels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.UserGroup", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.Group", "Group")
+                        .WithMany("UserGroups")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany("UserGroups")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.UserPermission", b =>
+                {
+                    b.HasOne("OrganizationalMessenger.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Call", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Channel", b =>
+                {
+                    b.Navigation("Calls");
+
+                    b.Navigation("Messages");
+
+                    b.Navigation("UserChannels");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Group", b =>
+                {
+                    b.Navigation("Calls");
+
+                    b.Navigation("Members");
+
+                    b.Navigation("Messages");
+
+                    b.Navigation("UserGroups");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Message", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("Reactions");
+
+                    b.Navigation("ReadReceipts");
+
+                    b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.Poll", b =>
+                {
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.PollOption", b =>
+                {
+                    b.Navigation("Votes");
+                });
+
+            modelBuilder.Entity("OrganizationalMessenger.Domain.Entities.User", b =>
+                {
+                    b.Navigation("CreatedChannels");
+
+                    b.Navigation("CreatedGroups");
+
+                    b.Navigation("InitiatedCalls");
+
+                    b.Navigation("LoginLogs");
+
+                    b.Navigation("MessageReports");
+
+                    b.Navigation("Reactions");
+
+                    b.Navigation("ReceivedCalls");
+
+                    b.Navigation("ReceivedMessages");
+
+                    b.Navigation("SentMessages");
+
+                    b.Navigation("SmsCreditLogs");
+
+                    b.Navigation("StarredMessages");
+
+                    b.Navigation("UploadedFiles");
+
+                    b.Navigation("UserChannels");
+
+                    b.Navigation("UserGroups");
+                });
+#pragma warning restore 612, 618
         }
-
-        /// <summary>
-        /// دریافت تعداد گزارشات در انتظار
-        /// </summary>
-        private async Task<int> GetPendingReportsCountAsync()
-        {
-            // اگر Entity Report وجود دارد
-            if (_context.Model.FindEntityType(typeof(Report)) != null)
-            {
-                return await _context.Set<Report>()
-                    .CountAsync(r => r.Status == ReportStatus.Pending);
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// دریافت گزارشات اخیر
-        /// </summary>
-        private async Task<List<ReportViewModel>> GetRecentReportsAsync(int count)
-        {
-            // اگر Entity Report وجود دارد
-            if (_context.Model.FindEntityType(typeof(Report)) != null)
-            {
-                return await _context.Set<Report>()
-                    .Include(r => r.Reporter)
-                    .OrderByDescending(r => r.CreatedAt)
-                    .Take(count)
-                    .Select(r => new ReportViewModel
-                    {
-                        Id = r.Id,
-                        ReporterName = !string.IsNullOrEmpty(r.Reporter.FullName)
-                            ? r.Reporter.FullName
-                            : $"{r.Reporter.FirstName} {r.Reporter.LastName}".Trim(),
-                        ItemType = r.ItemType.ToString(),
-                        ItemTypePersian = GetReportItemTypePersian(r.ItemType),
-                        Reason = r.Reason ?? "",
-                        Status = r.Status.ToString(),
-                        StatusPersian = GetReportStatusPersian(r.Status),
-                        StatusClass = GetReportStatusClass(r.Status),
-                        CreatedAt = r.CreatedAt,
-                        CreatedAtPersian = ToPersianDate(r.CreatedAt)
-                    })
-                    .ToListAsync();
-            }
-            return new List<ReportViewModel>();
-        }
-
-        #endregion
-
-        #region Persian Date/Time Helpers
-
-        /// <summary>
-        /// تبدیل تاریخ به شمسی
-        /// </summary>
-        private static string ToPersianDate(DateTime date)
-        {
-            var pc = new PersianCalendar();
-            return $"{pc.GetYear(date)}/{pc.GetMonth(date):00}/{pc.GetDayOfMonth(date):00}";
-        }
-
-        /// <summary>
-        /// تبدیل تاریخ و زمان به شمسی
-        /// </summary>
-        private static string ToPersianDateTime(DateTime date)
-        {
-            var pc = new PersianCalendar();
-            return $"{pc.GetYear(date)}/{pc.GetMonth(date):00}/{pc.GetDayOfMonth(date):00} - {date:HH:mm}";
-        }
-
-        /// <summary>
-        /// دریافت نام روز به فارسی
-        /// </summary>
-        private static string GetPersianDayName(DateTime date)
-        {
-            var pc = new PersianCalendar();
-            var dayOfWeek = pc.GetDayOfWeek(date);
-
-            var persianDayNames = new Dictionary<DayOfWeek, string>
-            {
-                { DayOfWeek.Saturday, "شنبه" },
-                { DayOfWeek.Sunday, "یکشنبه" },
-                { DayOfWeek.Monday, "دوشنبه" },
-                { DayOfWeek.Tuesday, "سه‌شنبه" },
-                { DayOfWeek.Wednesday, "چهارشنبه" },
-                { DayOfWeek.Thursday, "پنجشنبه" },
-                { DayOfWeek.Friday, "جمعه" }
-            };
-
-            return persianDayNames[dayOfWeek];
-        }
-
-        /// <summary>
-        /// دریافت تاریخ شمسی کامل
-        /// </summary>
-        private static string GetPersianDateFull()
-        {
-            var pc = new PersianCalendar();
-            var now = DateTime.Now;
-
-            var persianMonthNames = new[]
-            {
-                "", "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-                "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
-            };
-
-            var dayOfWeek = GetPersianDayName(now);
-            var day = pc.GetDayOfMonth(now);
-            var month = persianMonthNames[pc.GetMonth(now)];
-            var year = pc.GetYear(now);
-
-            return $"{dayOfWeek}، {day} {month} {year}";
-        }
-
-        /// <summary>
-        /// دریافت تاریخ و زمان شمسی
-        /// </summary>
-        private static string GetPersianDateTime()
-        {
-            var pc = new PersianCalendar();
-            var now = DateTime.Now;
-            return $"{pc.GetYear(now)}/{pc.GetMonth(now):00}/{pc.GetDayOfMonth(now):00} - {now:HH:mm:ss}";
-        }
-
-        #endregion
-
-        #region Enum Translation Helpers
-
-        /// <summary>
-        /// دریافت نام فارسی نوع پیام - اصلاح شده بر اساس Enum واقعی
-        /// </summary>
-        private static string GetMessageTypePersianName(MessageType type)
-        {
-            return type switch
-            {
-                MessageType.Text => "متن",
-                MessageType.Image => "تصویر",
-                MessageType.Video => "ویدیو",
-                MessageType.Audio => "صوت",
-                MessageType.Voice => "پیام صوتی",
-                MessageType.File => "فایل",
-                MessageType.Location => "موقعیت",
-                MessageType.Contact => "مخاطب",
-                MessageType.Poll => "نظرسنجی",
-                MessageType.System => "سیستمی",
-                _ => "نامشخص"
-            };
-        }
-
-
-        /// <summary>
-        /// دریافت رنگ نوع پیام برای نمودار - اصلاح شده بر اساس Enum واقعی
-        /// </summary>
-        private static string GetMessageTypeColor(MessageType type)
-        {
-            return type switch
-            {
-                MessageType.Text => "#3B82F6",      // آبی
-                MessageType.Image => "#10B981",     // سبز
-                MessageType.Video => "#F59E0B",     // نارنجی
-                MessageType.Audio => "#8B5CF6",     // بنفش
-                MessageType.Voice => "#EC4899",     // صورتی
-                MessageType.File => "#EF4444",      // قرمز
-                MessageType.Location => "#06B6D4",  // فیروزه‌ای
-                MessageType.Contact => "#6366F1",   // نیلی
-                MessageType.Poll => "#14B8A6",      // تیل
-                MessageType.System => "#78716C",    // خاکستری تیره
-                _ => "#9CA3AF"                      // خاکستری روشن
-            };
-        }
-
-
-        /// <summary>
-        /// دریافت وضعیت فارسی تماس - اصلاح شده بر اساس Enum واقعی
-        /// </summary>
-        private static string GetCallStatusPersian(CallStatus status)
-        {
-            return status switch
-            {
-                CallStatus.Initiated => "شروع شده",
-                CallStatus.Ringing => "در حال زنگ زدن",
-                CallStatus.InProgress => "در جریان",
-                CallStatus.Ended => "پایان یافته",
-                CallStatus.Missed => "بی‌پاسخ",
-                CallStatus.Rejected => "رد شده",      // ✅ Rejected وجود دارد
-                CallStatus.Failed => "ناموفق",
-                _ => "نامشخص"
-            };
-        }
-
-
-        /// <summary>
-        /// دریافت نام فارسی نوع آیتم گزارش
-        /// </summary>
-        private static string GetReportItemTypePersian(ReportItemType type)
-        {
-            return type switch
-            {
-                ReportItemType.User => "کاربر",
-                ReportItemType.Message => "پیام",
-                ReportItemType.Group => "گروه",
-                ReportItemType.Channel => "کانال",
-                _ => "نامشخص"
-            };
-        }
-
-        /// <summary>
-        /// دریافت وضعیت فارسی گزارش - اصلاح شده بر اساس Enum واقعی
-        /// </summary>
-        private static string GetReportStatusPersian(ReportStatus status)
-        {
-            return status switch
-            {
-                ReportStatus.Pending => "در انتظار بررسی",    // 0
-                ReportStatus.Reviewed => "بررسی شده",         // 1 (نه UnderReview)
-                ReportStatus.Resolved => "حل شده",            // 2
-                ReportStatus.Dismissed => "رد شده",           // 3 (نه Rejected)
-                _ => "نامشخص"
-            };
-        }
-
-
-        /// <summary>
-        /// دریافت کلاس CSS برای وضعیت گزارش - اصلاح شده بر اساس Enum واقعی
-        /// </summary>
-        private static string GetReportStatusClass(ReportStatus status)
-        {
-            return status switch
-            {
-                ReportStatus.Pending => "bg-warning text-dark",
-                ReportStatus.Reviewed => "bg-info text-white",      // ✅ Reviewed
-                ReportStatus.Resolved => "bg-success text-white",
-                ReportStatus.Dismissed => "bg-secondary text-white", // ✅ Dismissed
-                _ => "bg-light text-dark"
-            };
-        }
-
-
-        #endregion
-
-        #region Formatting Helpers
-
-        /// <summary>
-        /// فرمت کردن حجم فایل
-        /// </summary>
-        private static string FormatFileSize(long bytes)
-        {
-            string[] sizes = { "بایت", "کیلوبایت", "مگابایت", "گیگابایت", "ترابایت" };
-            int order = 0;
-            double size = bytes;
-
-            while (size >= 1024 && order < sizes.Length - 1)
-            {
-                order++;
-                size /= 1024;
-            }
-
-            return $"{size:0.##} {sizes[order]}";
-        }
-
-        /// <summary>
-        /// فرمت کردن مدت زمان تماس
-        /// </summary>
-        private static string FormatDuration(int? seconds)
-        {
-            if (!seconds.HasValue || seconds.Value == 0)
-                return "0:00";
-
-            var ts = TimeSpan.FromSeconds(seconds.Value);
-
-            if (ts.TotalHours >= 1)
-                return $"{(int)ts.TotalHours}:{ts.Minutes:00}:{ts.Seconds:00}";
-
-            return $"{ts.Minutes}:{ts.Seconds:00}";
-        }
-
-        #endregion
     }
-
-    #region DTOs and ViewModels
-
-    /// <summary>
-    /// داده‌های نمودار عمومی
-    /// </summary>
-    public class ChartData
-    {
-        public List<string> Labels { get; set; } = new();
-        public List<int> Values { get; set; } = new();
-    }
-
-    /// <summary>
-    /// داده‌های نوع پیام
-    /// </summary>
-    public class MessageTypeData
-    {
-        public string Type { get; set; } = "";
-        public string TypePersian { get; set; } = "";
-        public int Count { get; set; }
-        public string Color { get; set; } = "";
-    }
-
-    /// <summary>
-    /// داده‌های فعالیت ساعتی
-    /// </summary>
-    public class HourlyActivityData
-    {
-        public List<string> Labels { get; set; } = new();
-        public List<int> Values { get; set; } = new();
-    }
-
-    /// <summary>
-    /// داده‌های نمودار تماس‌ها
-    /// </summary>
-    public class CallsChartData
-    {
-        public List<string> Labels { get; set; } = new();
-        public List<int> VoiceCalls { get; set; } = new();
-        public List<int> VideoCalls { get; set; } = new();
-    }
-
-    /// <summary>
-    /// ویومدل کاربر جدید
-    /// </summary>
-    public class NewUserViewModel
-    {
-        public int Id { get; set; }
-        public string FullName { get; set; } = "";
-        public string Username { get; set; } = "";
-        public string Email { get; set; } = "";
-        public DateTime CreatedAt { get; set; }
-        public string CreatedAtPersian { get; set; } = "";
-        public bool IsActive { get; set; }
-        public bool IsOnline { get; set; }
-    }
-
-    
+}
+ 
+ 

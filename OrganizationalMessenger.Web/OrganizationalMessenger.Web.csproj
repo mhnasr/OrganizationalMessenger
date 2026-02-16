@@ -34,6 +34,8 @@
 
   <ItemGroup>
     <Folder Include="Areas\Admin\Views\Shared\" />
+    <Folder Include="wwwroot\css\chat\modules\channel\" />
+    <Folder Include="wwwroot\css\chat\modules\group\" />
   </ItemGroup>
 
 </Project>

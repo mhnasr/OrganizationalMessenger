@@ -1,4 +1,4 @@
-﻿using OrganizationalMessenger.Application.Interfaces;
+﻿
 using OrganizationalMessenger.Domain.Enums;
 
 namespace OrganizationalMessenger.Domain.Entities

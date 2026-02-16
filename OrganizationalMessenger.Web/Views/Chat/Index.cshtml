@@ -1,6 +1,7 @@
-﻿﻿@{
-ViewData["Title"] = "چت";
-Layout = "~/Views/Shared/_Layout.cshtml";
+﻿@{
+    ViewData["Title"] = "چت";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var currentUser = ViewBag.CurrentUser as OrganizationalMessenger.Domain.Entities.User;
 }
 
 <!-- Anti-forgery token -->
@@ -8,12 +9,10 @@ Layout = "~/Views/Shared/_Layout.cshtml";
     @Html.AntiForgeryToken()
 </form>
 
-<input type="hidden" id="currentUserId" value="@ViewBag.CurrentUser.Id" />
-
-
+<input type="hidden" id="currentUserId" value="@currentUser?.Id" />
 
 <div class="chat-container">
-    <!-- Sidebar - لیست چتها -->
+    <!-- Sidebar -->
     <div class="chat-sidebar">
         <div class="chat-header">
             <div class="search-box">
@@ -21,25 +20,42 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                 <input type="text" id="searchInput" placeholder="جستجو...">
             </div>
             <div class="header-right">
-                <span class="user-name">@(((dynamic)ViewBag.CurrentUser)?.FullName ?? "کاربر")</span>
-                <img src="@ViewBag.CurrentUser.AvatarUrl" class="logo">
-                <!-- دکمه خروج زیبا -->
+                <span class="user-name">@currentUser?.FullName</span>
+                <img src="@(currentUser?.AvatarUrl ?? "/images/default-avatar.png")" class="logo">
+
+                <!-- ✅ دکمه منوی ایجاد -->
+                <button class="create-btn" id="createMenuBtn" title="ایجاد">
+                    <i class="fas fa-plus"></i>
+                </button>
+
+                <!-- ✅ منوی dropdown -->
+                <div class="create-menu" id="createMenu" style="display: none;">
+                    <button class="create-menu-item" id="createGroupBtn">
+                        <i class="fas fa-users"></i>
+                        <span>گروه جدید</span>
+                    </button>
+                    <button class="create-menu-item" id="createChannelBtn">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>کانال جدید</span>
+                    </button>
+                </div>
+
+                <!-- دکمه خروج -->
                 <form asp-action="SignOut" asp-controller="Chat" method="post" class="logout-form">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="logout-btn" title="خروج">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </form>
-
             </div>
         </div>
 
-        <!-- Tab Switcher -->
+        <!-- ✅ تب‌ها -->
         <div class="chat-tabs">
             <button class="tab-btn active" data-tab="all">همه</button>
             <button class="tab-btn" data-tab="private">خصوصی</button>
-            <button class="tab-btn" data-tab="group">گروه</button>
-            <button class="tab-btn" data-tab="channel">کانال</button>
+            <button class="tab-btn" data-tab="groups">گروه‌ها</button>
+            <button class="tab-btn" data-tab="channels">کانال‌ها</button>
         </div>
 
         <!-- چت لیست -->
@@ -73,12 +89,8 @@ Layout = "~/Views/Shared/_Layout.cshtml";
         </div>
 
         <!-- Message Input -->
-        <!-- در message-input-area -->
-        <!-- Message Input -->
         <div id="replyPreviewContainer"></div>
         <div class="message-input-area" id="messageInputArea" style="display: none;">
-            <!-- ✅ Reply Preview -->
-            <!-- ✅ Input Actions -->
             <div class="input-wrapper">
                 <button id="micBtn" class="input-btn" title="پیام صوتی">
                     <i class="fas fa-microphone"></i>
@@ -97,13 +109,14 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 
                 <button id="emojiBtn" class="input-btn" title="ایموجی">😀</button>
 
-                <button id="sendBtn" class="input-btn send-btn" title="��رسال">
+                <button id="sendBtn" class="input-btn send-btn" title="ارسال">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
         </div>
     </div>
 </div>
+
 <div id="emojiPickerContainer" style="display:none;"></div>
 
 <!-- Bottom Navigation -->
@@ -130,19 +143,14 @@ Layout = "~/Views/Shared/_Layout.cshtml";
     </button>
 </nav>
 
-
 <script>
-    // ✅ اول currentUserId رو درست بگیر
     const currentUserId = parseInt(document.getElementById('currentUserId')?.value || '0');
-    console.log('Current User ID:', currentUserId); // ❌ چک کن console
+    console.log('🔍 Current User ID:', currentUserId);
 </script>
-
-
 
 <link href="~/css/chat.css" rel="stylesheet" />
 
 <!-- SignalR Client -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 
-@* <script src="~/js/chat1.js"></script> *@
 <script type="module" src="~/js/chat.js"></script>

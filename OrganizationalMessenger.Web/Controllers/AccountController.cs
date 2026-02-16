@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrganizationalMessenger.Application.Interfaces;
 using OrganizationalMessenger.Domain.Entities;
+using OrganizationalMessenger.Domain.Enums;
 using OrganizationalMessenger.Infrastructure.Authentication;
 using OrganizationalMessenger.Infrastructure.Data;
 using OrganizationalMessenger.Infrastructure.Services;

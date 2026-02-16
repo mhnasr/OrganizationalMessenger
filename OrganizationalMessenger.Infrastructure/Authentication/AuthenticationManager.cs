@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OrganizationalMessenger.Application.Interfaces;
+using OrganizationalMessenger.Domain.Enums;
 
 namespace OrganizationalMessenger.Infrastructure.Authentication
 {

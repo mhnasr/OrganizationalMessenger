@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrganizationalMessenger.Application.Interfaces;
+using OrganizationalMessenger.Domain.Enums;
 using OrganizationalMessenger.Infrastructure.Data;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;

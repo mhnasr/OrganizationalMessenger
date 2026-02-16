@@ -4,10 +4,13 @@ import { markMessagesAsRead, removeUnreadSeparator, loadMessageSettings } from '
 import { setupScrollListener } from './message-handlers.js';
 import './message-menu.js';
 import './forward.js';
-
 import './reply.js';
-
 import './reactions.js';
+
+// ✅ Import ماژول‌های Group/Channel
+import './modules/group/group-manager.js';
+import './modules/channel/channel-manager.js';
+
 export async function initChat() {
     window.currentUserId = parseInt(document.getElementById('currentUserId')?.value || '0');
     console.log('🔍 Current User ID:', window.currentUserId);
@@ -27,6 +30,7 @@ export async function initChat() {
 
     setupEventListeners();
     setupScrollListener();
+    setupCreateMenu(); // ✅ فعال‌سازی منوی ایجاد
 
     window.addEventListener('focus', function () {
         setIsPageFocused(true);
@@ -43,9 +47,6 @@ export async function initChat() {
     console.log('✅ Init complete');
 }
 
-
-
-
 async function setupEventListeners() {
     console.log('🎯 Setting up event listeners...');
 
@@ -59,7 +60,6 @@ async function setupEventListeners() {
     if (sendBtn) {
         sendBtn.addEventListener('click', () => {
             sendMessage();
-            // ✅ حذف separator بعد از ارسال پیام
             setTimeout(() => {
                 removeUnreadSeparator();
             }, 500);
@@ -72,7 +72,6 @@ async function setupEventListeners() {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
-                // ✅ حذف separator بعد از ارسال پیام
                 setTimeout(() => {
                     removeUnreadSeparator();
                 }, 500);
@@ -117,6 +116,29 @@ async function setupEventListeners() {
     setupVoiceRecording();
 
     console.log('✅ Event listeners attached');
+}
+
+// ✅ Setup منوی ایجاد
+function setupCreateMenu() {
+    const createMenuBtn = document.getElementById('createMenuBtn');
+    const createMenu = document.getElementById('createMenu');
+
+    if (createMenuBtn && createMenu) {
+        createMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = createMenu.style.display === 'block';
+            createMenu.style.display = isVisible ? 'none' : 'block';
+        });
+
+        // بستن با کلیک بیرون
+        document.addEventListener('click', (e) => {
+            if (!createMenu.contains(e.target) && e.target !== createMenuBtn) {
+                createMenu.style.display = 'none';
+            }
+        });
+
+        console.log('✅ Create menu initialized');
+    }
 }
 
 export function toggleMessageInput(show) {

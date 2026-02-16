@@ -59,6 +59,12 @@ builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IAuthenticationManager, AuthenticationManager>();
 builder.Services.AddScoped<ISmsSender, TopTipSmsSender>();
 
+// Group & Channel Services
+builder.Services.AddScoped<IGroupService, OrganizationalMessenger.Infrastructure.Services.GroupService>();
+builder.Services.AddScoped<IChannelService, OrganizationalMessenger.Infrastructure.Services.ChannelService>();
+
+
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllersWithViews();
