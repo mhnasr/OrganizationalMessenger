@@ -2,475 +2,1067 @@
    Group & Channel Dialogs
 ============================================ */
 
+/* ==================== Overlay ==================== */
 .group-dialog-overlay,
-.channel-dialog-overlay {
+.members-dialog-overlay,
+.add-member-dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10000;
-    animation: fadeIn 0.3s ease;
+    animation: gcFadeIn 0.2s ease;
 }
 
+/* ==================== Dialog Base ==================== */
 .group-dialog,
-.channel-dialog {
+.members-dialog,
+.add-member-dialog {
     background: white;
     border-radius: 16px;
     width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
+    max-width: 480px;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    animation: slideUp 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: gcSlideUp 0.3s ease;
+    overflow: hidden;
 }
 
+.post-create-dialog {
+    max-width: 400px;
+}
+
+/* ==================== Header ==================== */
 .group-dialog-header,
-.channel-dialog-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #e0e0e0;
+.members-dialog-header,
+.add-member-dialog-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e8e8e8;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
 
     .group-dialog-header h3,
-    .channel-dialog-header h3 {
+    .members-dialog-header h3,
+    .add-member-dialog-header h3 {
         margin: 0;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 600;
-        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
     }
 
-.close-dialog {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #999;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s;
+    .group-dialog-header .close-dialog,
+    .members-dialog-header .close-dialog,
+    .add-member-dialog-header .close-dialog {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+        .group-dialog-header .close-dialog:hover,
+        .members-dialog-header .close-dialog:hover,
+        .add-member-dialog-header .close-dialog:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+.success-header {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
 }
 
-    .close-dialog:hover {
-        background: #f5f5f5;
-        color: #333;
-    }
-
+/* ==================== Body ==================== */
 .group-dialog-body,
-.channel-dialog-body {
-    padding: 24px;
+.members-dialog-body,
+.add-member-dialog-body {
+    padding: 20px 24px;
     overflow-y: auto;
     flex: 1;
 }
 
+/* ==================== Footer ==================== */
+.group-dialog-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e8e8e8;
+    background: #fafafa;
+}
+
+/* ==================== Form Elements ==================== */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
     .form-group label {
         display: block;
+        margin-bottom: 6px;
         font-size: 14px;
         font-weight: 500;
         color: #333;
-        margin-bottom: 8px;
     }
 
-        .form-group label input[type="checkbox"] {
-            margin-left: 8px;
-            cursor: pointer;
-        }
+    .form-group .required {
+        color: #e53935;
+    }
 
 .form-input {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #e0e0e0;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
     font-family: inherit;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
 }
 
     .form-input:focus {
         outline: none;
         border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
     }
 
-textarea.form-input {
-    resize: vertical;
-    min-height: 60px;
-}
-
-.group-dialog-footer,
-.channel-dialog-footer {
-    padding: 16px 24px;
-    border-top: 1px solid #e0e0e0;
+.checkbox-group label {
     display: flex;
-    gap: 12px;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
 }
 
-.btn-cancel {
-    padding: 10px 20px;
-    background: #f5f5f5;
-    color: #666;
+.form-text {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+}
+
+/* ==================== Buttons ==================== */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     border: none;
+    padding: 10px 20px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    flex: 1;
 }
 
-    .btn-cancel:hover {
-        background: #e0e0e0;
-    }
-
-.btn-primary {
-    padding: 10px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
 
-/* ============================================
-   Create Menu - دکمه + در سایدبار
-============================================ */
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 
-.create-menu-container {
-    position: relative;
+.btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    text-align: center;
 }
 
-.create-menu-btn {
+    .btn-cancel:hover {
+        background: #e8e8e8;
+    }
+
+/* ==================== Post-Create Success ==================== */
+.text-center {
+    text-align: center;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: white;
+    animation: gcPop 0.5s ease;
+}
+
+.success-message {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.success-sub {
+    font-size: 14px;
+    color: #888;
+}
+
+/* ==================== Member Count Badge ==================== */
+.member-count-badge {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+/* ==================== Add Member Button ==================== */
+.members-actions {
+    margin-bottom: 16px;
+}
+
+.btn-add-member {
     width: 100%;
-    padding: 12px 16px;
+    padding: 12px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+    .btn-add-member:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+/* ==================== Members List ==================== */
+.members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+    .member-item:hover {
+        background: #f8f8f8;
+    }
+
+.member-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+    .member-avatar-wrapper.online::after {
+        content: '';
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 10px;
+        height: 10px;
+        background: #4caf50;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+.member-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.member-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.member-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.member-role {
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .member-role.role-owner {
+        color: #f59e0b;
+    }
+
+    .member-role.role-admin {
+        color: #667eea;
+    }
+
+.btn-remove-member {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff0f0;
+    color: #e53935;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+    .btn-remove-member:hover {
+        background: #e53935;
+        color: white;
+    }
+
+/* ==================== Search Input ==================== */
+.search-wrapper {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 14px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 14px 12px 14px;
+    padding-right: 40px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+/* ==================== Users List (Search Results) ==================== */
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+    .user-item:hover {
+        background: #f8f8f8;
+    }
+
+.user-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+    .user-avatar-wrapper.online::after {
+        content: '';
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 10px;
+        height: 10px;
+        background: #4caf50;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.user-username {
+    font-size: 12px;
+    color: #999;
+}
+
+.btn-add-user {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+    .btn-add-user:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-add-user:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+/* ==================== Loading & No Results ==================== */
+.loading-users {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+    font-size: 14px;
+}
+
+    .loading-users i {
+        margin-left: 8px;
+    }
+
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+    .no-results i {
+        font-size: 40px;
+        margin-bottom: 12px;
+        display: block;
+        color: #ccc;
+    }
+
+    .no-results p {
+        font-size: 15px;
+        margin: 0 0 4px;
+        color: #666;
+    }
+
+    .no-results small {
+        font-size: 13px;
+        color: #aaa;
+    }
+
+/* ==================== Toast Notification ==================== */
+.gm-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 99999;
+    opacity: 0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+}
+
+    .gm-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+.gm-toast-success {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+}
+
+.gm-toast-error {
+    background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+    color: white;
+}
+
+.gm-toast-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* ==================== Animations ==================== */
+@keyframes gcFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes gcSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes gcPop {
+    0% {
+        transform: scale(0);
+    }
+
+    60% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 576px) {
+    .group-dialog,
+    .members-dialog,
+    .add-member-dialog {
+        width: 95%;
+        max-height: 90vh;
+        border-radius: 12px;
+    }
+
+    .group-dialog-header,
+    .members-dialog-header,
+    .add-member-dialog-header {
+        padding: 14px 18px;
+    }
+
+    .group-dialog-body,
+    .members-dialog-body,
+    .add-member-dialog-body {
+        padding: 16px 18px;
+    }
+}
+
+/* ==================== Scrollbar ==================== */
+.members-list::-webkit-scrollbar,
+.users-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.members-list::-webkit-scrollbar-track,
+.users-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.members-list::-webkit-scrollbar-thumb,
+.users-list::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 3px;
+}
+
+    .members-list::-webkit-scrollbar-thumb:hover,
+    .users-list::-webkit-scrollbar-thumb:hover {
+        background: #bbb;
+    }
+
+
+
+
+/* ============================================
+   Group Members Dialog
+============================================ */
+.group-members-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+    .group-members-overlay.active {
+        opacity: 1;
+    }
+
+.group-members-dialog {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.group-members-overlay.active .group-members-dialog {
+    transform: translateY(0) scale(1);
+}
+
+/* Header */
+.group-members-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+    .group-members-header h3 {
+        margin: 0;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+.member-count-badge {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.group-members-header .close-dialog {
+    color: white;
+    font-size: 22px;
+}
+
+    .group-members-header .close-dialog:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+/* Tabs */
+.group-members-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+}
+
+.gm-tab {
+    flex: 1;
+    padding: 14px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     transition: all 0.2s;
-    margin: 12px 16px;
 }
 
-    .create-menu-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    .gm-tab:hover {
+        background: rgba(0, 0, 0, 0.03);
+        color: #333;
     }
 
-.create-menu {
-    position: absolute;
-    top: 100%;
-    left: 16px;
-    right: 16px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    z-index: 1000;
-    margin-top: 8px;
-    display: none;
-    animation: slideDown 0.2s ease;
+    .gm-tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+/* Search */
+.group-members-search {
+    padding: 12px 16px;
+    position: relative;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-    .create-menu.show {
-        display: block;
+    .group-members-search i {
+        position: absolute;
+        right: 28px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
     }
 
-.create-menu-item {
+    .group-members-search input {
+        width: 100%;
+        padding: 10px 40px 10px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+        outline: none;
+    }
+
+        .group-members-search input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+.search-hint {
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fafafa;
+}
+
+/* Members List */
+.group-members-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    max-height: 50vh;
+}
+
+.group-member-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 16px;
-    cursor: pointer;
+    padding: 10px 12px;
+    border-radius: 10px;
     transition: background 0.2s;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: right;
-    color: #333;
+    animation: slideIn 0.3s ease;
+}
+
+    .group-member-item:hover {
+        background: #f5f7ff;
+    }
+
+/* Avatar */
+.member-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+}
+
+    .member-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .member-avatar.online::after {
+        content: '';
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 12px;
+        height: 12px;
+        background: #4caf50;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+/* Info */
+.member-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.member-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.member-name {
+    font-weight: 600;
     font-size: 14px;
+    color: #333;
 }
 
-    .create-menu-item:not(:last-child) {
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .create-menu-item:hover {
-        background: #f8f8f8;
-    }
-
-    .create-menu-item i {
-        font-size: 18px;
-        color: #667eea;
-        width: 24px;
-        text-align: center;
-    }
-
-/* ============================================
-   Animations
-============================================ */
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+.you-badge {
+    font-size: 11px;
+    color: #667eea;
+    font-weight: 400;
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.member-username {
+    font-size: 12px;
+    color: #999;
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Role Badge */
+.role-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    flex-shrink: 0;
 }
 
-/* ============================================
-   Dark Mode
-============================================ */
-
-@media (prefers-color-scheme: dark) {
-    .group-dialog,
-    .channel-dialog {
-        background: #2a2a2a;
+    .role-badge.admin {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
     }
 
-    .group-dialog-header,
-    .channel-dialog-header,
-    .group-dialog-footer,
-    .channel-dialog-footer {
-        border-color: #444;
+    .role-badge.member {
+        background: #f0f0f0;
+        color: #666;
     }
 
-        .group-dialog-header h3,
-        .channel-dialog-header h3 {
-            color: #fff;
+/* Action Buttons */
+.member-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.member-action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+    .member-action-btn.add {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+        .member-action-btn.add:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
-    .form-group label {
+    .member-action-btn.added {
+        background: #4caf50;
+        color: white;
+        cursor: default;
+    }
+
+    .member-action-btn.remove {
+        background: #fff5f5;
+        color: #e53e3e;
+        border: 1px solid #fed7d7;
+    }
+
+        .member-action-btn.remove:hover {
+            background: #e53e3e;
+            color: white;
+            border-color: #e53e3e;
+        }
+
+    .member-action-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+/* Empty & Loading States */
+.search-empty, .no-members {
+    padding: 40px 20px;
+    text-align: center;
+    color: #999;
+}
+
+    .search-empty i {
+        margin-bottom: 12px;
         color: #ccc;
     }
 
-    .form-input {
-        background: #333;
-        border-color: #444;
-        color: #fff;
+    .search-empty p, .no-members {
+        font-size: 14px;
+        margin: 8px 0 0;
     }
 
-        .form-input:focus {
-            border-color: #667eea;
-            background: #3a3a3a;
-        }
-
-    .create-menu {
-        background: #2a2a2a;
-        border: 1px solid #444;
-    }
-
-    .create-menu-item {
-        color: #ccc;
-    }
-
-        .create-menu-item:hover {
-            background: #333;
-        }
-
-        .create-menu-item:not(:last-child) {
-            border-color: #444;
-        }
+.search-loading {
+    padding: 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #667eea;
 }
 
-/* ============================================
-   Responsive
-============================================ */
+.spinner-small {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
 
-@media (max-width: 768px) {
-    .group-dialog,
-    .channel-dialog {
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+    .toast-notification.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+.toast-success {
+    background: linear-gradient(135deg, #4caf50, #43a047);
+    color: white;
+}
+
+.toast-error {
+    background: linear-gradient(135deg, #e53e3e, #c53030);
+    color: white;
+}
+
+.toast-info {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+/* Scrollbar */
+.group-members-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.group-members-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.group-members-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+    .group-members-list::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+
+/* Responsive */
+@media (max-width: 480px) {
+    .group-members-dialog {
         width: 95%;
         max-height: 90vh;
+        border-radius: 12px;
     }
 
-    .group-dialog-body,
-    .channel-dialog-body {
-        padding: 16px;
-    }
-
-    .create-menu-btn {
-        margin: 8px 12px;
-        padding: 10px 14px;
-        font-size: 13px;
+    .member-action-btn {
+        padding: 6px 10px;
+        font-size: 12px;
     }
 }
 
-
-
-
-
-/* ==================== Members Dialog ==================== */
-.members-dialog-overlay,
-.add-member-dialog-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-}
-
-.members-dialog,
-.add-member-dialog {
-    background: white;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.members-dialog-header,
-.dialog-header {
-    padding: 20px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.members-dialog-body,
-.dialog-body {
-    padding: 20px;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.members-actions {
-    margin-bottom: 15px;
-}
-
-.members-list,
-.users-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.member-item,
-.user-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: #f7fafc;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-}
-
-    .member-item:hover,
-    .user-item:hover {
-        background: #edf2f7;
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
     }
 
-.member-avatar,
-.user-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.member-info,
-.user-info {
-    flex: 1;
-}
-
-.member-name,
-.user-name {
-    font-weight: 600;
-    color: #2d3748;
-}
-
-.member-role,
-.user-username {
-    font-size: 0.85rem;
-    color: #718096;
-}
-
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-}
-
-.close-dialog {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #718096;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-    .close-dialog:hover {
-        background: #edf2f7;
-        color: #2d3748;
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
+}

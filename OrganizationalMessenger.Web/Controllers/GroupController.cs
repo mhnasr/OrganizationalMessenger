@@ -173,6 +173,7 @@ namespace OrganizationalMessenger.Web.Controllers
 
 
         // ✅ دریافت لیست اعضای گروه
+        // ✅ دریافت لیست اعضای گروه
         [HttpGet("{groupId}/Members")]
         public async Task<IActionResult> GetGroupMembers(int groupId)
         {
@@ -181,16 +182,20 @@ namespace OrganizationalMessenger.Web.Controllers
 
             try
             {
-                // بررسی عضویت کاربر در گروه
                 var userGroup = await _context.UserGroups
                     .FirstOrDefaultAsync(ug => ug.GroupId == groupId && ug.UserId == userId.Value && ug.IsActive);
 
                 if (userGroup == null)
                     return NotFound(new { success = false, message = "شما عضو این گروه نیستید" });
 
-                var members = await _context.UserGroups
+                // ✅ ابتدا داده‌ها را از دیتابیس بگیر، بعد projection سمت کلاینت
+                var membersRaw = await _context.UserGroups
                     .Where(ug => ug.GroupId == groupId && ug.IsActive)
                     .Include(ug => ug.User)
+                    .OrderByDescending(ug => ug.IsAdmin)
+                    .ToListAsync();
+
+                var members = membersRaw
                     .Select(ug => new
                     {
                         userId = ug.UserId,
@@ -204,7 +209,7 @@ namespace OrganizationalMessenger.Web.Controllers
                     })
                     .OrderByDescending(m => m.isAdmin)
                     .ThenBy(m => m.name)
-                    .ToListAsync();
+                    .ToList();
 
                 return Ok(new { success = true, members });
             }
@@ -215,6 +220,7 @@ namespace OrganizationalMessenger.Web.Controllers
         }
 
         // ✅ جستجوی کاربران برای اضافه کردن
+        // ✅ جستجوی کاربران برای اضافه کردن
         [HttpGet("{groupId}/SearchUsers")]
         public async Task<IActionResult> SearchUsersForGroup(int groupId, [FromQuery] string query = "")
         {
@@ -223,20 +229,19 @@ namespace OrganizationalMessenger.Web.Controllers
 
             try
             {
-                // بررسی مجوز (باید ادمین باشد)
                 var adminGroup = await _context.UserGroups
                     .FirstOrDefaultAsync(ug => ug.GroupId == groupId && ug.UserId == userId.Value && ug.IsAdmin);
 
                 if (adminGroup == null)
                     return StatusCode(403, new { success = false, message = "شما مجوز اضافه کردن عضو ندارید" });
 
-                // کاربرانی که قبلاً عضو نیستند
                 var existingMemberIds = await _context.UserGroups
                     .Where(ug => ug.GroupId == groupId && ug.IsActive)
                     .Select(ug => ug.UserId)
                     .ToListAsync();
 
-                var users = await _context.Users
+                // ✅ ابتدا فیلتر در دیتابیس، بعد projection سمت کلاینت
+                var usersRaw = await _context.Users
                     .Where(u => u.IsActive &&
                                !u.IsDeleted &&
                                !existingMemberIds.Contains(u.Id) &&
@@ -244,16 +249,17 @@ namespace OrganizationalMessenger.Web.Controllers
                                 u.FirstName.Contains(query) ||
                                 u.LastName.Contains(query) ||
                                 u.Username.Contains(query)))
-                    .Select(u => new
-                    {
-                        id = u.Id,
-                        name = $"{u.FirstName} {u.LastName}",
-                        username = u.Username,
-                        avatar = u.AvatarUrl ?? "/images/default-avatar.png",
-                        isOnline = u.IsOnline
-                    })
                     .Take(20)
                     .ToListAsync();
+
+                var users = usersRaw.Select(u => new
+                {
+                    id = u.Id,
+                    name = $"{u.FirstName} {u.LastName}",
+                    username = u.Username,
+                    avatar = u.AvatarUrl ?? "/images/default-avatar.png",
+                    isOnline = u.IsOnline
+                }).ToList();
 
                 return Ok(new { success = true, users });
             }

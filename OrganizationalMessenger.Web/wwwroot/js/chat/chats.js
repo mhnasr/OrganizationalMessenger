@@ -99,6 +99,9 @@ export async function selectChat(chatEl) {
         btn.style.display = 'flex';
     });
 
+    // ✅ تنظیم دکمه moreBtn بر اساس نوع چت
+    setupMoreButton(chatEl.dataset.chatType, parseInt(chatEl.dataset.chatId));
+
     await loadMessages(false);
 
     // ✅ فقط یک‌بار اینجا صدا زده می‌شود
@@ -127,6 +130,39 @@ export async function selectChat(chatEl) {
         }, 1000);
     }, 300);
 }
+
+// ✅ تنظیم دکمه moreBtn برای نمایش مدیریت اعضای گروه
+function setupMoreButton(chatType, chatId) {
+    const moreBtn = document.getElementById('moreBtn');
+    if (!moreBtn) return;
+
+    // ✅ کلون کردن دکمه برای حذف event listener های قبلی
+    const newMoreBtn = moreBtn.cloneNode(true);
+    moreBtn.parentNode.replaceChild(newMoreBtn, moreBtn);
+
+    if (chatType === 'group') {
+        newMoreBtn.style.display = 'flex';
+        newMoreBtn.title = 'مدیریت اعضا';
+        newMoreBtn.innerHTML = '<i class="fas fa-users-cog"></i>';
+        newMoreBtn.addEventListener('click', () => {
+            // ✅ از window.groupManager استفاده می‌کنیم (در group-manager.js ست شده)
+            if (window.groupManager) {
+                window.groupManager.showMembersDialog(chatId);
+            } else {
+                console.error('❌ groupManager not found on window');
+            }
+        });
+    } else if (chatType === 'channel') {
+        newMoreBtn.style.display = 'flex';
+        newMoreBtn.title = 'مدیریت کانال';
+        newMoreBtn.innerHTML = '<i class="fas fa-cog"></i>';
+        // TODO: مدیریت کانال
+    } else {
+        // چت خصوصی - فعلاً مخفی
+        newMoreBtn.style.display = 'none';
+    }
+}
+
 export function handleTabClick(tabBtn) {
     const tab = tabBtn.dataset.tab;
 
