@@ -10,6 +10,7 @@ using OrganizationalMessenger.Infrastructure.Authentication.OrganizationalMessen
 using OrganizationalMessenger.Infrastructure.Data;
 using OrganizationalMessenger.Infrastructure.Services;
 using OrganizationalMessenger.Web.Hubs;
+using Westwind.AspNetCore.LiveReload;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,10 +97,24 @@ builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
 
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddControllersWithViews()
+                    .AddRazorRuntimeCompilation();
+
+    builder.Services.AddLiveReload(); // اینجا، نه بعد از Build
+}
 
 
 
 var app = builder.Build();
+
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseLiveReload(); // قبل از UseStaticFiles
+}
+
 
 // =====================================================
 // MIDDLEWARE (ترتیب صحیح)

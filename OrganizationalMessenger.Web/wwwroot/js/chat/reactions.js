@@ -13,7 +13,7 @@ const popularEmojis = [
 export function showReactionPicker(messageId) {
     console.log('😊 Showing reaction picker for message:', messageId);
 
-    // حذف picker قبل��
+    // حذف picker قبلی
     const existingPicker = document.getElementById('reactionPicker');
     if (existingPicker) {
         existingPicker.remove();
@@ -23,17 +23,14 @@ export function showReactionPicker(messageId) {
     const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
     if (!messageEl) return;
 
-    // ✅ پیدا کردن دکمه add که روی آن کلیک شده
     const addBtn = messageEl.querySelector('.reaction-add-btn');
     if (!addBtn) return;
 
-    // ✅ تشخیص نوع پیام
     const isSent = messageEl.classList.contains('sent');
-    console.log('📍 Message type:', isSent ? 'sent' : 'received');
 
     const picker = document.createElement('div');
     picker.id = 'reactionPicker';
-    picker.className = `reaction-picker ${isSent ? 'picker-left' : 'picker-right'}`;
+    picker.className = `reaction-picker ${isSent ? 'picker-sent' : 'picker-received'}`;
     picker.innerHTML = `
         <div class="reaction-picker-emojis">
             ${popularEmojis.map(emoji => `
@@ -44,14 +41,55 @@ export function showReactionPicker(messageId) {
         </div>
     `;
 
-    // ✅ اضافه کردن picker به message-reactions (کنار دکمه)
-    const reactionsContainer = messageEl.querySelector('.message-reactions');
-    if (reactionsContainer) {
-        reactionsContainer.appendChild(picker);
-        console.log('✅ Picker added to reactions container');
+    // ✅ اضافه کردن به BODY
+    document.body.appendChild(picker);
+
+    // ✅ محاسبه موقعیت دقیق
+    const rect = addBtn.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    // ✅ محاسبه offset بر اساس نوع پیام
+    let offsetX = 0;
+    if (isSent) {
+        // پیام ارسالی: کمی به چپ (20px)
+        offsetX = -20;
+    } else {
+        // پیام دریافتی: کمی به راست (20px)
+        offsetX = 20;
     }
 
-    // Event listeners
+    picker.style.position = 'fixed';
+    picker.style.left = (rect.left + (rect.width / 2) + offsetX) + 'px';
+    picker.style.top = (rect.top + scrollTop - 8) + 'px';
+    picker.style.transform = 'translateX(-50%) translateY(-100%)';
+
+    console.log('📍 Picker positioned:', { left: rect.left, top: rect.top, offsetX });
+
+
+    // Boundary check و adjust
+    const chatMainRect = document.querySelector('.chat-main')?.getBoundingClientRect();
+    if (chatMainRect) {
+        const pickerRect = picker.getBoundingClientRect();
+
+        // اگر از چپ خارج شد
+        if (pickerRect.left < chatMainRect.left + 10) {
+            picker.style.left = (chatMainRect.left + 20) + 'px';
+            picker.style.transform = 'translateX(0%) translateY(-100%)';
+        }
+
+        // اگر از راست خارج شد
+        if (pickerRect.right > chatMainRect.right - 10) {
+            picker.style.left = (chatMainRect.right - pickerRect.width - 40) + 'px';
+            picker.style.transform = 'translateX(0%) translateY(-100%)';
+        }
+    }
+
+
+
+
+
+
+    // Event listeners...
     picker.querySelectorAll('.reaction-emoji-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -63,14 +101,23 @@ export function showReactionPicker(messageId) {
 
     // بستن با کلیک بیرون
     setTimeout(() => {
-        document.addEventListener('click', function closePicker(e) {
+        const closePicker = (e) => {
             if (!picker.contains(e.target) && !addBtn.contains(e.target)) {
                 picker.remove();
                 document.removeEventListener('click', closePicker);
             }
-        });
+        };
+        document.addEventListener('click', closePicker);
     }, 100);
+
+
+
+
+
+
+
 }
+
 
 export async function addOrChangeReaction(messageId, emoji) {
     console.log('🎭 Add or change reaction:', messageId, emoji);
@@ -157,7 +204,7 @@ function renderReactions(messageId, reactions, container) {
         `;
         return;
     }
-
+    
     const reactionsItems = reactions.map(r => `
         <div class="reaction-item ${r.hasReacted ? 'my-reaction' : ''}" 
              data-emoji="${r.emoji}"
@@ -169,11 +216,11 @@ function renderReactions(messageId, reactions, container) {
     `).join('');
 
     container.innerHTML = `
-        ${reactionsItems}
-        <button class="reaction-add-btn" onclick="window.showReactionPicker(${messageId})">
-            <i class="far fa-smile"></i>
-        </button>
-    `;
+    ${reactionsItems}
+    <button class="reaction-add-btn" onclick="window.showReactionPicker(${messageId})" title="واکنش اضافه کن">
+        <i class="far fa-smile"></i>
+    </button>
+`;
 }
 
 window.showReactionPicker = showReactionPicker;

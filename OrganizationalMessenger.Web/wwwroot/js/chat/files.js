@@ -228,13 +228,15 @@ function hideUploadProgress() {
     document.getElementById('uploadProgress')?.remove();
 }
 
-export function renderFileAttachment(file) {
+export function renderFileAttachment(file, isSent) {
+    const alignmentClass = isSent ? 'file-sent' : 'file-received';
+
     const fileType = file.fileType || 'Document';
     console.log('🔍 Rendering file:', file.originalFileName, 'Type:', fileType);
 
     if (fileType === 'Image') {
         return `
-            <div class="message-file image-file">
+            <div class="message-file image-file ${alignmentClass}">
                 <img src="${file.thumbnailUrl || file.fileUrl}" 
                      alt="${file.originalFileName}" 
                      onclick="window.openImagePreview('${file.fileUrl}')"
@@ -251,7 +253,7 @@ export function renderFileAttachment(file) {
     }
     else if (fileType === 'Video') {
         return `
-            <div class="message-file video-file">
+            <div class="message-file video-file ${alignmentClass}">
                 <video controls 
                        preload="metadata" 
                        style="max-width: 400px; width: 100%; border-radius: 12px;">
@@ -271,12 +273,15 @@ export function renderFileAttachment(file) {
         `;
     }
     else if (fileType === 'Audio') {
-        return window.renderAudioPlayer(file);
+        // اگر می‌خواهی جهت‌دار شود، می‌توانی کلاس را به خروجی player هم اضافه کنی
+        const html = window.renderAudioPlayer(file);
+        // مثلا اگر renderAudioPlayer خودش div.message-file بسازد، می‌شود بعداً با JS کلاس اضافه کرد
+        return html;
     }
     else {
         const icon = getFileIcon(fileType, file.extension);
         return `
-            <div class="message-file document-file">
+            <div class="message-file document-file ${alignmentClass}">
                 <i class="${icon}"></i>
                 <div class="file-info">
                     <span class="file-name">${file.originalFileName}</span>

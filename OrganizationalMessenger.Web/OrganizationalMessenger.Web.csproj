@@ -1,41 +1,49 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Admin\**" />
-    <Compile Remove="Area\**" />
-    <Content Remove="Admin\**" />
-    <Content Remove="Area\**" />
-    <EmbeddedResource Remove="Admin\**" />
-    <EmbeddedResource Remove="Area\**" />
-    <None Remove="Admin\**" />
-    <None Remove="Area\**" />
+	<Compile Remove="Admin\**" />
+	<Compile Remove="Area\**" />
+	<Content Remove="Admin\**" />
+	<Content Remove="Area\**" />
+	<EmbeddedResource Remove="Admin\**" />
+	<EmbeddedResource Remove="Area\**" />
+	<None Remove="Admin\**" />
+	<None Remove="Area\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+	<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.24" />
+	<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
+	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  <PrivateAssets>all</PrivateAssets>
+	</PackageReference>
+	<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
+	<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+	<PackageReference Include="Westwind.AspNetCore.LiveReload" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OrganizationalMessenger.Infrastructure\OrganizationalMessenger.Infrastructure.csproj" />
+	<ProjectReference Include="..\OrganizationalMessenger.Infrastructure\OrganizationalMessenger.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Admin\Views\Shared\" />
-    <Folder Include="wwwroot\css\chat\modules\channel\" />
-    <Folder Include="wwwroot\css\chat\modules\group\" />
+	<Folder Include="Areas\Admin\Views\Shared\" />
+	<Folder Include="wwwroot\css\chat\modules\channel\" />
+	<Folder Include="wwwroot\css\chat\modules\group\" />
   </ItemGroup>
+
+
+	<PropertyGroup>
+		<OutputPath>bin\Watch\</OutputPath>
+		<BaseOutputPath>bin\Watch\</BaseOutputPath>
+	</PropertyGroup>
 
 </Project>

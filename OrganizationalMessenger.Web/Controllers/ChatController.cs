@@ -114,7 +114,7 @@ namespace OrganizationalMessenger.Web.Controllers
             }
 
             var messages = await query
-                .OrderByDescending(m => m.SentAt)
+                .OrderByDescending(m => m.Id)
                 .Take(pageSize)
                 .ToListAsync();
 
@@ -326,7 +326,7 @@ namespace OrganizationalMessenger.Web.Controllers
                         .Where(m =>
                             ((m.SenderId == userId && m.ReceiverId == user.Id) ||
                              (m.SenderId == user.Id && m.ReceiverId == userId)))
-                        .OrderByDescending(m => m.SentAt)
+                        .OrderByDescending(m => m.Id)
                         .FirstOrDefaultAsync();
 
                     var unreadCount = await _context.Messages
@@ -342,12 +342,13 @@ namespace OrganizationalMessenger.Web.Controllers
                         name = fullName,
                         avatar = user.AvatarUrl ?? "/images/default-avatar.png",
                         isOnline = user.IsOnline,
-                        lastMessage = lastMessage != null ?
-                            (lastMessage.MessageText ?? lastMessage.Content ?? "") : "",
+                        lastMessage = lastMessage != null ?(lastMessage.MessageText ?? lastMessage.Content ?? "") : "",
                         lastMessageTime = lastMessage?.SentAt ?? user.LastSeen ?? user.CreatedAt,
+                        lastMessageId = lastMessage?.Id ?? 0,   // 👈 این خط
                         unreadCount,
                         messageDirection = lastMessage?.SenderId == userId ? "sent" : "received"
                     });
+
                 }
             }
 
@@ -363,7 +364,7 @@ namespace OrganizationalMessenger.Web.Controllers
                 {
                     var lastMessage = await _context.Messages
                         .Where(m => m.GroupId == ug.GroupId && !m.IsDeleted)
-                        .OrderByDescending(m => m.SentAt)
+                        .OrderByDescending(m => m.Id)
                         .FirstOrDefaultAsync();
 
                     var memberCount = await _context.UserGroups
@@ -377,14 +378,16 @@ namespace OrganizationalMessenger.Web.Controllers
                         avatar = ug.Group.AvatarUrl ?? "/images/default-group.png",
                         isOnline = false,
                         lastMessage = lastMessage != null ?
-                            (lastMessage.MessageText ?? lastMessage.Content ?? "") : "بدون پیام",
+                        (lastMessage.MessageText ?? lastMessage.Content ?? "") : "بدون پیام",
                         lastMessageTime = lastMessage?.SentAt ?? ug.Group.CreatedAt,
+                        lastMessageId = lastMessage?.Id ?? 0,   // 👈
                         memberCount,
-                        unreadCount = 0, // TODO: محاسبه دقیق
+                        unreadCount = 0,
                         role = ug.Role.ToString(),
                         isAdmin = ug.IsAdmin,
                         isMuted = ug.IsMuted
                     });
+
                 }
             }
 
@@ -401,7 +404,7 @@ namespace OrganizationalMessenger.Web.Controllers
                 {
                     var lastMessage = await _context.Messages
                         .Where(m => m.ChannelId == uc.ChannelId && !m.IsDeleted)
-                        .OrderByDescending(m => m.SentAt)
+                        .OrderByDescending(m => m.Id)
                         .FirstOrDefaultAsync();
 
                     chats.Add(new
@@ -412,8 +415,9 @@ namespace OrganizationalMessenger.Web.Controllers
                         avatar = uc.Channel.AvatarUrl ?? "/images/default-channel.png",
                         isOnline = false,
                         lastMessage = lastMessage != null ?
-                            (lastMessage.MessageText ?? lastMessage.Content ?? "") : "بدون پیام",
+        (lastMessage.MessageText ?? lastMessage.Content ?? "") : "بدون پیام",
                         lastMessageTime = lastMessage?.SentAt ?? uc.Channel.CreatedAt,
+                        lastMessageId = lastMessage?.Id ?? 0,   // 👈
                         memberCount = uc.Channel.MemberCount,
                         unreadCount = uc.UnreadCount,
                         role = uc.Role.ToString(),
@@ -422,10 +426,14 @@ namespace OrganizationalMessenger.Web.Controllers
                         isMuted = uc.IsMuted,
                         isPinned = uc.IsPinned
                     });
+
                 }
             }
 
-            return chats.OrderByDescending(c => c.lastMessageTime ?? DateTime.MinValue).ToList();
+            return chats
+                .OrderByDescending(c => c.lastMessageId)   // 👈 حالا بر اساس Id آخرین پیام
+                .ThenByDescending(c => c.lastMessageTime ?? DateTime.MinValue) // اختیاری، tie-breaker
+                .ToList();
         }
 
 

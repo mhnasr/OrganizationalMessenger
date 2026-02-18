@@ -83,7 +83,7 @@
     width: 22px;
     height: 22px;
     background: white;
-    border: 2px dashed rgba(0, 0, 0, 0.2);
+    
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s;
@@ -113,15 +113,29 @@
    Reaction Picker - دقیقاً روی دکمه
 ============================================ */
 .reaction-picker {
-    position: absolute;
-    bottom: calc(100% + 8px); /* ✅ بالای دکمه */
+    position: fixed !important;
     background: white;
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    padding: 8px;
-    z-index: 10000;
-    animation: popInPicker 0.2s ease;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    padding: 0px;
+    z-index: 10001;
+    min-width: 180px;
+    max-width: 220px;
+    animation: popInPicker 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    font-family: inherit;
 }
+
+    .reaction-picker.picker-sent {
+        /* پیام ارسالی - offset خودکار در JS */
+    }
+
+    .reaction-picker.picker-received {
+        /* پیام دریافتی - offset خودکار در JS */
+    }
+
+
+
 
     /* ✅ برای پیام‌های ارسالی */
     .reaction-picker.picker-left {
@@ -157,11 +171,13 @@
 
 .reaction-picker-emojis {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 0px;
-    max-height: 300px;
+    max-height: 240px;
     overflow-y: auto;
+    padding: 4px 0;
 }
+
 
     .reaction-picker-emojis::-webkit-scrollbar {
         width: 6px;
@@ -185,33 +201,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     background: transparent;
     border: none;
-    border-radius: 2px;
-    font-size: 18px;
+    border-radius: 10px;
+    font-size: 22px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s ease;
 }
 
-    .reaction-emoji-btn:hover {
-        background: #f5f5f5;
-        transform: scale(1.15);
-    }
+   
 
 /* ============================================
    Animations
 ============================================ */
 @keyframes popInPicker {
-    from {
+    0% {
         opacity: 0;
-        transform: translateX(-50%) translateY(10px) scale(0.9);
+        transform: translateX(-50%) translateY(-10px) scale(0.8);
     }
 
-    to {
+    100% {
         opacity: 1;
-        transform: translateX(-50%) translateY(0) scale(1);
+        transform: translateX(-50%) translateY(-100%) scale(1);
     }
 }
 
@@ -243,19 +256,21 @@
 
  
 
-    .reaction-picker {
-        background: #2a2a2a;
-        border: 1px solid #444;
-    }
+   
 
         .reaction-picker.picker-left::after,
         .reaction-picker.picker-right::after {
             border-top-color: #2a2a2a;
         }
 
+
+
     .reaction-emoji-btn:hover {
-        background: #333;
+        background: rgba(0, 0, 0, 0.08);
+        transform: scale(1.15);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
+
 
     .reaction-picker-emojis::-webkit-scrollbar-track {
         background: #333;

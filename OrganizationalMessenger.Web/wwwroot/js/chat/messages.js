@@ -327,7 +327,10 @@ export function displayMessage(msg) {
 
     let attachmentsHtml = '';
     if (msg.attachments && msg.attachments.length > 0) {
-        attachmentsHtml = msg.attachments.map(file => renderFileAttachment(file)).join('');
+        const isSent = msg.senderId === window.currentUserId;
+        attachmentsHtml = msg.attachments
+            .map(file => renderFileAttachment(file, isSent))
+            .join('');
     }
 
     let messageTextHtml = '';
