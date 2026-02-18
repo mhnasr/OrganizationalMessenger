@@ -29,6 +29,32 @@ namespace OrganizationalMessenger.Web.Controllers
             return int.TryParse(claim.Value, out var id) ? id : null;
         }
 
+
+        [HttpGet("CanCreateGroup")]
+        public IActionResult CanCreateGroup()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized(new { success = false, canCreate = false });
+
+            try
+            {
+                var user = _context.Users.Find(userId.Value);
+                return Ok(new
+                {
+                    success = true,
+                    canCreate = user?.CanCreateGroup ?? false
+                });
+            }
+            catch
+            {
+                return Ok(new { success = true, canCreate = false });
+            }
+        }
+
+
+
+
+
         // ✅ تغییر [FromBody] به [FromForm]
         [HttpPost("Create")]
         public async Task<IActionResult> CreateGroup([FromForm] CreateGroupRequest request)

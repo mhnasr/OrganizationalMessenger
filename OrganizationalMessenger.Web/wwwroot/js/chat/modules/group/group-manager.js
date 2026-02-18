@@ -6,21 +6,85 @@ import { getCsrfToken } from '../../utils.js';
 
 export class GroupManager {
     constructor() {
-        this.searchTimer = null; // برای debounce
+        this.searchTimer = null;
+        this.canCreateGroup = false; // ✅ مقدار اولیه
         this.init();
     }
 
-    init() {
+    async init() { // ✅ async کنید
         console.log('📦 GroupManager initialized');
+
+        // ✅ اول دسترسی را چک کن و منتظر بمان
+        await this.checkCreateGroupPermission();
+
+        // بعد event listener ها را ست کن
         this.setupEventListeners();
+    }
+
+    // ✅ چک کردن دسترسی
+    async checkCreateGroupPermission() {
+        try {
+            const response = await fetch('/api/Group/CanCreateGroup');
+            const result = await response.json();
+
+            this.canCreateGroup = result.success && result.canCreate;
+            console.log('✅ CanCreateGroup permission:', this.canCreateGroup);
+
+            this.toggleCreateGroupButton();
+
+        } catch (error) {
+            console.error('❌ Error checking group permission:', error);
+            this.canCreateGroup = false;
+            this.toggleCreateGroupButton();
+        }
+    }
+
+    // ✅ نمایش/مخفی کردن دکمه
+    toggleCreateGroupButton() {
+        const createGroupBtn = document.getElementById('createGroupBtn');
+        if (!createGroupBtn) {
+            console.warn('⚠️ createGroupBtn not found');
+            return;
+        }
+
+        console.log('🔧 Toggling button, canCreateGroup:', this.canCreateGroup);
+
+        if (this.canCreateGroup) {
+            createGroupBtn.style.display = 'flex'; // ✅ برای menu item
+            createGroupBtn.style.visibility = 'visible';
+            createGroupBtn.classList.remove('hidden');
+        } else {
+            createGroupBtn.style.display = 'none';
+            createGroupBtn.style.visibility = 'hidden';
+            createGroupBtn.classList.add('hidden');
+        }
     }
 
     setupEventListeners() {
         const createGroupBtn = document.getElementById('createGroupBtn');
+        console.log('🔍 setupEventListeners - canCreateGroup:', this.canCreateGroup);
+
         if (createGroupBtn) {
-            createGroupBtn.addEventListener('click', () => this.showCreateDialog());
+            // ✅ همیشه event listener ست کن، شرط را در click handler بگذار
+            createGroupBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // ✅ مهم!
+                if (this.canCreateGroup) {
+                    console.log('✅ Permission granted, opening dialog');
+                    this.showCreateDialog();
+                } else {
+                    console.log('❌ No permission');
+                    // اختیاری: toast یا alert
+                }
+            });
+        } else {
+            console.warn('⚠️ createGroupBtn not found in setupEventListeners');
         }
     }
+
+   
+
+
+
 
     // ============================================
     // ایجاد گروه

@@ -115,8 +115,82 @@ async function setupEventListeners() {
 
     setupVoiceRecording();
 
+
+    await setupHeaderEventListeners(); // ✅ اضافه کنید
+
+
     console.log('✅ Event listeners attached');
 }
+
+
+
+async function setupHeaderEventListeners() {
+    console.log('🎯 Setting up header event listeners...');
+
+    // ✅ مدیریت اعضا
+    const manageMembersBtn = document.getElementById('manageMembersBtn');
+    if (manageMembersBtn) {
+        manageMembersBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const chatId = parseInt(e.currentTarget.dataset.chatId);
+            const chatType = e.currentTarget.dataset.chatType;
+
+            console.log('👥 Manage members clicked:', chatType, chatId);
+
+            if (chatType === 'group' && window.groupManager) {
+                await window.groupManager.showMembersDialog(chatId);
+            } else if (chatType === 'channel' && window.channelManager) {
+                await window.channelManager.showMembersDialog(chatId);
+            }
+        });
+    }
+
+    // ✅ تماس صوتی
+    const callVoiceBtn = document.getElementById('callVoiceBtn');
+    if (callVoiceBtn) {
+        callVoiceBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('📞 Voice call clicked');
+            alert('تماس صوتی - به زودی');
+        });
+    }
+
+    // ✅ تماس تصویری
+    const callVideoBtn = document.getElementById('callVideoBtn');
+    if (callVideoBtn) {
+        callVideoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('📹 Video call clicked');
+            alert('تماس تصویری - به زودی');
+        });
+    }
+
+    // ✅ More button
+    const moreBtn = document.getElementById('moreBtn');
+    if (moreBtn) {
+        moreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('⋮⋮⋮ More clicked');
+            // Menu باز کردن
+        });
+    }
+
+    // ✅ Back button
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            console.log('⬅️ Back clicked');
+           // loadChats('all'); // برگشت به لیست چت‌ها
+        });
+    }
+
+    console.log('✅ Header event listeners attached');
+}
+
+
+
+
+
 
 // ✅ Setup منوی ایجاد
 function setupCreateMenu() {

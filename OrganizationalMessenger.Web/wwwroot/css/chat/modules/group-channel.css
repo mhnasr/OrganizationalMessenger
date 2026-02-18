@@ -4,6 +4,7 @@
 
 /* ==================== Overlay ==================== */
 .group-dialog-overlay,
+.channel-dialog-overlay, /* ✅ اضافه شد */
 .members-dialog-overlay,
 .add-member-dialog-overlay {
     position: fixed;
@@ -21,6 +22,7 @@
 
 /* ==================== Dialog Base ==================== */
 .group-dialog,
+.channel-dialog, /* ✅ اضافه شد */
 .members-dialog,
 .add-member-dialog {
     background: white;
@@ -41,6 +43,7 @@
 
 /* ==================== Header ==================== */
 .group-dialog-header,
+.channel-dialog-header, /* ✅ اضافه شد */
 .members-dialog-header,
 .add-member-dialog-header {
     display: flex;
@@ -53,6 +56,7 @@
 }
 
     .group-dialog-header h3,
+    .channel-dialog-header h3, /* ✅ اضافه شد */
     .members-dialog-header h3,
     .add-member-dialog-header h3 {
         margin: 0;
@@ -65,6 +69,7 @@
     }
 
     .group-dialog-header .close-dialog,
+    .channel-dialog-header .close-dialog, /* ✅ اضافه شد */
     .members-dialog-header .close-dialog,
     .add-member-dialog-header .close-dialog {
         background: rgba(255, 255, 255, 0.2);
@@ -93,6 +98,7 @@
 
 /* ==================== Body ==================== */
 .group-dialog-body,
+.channel-dialog-body, /* ✅ اضافه شد */
 .members-dialog-body,
 .add-member-dialog-body {
     padding: 20px 24px;
@@ -101,7 +107,9 @@
 }
 
 /* ==================== Footer ==================== */
-.group-dialog-footer {
+
+.group-dialog-footer,
+.channel-dialog-footer /* ✅ اضافه شد */ {
     display: flex;
     gap: 12px;
     padding: 16px 24px;

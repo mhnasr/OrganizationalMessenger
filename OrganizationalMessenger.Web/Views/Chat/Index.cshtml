@@ -29,16 +29,19 @@
                 </button>
 
                 <!-- ✅ منوی dropdown -->
+                <!-- در create-menu -->
                 <div class="create-menu" id="createMenu" style="display: none;">
-                    <button class="create-menu-item" id="createGroupBtn">
+                    <button class="create-menu-item" id="createGroupBtn" style="display: none;">
                         <i class="fas fa-users"></i>
                         <span>گروه جدید</span>
                     </button>
-                    <button class="create-menu-item" id="createChannelBtn">
+                    <button class="create-menu-item" id="createChannelBtn" style="display: none;">
                         <i class="fas fa-bullhorn"></i>
                         <span>کانال جدید</span>
                     </button>
                 </div>
+
+
 
                 <!-- دکمه خروج -->
                 <form asp-action="SignOut" asp-controller="Chat" method="post" class="logout-form">
@@ -66,22 +69,38 @@
 
     <!-- Main Chat Area -->
     <div class="chat-main">
-        <div class="chat-top-header" id="chatTopHeader">
-            <div class="chat-info">
-                <span id="chatTitle">چتی را انتخاب کنید</span>
-            </div>
-            <div class="chat-actions">
-                <button id="callVoiceBtn" style="display:none;" title="تماس صوتی">
+        <!-- Chat Header - کاملاً RTL -->
+        <div id="chatTopHeader" class="chat-header">
+            <!-- دکمه‌های سمت چپ -->
+            <div class="chat-actions-left">
+                
+                <button id="callVoiceBtn" class="header-btn" style="display:none;" title="تماس صوتی">
                     <i class="fas fa-phone"></i>
                 </button>
-                <button id="callVideoBtn" style="display:none;" title="تماس تصویری">
+                <button id="callVideoBtn" class="header-btn" style="display:none;" title="تماس تصویری">
                     <i class="fas fa-video"></i>
                 </button>
-                <button id="moreBtn" style="display:none;">
+            </div>
+
+            <!-- عنوان وسط -->
+            <div class="chat-title-container">
+                <div class="chat-avatar-small"></div>
+                <h2 id="chatTitle" class="chat-title">یک گفتگو انتخاب کنید</h2>
+                <span id="chatStatus" class="chat-status"></span>
+            </div>
+
+            <!-- دکمه‌های مدیریت سمت راست -->
+            <div class="chat-actions-right">
+                <button id="manageMembersBtn" class="header-btn" style="display:none;" title="مدیریت اعضا">
+                    <i class="fas fa-users-cog"></i>
+                </button>
+                <button id="moreBtn" class="header-btn" style="display:none;" title="گزینه‌های بیشتر">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
             </div>
         </div>
+
+
 
         <!-- پیامها -->
         <div class="messages-container" id="messagesContainer">

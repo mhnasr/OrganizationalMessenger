@@ -29,6 +29,28 @@ namespace OrganizationalMessenger.Web.Controllers
             return int.TryParse(claim.Value, out var id) ? id : null;
         }
 
+
+        [HttpGet("CanCreateChannel")]
+        public IActionResult CanCreateChannel()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized(new { success = false, canCreate = false });
+
+            try
+            {
+                var user = _context.Users.Find(userId.Value);
+                return Ok(new
+                {
+                    success = true,
+                    canCreate = user?.CanCreateChannel ?? false
+                });
+            }
+            catch
+            {
+                return Ok(new { success = true, canCreate = false });
+            }
+        }
+
         // ✅ تغییر [FromBody] به [FromForm]
         [HttpPost("Create")]
         public async Task<IActionResult> CreateChannel([FromForm] CreateChannelRequest request)
@@ -149,13 +171,18 @@ namespace OrganizationalMessenger.Web.Controllers
                 if (userChannel == null)
                     return NotFound(new { success = false, message = "شما عضو این کانال نیستید" });
 
-                var members = await _context.UserChannels
+                // ✅ ابتدا ToListAsync() بعد projection
+                var membersRaw = await _context.UserChannels
                     .Where(uc => uc.ChannelId == channelId && uc.IsActive)
                     .Include(uc => uc.User)
+                    .OrderByDescending(uc => uc.IsAdmin)
+                    .ToListAsync(); // ✅ اینجا
+
+                var members = membersRaw
                     .Select(uc => new
                     {
                         userId = uc.UserId,
-                        name = $"{uc.User.FirstName} {uc.User.LastName}",
+                        name = $"{uc.User.FirstName} {uc.User.LastName}", // ✅ حالا OK
                         username = uc.User.Username,
                         avatar = uc.User.AvatarUrl ?? "/images/default-avatar.png",
                         role = uc.Role.ToString(),
@@ -165,8 +192,8 @@ namespace OrganizationalMessenger.Web.Controllers
                         isOnline = uc.User.IsOnline
                     })
                     .OrderByDescending(m => m.isAdmin)
-                    .ThenBy(m => m.name)
-                    .ToListAsync();
+                    .ThenBy(m => m.name) // ✅ string interpolation OK
+                    .ToList();
 
                 return Ok(new { success = true, members });
             }
@@ -175,6 +202,7 @@ namespace OrganizationalMessenger.Web.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
 
         // ✅ جستجوی کاربران برای اضافه کردن
         [HttpGet("{channelId}/SearchUsers")]

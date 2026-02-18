@@ -6,6 +6,7 @@
 @import url('./chat/variables.css');
 @import url('./chat/layout.css');
 @import url('./chat/header.css');
+@import url('./chat/chat-header.css');
 @import url('./chat/tabs.css');
 @import url('./chat/sidebar.css');
 @import url('./chat/messages.css');
